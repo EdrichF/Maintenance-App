@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { createClient } from '@/lib/supabase/client'
 import { Input } from '@/components/ui/Input'
+import { PasswordInput } from '@/components/ui/PasswordInput'
 import { Button } from '@/components/ui/Button'
 import { Wrench } from 'lucide-react'
 
@@ -29,30 +30,32 @@ export default function LoginPage() {
     const { data, error: authError } = await supabase.auth.signInWithPassword(values)
 
     if (authError) {
-      if (authError.message.toLowerCase().includes('email not confirmed')) {
-        setError('Please confirm your email first — check your inbox for a confirmation link from Supabase.')
-      } else {
-        setError('Invalid email or password.')
-      }
+      setError(
+        authError.message.toLowerCase().includes('email not confirmed')
+          ? 'Please confirm your email first — check your inbox.'
+          : 'Invalid email or password.'
+      )
       setLoading(false)
       return
     }
 
-    // Route based on role
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', data.user.id)
       .single()
 
-    router.push(profile?.role === 'admin' ? '/admin' : '/client')
+    const role = profile?.role
+    let dest = '/client'
+    if (role === 'admin') dest = '/admin'
+    else if (role === 'regional_manager') dest = '/regional'
+    router.push(dest)
     router.refresh()
   }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
           <Wrench className="text-brand-600" size={28} />
           <span className="text-2xl font-bold text-brand-600">ConnexServ</span>
@@ -71,9 +74,8 @@ export default function LoginPage() {
               error={errors.email?.message}
               {...register('email', { required: 'Email is required' })}
             />
-            <Input
+            <PasswordInput
               id="password"
-              type="password"
               label="Password"
               placeholder="Your password"
               error={errors.password?.message}

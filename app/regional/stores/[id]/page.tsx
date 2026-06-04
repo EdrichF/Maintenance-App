@@ -3,11 +3,13 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import {
   ArrowLeft, Phone, Mail, MapPin, Building2,
-  FileText, TrendingUp, CheckCircle, Clock,
+  FileText, CheckCircle, Clock, Archive,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
+import { QuoteApprovalCard } from '@/components/regional/QuoteApprovalCard'
 import {
-  STATUS_COLORS, STATUS_LABELS, PRIORITY_COLORS, PRIORITY_LABELS,
+  STATUS_COLORS, STATUS_LABELS,
+  PRIORITY_COLORS, PRIORITY_LABELS,
   QUOTE_STATUS_LABELS, formatDate, formatCurrency,
 } from '@/lib/utils'
 import type { Ticket, Quote } from '@/lib/types'
@@ -18,7 +20,6 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  // Use admin client to bypass RLS — still scoped to this RM's stores
   const { data: store } = await adminClient
     .from('profiles')
     .select('*')
@@ -39,28 +40,37 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
   const allQuotes  = ticketList.flatMap(t => t.quotes ?? [])
 
   const stats = {
-    total:     ticketList.length,
-    open:      ticketList.filter(t => t.status === 'open').length,
-    inProgress:ticketList.filter(t => t.status === 'in_progress').length,
-    completed: ticketList.filter(t => t.status === 'completed').length,
-    urgent:    ticketList.filter(t => t.priority === 'urgent' && !['completed','cancelled'].includes(t.status)).length,
-    pendingQ:  allQuotes.filter(q => q.status === 'pending').length,
-    acceptedQ: allQuotes.filter(q => q.status === 'accepted').length,
-    totalValue:allQuotes.filter(q => q.status === 'accepted').reduce((s, q) => s + (q.amount ?? 0), 0),
+    total:      ticketList.length,
+    open:       ticketList.filter(t => t.status === 'open').length,
+    inProgress: ticketList.filter(t => t.status === 'in_progress').length,
+    completed:  ticketList.filter(t => t.status === 'completed').length,
+    pendingQ:   allQuotes.filter(q => q.status === 'pending').length,
+    acceptedQ:  allQuotes.filter(q => q.status === 'accepted').length,
+    totalValue: allQuotes
+      .filter(q => q.status === 'accepted')
+      .reduce((s, q) => s + (q.amount ?? 0), 0),
   }
 
-  const acceptanceRate = (stats.acceptedQ + allQuotes.filter(q => q.status === 'declined').length) > 0
-    ? Math.round((stats.acceptedQ / (stats.acceptedQ + allQuotes.filter(q => q.status === 'declined').length)) * 100)
+  const declined = allQuotes.filter(q => q.status === 'declined').length
+  const acceptanceRate = (stats.acceptedQ + declined) > 0
+    ? Math.round((stats.acceptedQ / (stats.acceptedQ + declined)) * 100)
     : null
 
-  // Filter state — split by status
-  const openTickets      = ticketList.filter(t => !['completed','cancelled'].includes(t.status))
-  const closedTickets    = ticketList.filter(t => ['completed','cancelled'].includes(t.status))
+  const openTickets   = ticketList.filter(t => !['completed','cancelled'].includes(t.status))
+  const closedTickets = ticketList.filter(t =>  ['completed','cancelled'].includes(t.status))
+
+  const pendingQuotes = ticketList
+    .flatMap(t => (t.quotes ?? []).map(q => ({ ...q, ticketTitle: t.title, ticketId: t.id })))
+    .filter(q => q.status === 'pending')
+
+  const archivedQuotes = ticketList
+    .flatMap(t => (t.quotes ?? []).map(q => ({ ...q, ticketTitle: t.title })))
+    .filter(q => q.status !== 'pending')
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   return (
     <div className="space-y-6 max-w-4xl">
 
-      {/* Back + header */}
       <div className="flex items-center gap-3">
         <Link href="/regional/stores" className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
           <ArrowLeft size={20} />
@@ -71,10 +81,9 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
         </div>
       </div>
 
-      {/* Store info + summary stats */}
+      {/* Info + stats grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-        {/* Contact card */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-2">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Store Contact</p>
           {store.full_name && (
@@ -103,7 +112,6 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
           )}
         </div>
 
-        {/* Ticket stats */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Ticket Summary</p>
           <div className="grid grid-cols-2 gap-3">
@@ -121,7 +129,6 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
           </div>
         </div>
 
-        {/* Quote stats */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Quote Summary</p>
           <div className="space-y-3">
@@ -136,10 +143,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
                   <span className="font-semibold text-gray-900 dark:text-white">{acceptanceRate}%</span>
                 </div>
                 <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-green-500 rounded-full transition-all"
-                    style={{ width: `${acceptanceRate}%` }}
-                  />
+                  <div className="h-full bg-green-500 rounded-full" style={{ width: `${acceptanceRate}%` }} />
                 </div>
               </div>
             )}
@@ -157,6 +161,26 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
         </div>
       </div>
 
+      {/* Pending quotes awaiting approval */}
+      {pendingQuotes.length > 0 && (
+        <div>
+          <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <FileText size={16} className="text-yellow-500" />
+            Quotes Awaiting Your Approval ({pendingQuotes.length})
+          </h2>
+          <div className="space-y-3">
+            {pendingQuotes.map((q: any) => (
+              <QuoteApprovalCard
+                key={q.id}
+                quote={q as Quote}
+                ticketTitle={q.ticketTitle}
+                ticketId={q.ticketId}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Active tickets */}
       <div>
         <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
@@ -166,7 +190,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
         {openTickets.length === 0 ? (
           <div className="bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 rounded-xl p-6 text-center">
             <CheckCircle size={20} className="mx-auto text-green-500 mb-2" />
-            <p className="text-sm text-green-700 dark:text-green-400">No active tickets — all caught up!</p>
+            <p className="text-sm text-green-700 dark:text-green-400">No active tickets.</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -186,19 +210,6 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
                     </Badge>
                   </div>
                 </div>
-                {(ticket.quotes ?? []).length > 0 && (
-                  <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700 flex gap-2 flex-wrap">
-                    {ticket.quotes.map((q: Quote) => (
-                      <span key={q.id} className={`text-xs px-2 py-0.5 rounded-full ${
-                        q.status === 'accepted' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                        q.status === 'declined' ? 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' :
-                        'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                      }`}>
-                        {formatCurrency(q.amount)} · {QUOTE_STATUS_LABELS[q.status]}
-                      </span>
-                    ))}
-                  </div>
-                )}
               </div>
             ))}
           </div>
@@ -213,7 +224,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
             Completed & Cancelled ({closedTickets.length})
           </h2>
           <div className="space-y-2">
-            {closedTickets.slice(0, 10).map(ticket => (
+            {closedTickets.map(ticket => (
               <div key={ticket.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 opacity-75">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
@@ -224,6 +235,33 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
                     {STATUS_LABELS[ticket.status]}
                   </Badge>
                 </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Quote archive */}
+      {archivedQuotes.length > 0 && (
+        <div>
+          <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <Archive size={16} className="text-gray-400" />
+            Quote Archive ({archivedQuotes.length})
+          </h2>
+          <div className="space-y-2">
+            {archivedQuotes.map((q: any) => (
+              <div key={q.id} className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{q.ticketTitle}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{formatCurrency(q.amount)} · {formatDate(q.created_at)}</p>
+                </div>
+                <span className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full ${
+                  q.status === 'accepted'
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                    : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                }`}>
+                  {q.status === 'accepted' ? 'Approved' : 'Declined'}
+                </span>
               </div>
             ))}
           </div>

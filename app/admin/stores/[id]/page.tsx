@@ -1,10 +1,14 @@
-import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Mail, Phone, MapPin, Building2 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { AssignRMForm } from '@/components/admin/AssignRMForm'
-import { STATUS_COLORS, STATUS_LABELS, PRIORITY_COLORS, PRIORITY_LABELS, formatDate } from '@/lib/utils'
+import {
+  STATUS_COLORS, STATUS_LABELS,
+  PRIORITY_COLORS, PRIORITY_LABELS,
+  formatDate,
+} from '@/lib/utils'
 import type { Ticket } from '@/lib/types'
 
 export default async function AdminStoreDetailPage({ params }: { params: { id: string } }) {
@@ -31,6 +35,10 @@ export default async function AdminStoreDetailPage({ params }: { params: { id: s
     .eq('role', 'regional_manager')
     .order('full_name')
 
+  const currentRm = store.regional_manager_id
+    ? (regionalManagers ?? []).find((rm: any) => rm.id === store.regional_manager_id)
+    : null
+
   return (
     <div className="max-w-2xl space-y-5">
       <div className="flex items-center gap-3">
@@ -50,6 +58,12 @@ export default async function AdminStoreDetailPage({ params }: { params: { id: s
           <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
             <Building2 size={14} className="text-gray-400" />
             <span>{store.full_name}</span>
+          </div>
+        )}
+        {store.branch_code && (
+          <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+            <span className="text-gray-400 font-mono text-xs">CODE</span>
+            <span className="font-mono font-semibold">{store.branch_code}</span>
           </div>
         )}
         {store.email && (
@@ -76,6 +90,7 @@ export default async function AdminStoreDetailPage({ params }: { params: { id: s
       <AssignRMForm
         storeId={store.id}
         currentRmId={store.regional_manager_id}
+        currentRmName={currentRm?.full_name ?? currentRm?.company_name ?? null}
         regionalManagers={regionalManagers ?? []}
       />
 

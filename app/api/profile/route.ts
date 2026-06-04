@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
-// GET /api/profile — fetch own profile
 export async function GET() {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -16,18 +15,24 @@ export async function GET() {
   return NextResponse.json({ profile })
 }
 
-// PATCH /api/profile — update own profile
 export async function PATCH(request: Request) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
 
   const body = await request.json()
-  const { full_name, phone, address, company_name, sub_store } = body
+  const { full_name, phone, address, company_name, sub_store, branch_code } = body
+
+  const updateData: Record<string, string> = {
+    full_name, phone, address, company_name, sub_store,
+  }
+  if (branch_code) {
+    updateData.branch_code = branch_code.trim().toUpperCase()
+  }
 
   const { data: profile, error } = await supabase
     .from('profiles')
-    .update({ full_name, phone, address, company_name, sub_store })
+    .update(updateData)
     .eq('id', user.id)
     .select()
     .single()

@@ -12,15 +12,23 @@ interface ProfileForm {
   address: string
   company_name: string
   sub_store: string
+  branch_code: string
+}
+
+const ROLE_LABELS: Record<string, string> = {
+  admin:            'Administrator',
+  regional_manager: 'Regional Manager',
+  store_manager:    'Store Manager',
+  client:           'Store Manager',
 }
 
 export default function SettingsPage() {
-  const [loading, setLoading] = useState(false)
+  const [loading,  setLoading]  = useState(false)
   const [fetching, setFetching] = useState(true)
-  const [saved, setSaved] = useState(false)
-  const [error, setError] = useState('')
-  const [email, setEmail] = useState('')
-  const [role, setRole] = useState('')
+  const [saved,    setSaved]    = useState(false)
+  const [error,    setError]    = useState('')
+  const [email,    setEmail]    = useState('')
+  const [role,     setRole]     = useState('')
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ProfileForm>()
 
@@ -30,14 +38,15 @@ export default function SettingsPage() {
       .then(({ profile }) => {
         if (profile) {
           reset({
-            full_name:    profile.full_name   ?? '',
-            phone:        profile.phone       ?? '',
-            address:      profile.address     ?? '',
+            full_name:    profile.full_name    ?? '',
+            phone:        profile.phone        ?? '',
+            address:      profile.address      ?? '',
             company_name: profile.company_name ?? '',
-            sub_store:    profile.sub_store   ?? '',
+            sub_store:    profile.sub_store    ?? '',
+            branch_code:  profile.branch_code  ?? '',
           })
           setEmail(profile.email ?? '')
-          setRole(profile.role ?? '')
+          setRole(profile.role   ?? '')
         }
         setFetching(false)
       })
@@ -55,8 +64,8 @@ export default function SettingsPage() {
     })
 
     if (!res.ok) {
-      const data = await res.json()
-      setError(data.error || 'Failed to save')
+      const d = await res.json()
+      setError(d.error || 'Failed to save')
       setLoading(false)
       return
     }
@@ -64,13 +73,6 @@ export default function SettingsPage() {
     setSaved(true)
     setLoading(false)
     setTimeout(() => setSaved(false), 3000)
-  }
-
-  const ROLE_LABELS: Record<string, string> = {
-    admin:            'Administrator',
-    regional_manager: 'Regional Manager',
-    store_manager:    'Store Manager',
-    client:           'Store Manager',
   }
 
   if (fetching) {
@@ -108,7 +110,7 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Editable profile info */}
+      {/* Editable profile */}
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
         <div className="flex items-center gap-2 mb-4">
           <Building2 size={16} className="text-brand-600" />
@@ -137,19 +139,29 @@ export default function SettingsPage() {
             error={errors.sub_store?.message}
             {...register('sub_store', { required: 'Branch name is required' })}
           />
+          <div>
+            <Input
+              id="branch_code"
+              label="Branch Code"
+              placeholder="e.g. CPT001"
+              error={errors.branch_code?.message}
+              {...register('branch_code')}
+            />
+            <p className="mt-1 text-xs text-gray-400">
+              Unique identifier used by your regional manager to link your store.
+            </p>
+          </div>
           <Input
             id="phone"
             type="tel"
             label="Phone Number"
             placeholder="+27 71 234 5678"
-            error={errors.phone?.message}
             {...register('phone')}
           />
           <Input
             id="address"
             label="Address"
             placeholder="123 Main St, Cape Town"
-            error={errors.address?.message}
             {...register('address')}
           />
 
@@ -158,11 +170,9 @@ export default function SettingsPage() {
               {error}
             </div>
           )}
-
           {saved && (
             <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 text-sm rounded-lg px-4 py-3">
-              <CheckCircle size={16} />
-              Changes saved successfully.
+              <CheckCircle size={16} /> Changes saved successfully.
             </div>
           )}
 

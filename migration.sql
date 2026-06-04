@@ -25,10 +25,14 @@ ALTER TABLE profiles
 ALTER TABLE quotes
   ADD COLUMN IF NOT EXISTS file_url text;
 
+-- 5. Add branch_code — unique identifier entered by store during signup
+ALTER TABLE profiles
+  ADD COLUMN IF NOT EXISTS branch_code text UNIQUE;
+
 -- ============================================================
 -- How to create a Regional Manager account:
 -- 1. Sign up normally (or use Supabase Auth → Add user)
 -- 2. In the profiles table, set role = 'regional_manager'
--- 3. In each store_manager profile that belongs to this RM,
---    set regional_manager_id = <rm_user_id>
+-- 3. Link stores to an RM via the Stores tab in the admin panel
+--    using the store's branch code
 -- ============================================================
