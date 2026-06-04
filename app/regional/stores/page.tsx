@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Store, ArrowRight, Phone, Mail, MapPin } from 'lucide-react'
 import { formatDate, formatCurrency, STATUS_COLORS, STATUS_LABELS } from '@/lib/utils'
+import { AddStoreForm } from '@/components/regional/AddStoreForm'
 
 export default async function RegionalStoresPage() {
   const supabase    = createClient()
@@ -36,8 +37,13 @@ export default async function RegionalStoresPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white">All Stores</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{storeList.length} store{storeList.length !== 1 ? 's' : ''} under your management</p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">All Stores</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{storeList.length} store{storeList.length !== 1 ? 's' : ''} under your management</p>
+          </div>
+          <AddStoreForm />
+        </div>
       </div>
 
       {storeList.length === 0 ? (
