@@ -19,30 +19,51 @@ export async function POST(request: Request) {
   }
 
   const adminClient = createAdminClient()
+  const normalised = branch_code.trim().toUpperCase()
 
-  const { data: store } = await adminClient
+  // Use ilike for case-insensitive match and trim stored values
+  const { data: stores, error: queryError } = await adminClient
     .from('profiles')
-    .select('id, company_name, sub_store, regional_manager_id')
-    .eq('branch_code', branch_code.trim().toUpperCase())
+    .select('id, company_name, sub_store, regional_manager_id, branch_code')
+    .ilike('branch_code', normalised)
     .in('role', ['store_manager', 'client'])
-    .single()
 
-  if (!store) {
-    return NextResponse.json({ error: 'No store found with that branch code.' }, { status: 404 })
+  if (queryError) {
+    // Column may not exist yet
+    if (queryError.message?.includes('branch_code') || queryError.code === '42703') {
+      return NextResponse.json({
+        error: 'The branch_code column does not exist yet. Please run the migration SQL in your Supabase SQL Editor first.',
+      }, { status: 500 })
+    }
+    return NextResponse.json({ error: queryError.message }, { status: 500 })
   }
 
+  if (!stores || stores.length === 0) {
+    return NextResponse.json({
+      error: `No store found with branch code "${normalised}". Make sure the store manager has set their branch code in Settings.`,
+    }, { status: 404 })
+  }
+
+  const store = stores[0]
+
   if (store.regional_manager_id && store.regional_manager_id !== user.id) {
-    return NextResponse.json({ error: 'This store is already assigned to another regional manager.' }, { status: 409 })
+    return NextResponse.json({
+      error: 'This store is already assigned to another regional manager.',
+    }, { status: 409 })
   }
 
   if (store.regional_manager_id === user.id) {
     return NextResponse.json({ error: 'This store is already in your region.' }, { status: 409 })
   }
 
-  await adminClient
+  const { error: updateError } = await adminClient
     .from('profiles')
     .update({ regional_manager_id: user.id })
     .eq('id', store.id)
+
+  if (updateError) {
+    return NextResponse.json({ error: updateError.message }, { status: 500 })
+  }
 
   return NextResponse.json({
     success: true,
