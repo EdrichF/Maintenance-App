@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { Bell, LogOut, Wrench } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import type { Notification } from '@/lib/types'
 
 interface NavbarProps {
@@ -18,7 +19,6 @@ export function Navbar({ role }: NavbarProps) {
 
   useEffect(() => {
     fetchUnread()
-    // Poll every 30 seconds for new notifications
     const interval = setInterval(fetchUnread, 30_000)
     return () => clearInterval(interval)
   }, [])
@@ -42,7 +42,7 @@ export function Navbar({ role }: NavbarProps) {
     : [{ href: '/client', label: 'Dashboard' }, { href: '/client/tickets', label: 'My Tickets' }]
 
   return (
-    <nav className="bg-white border-b border-gray-200 sticky top-0 z-10">
+    <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
       <div className="max-w-5xl mx-auto px-4 flex items-center justify-between h-14">
         {/* Logo */}
         <Link href={base} className="flex items-center gap-2 font-bold text-brand-600 text-lg">
@@ -58,8 +58,8 @@ export function Navbar({ role }: NavbarProps) {
               href={link.href}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 pathname === link.href
-                  ? 'bg-brand-50 text-brand-700'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  ? 'bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'
               }`}
             >
               {link.label}
@@ -68,8 +68,12 @@ export function Navbar({ role }: NavbarProps) {
         </div>
 
         {/* Right actions */}
-        <div className="flex items-center gap-2">
-          <Link href={`${base}/notifications`} className="relative p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg">
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <Link
+            href={`${base}/notifications`}
+            className="relative p-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+          >
             <Bell size={20} />
             {unread > 0 && (
               <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
@@ -79,7 +83,7 @@ export function Navbar({ role }: NavbarProps) {
           </Link>
           <button
             onClick={handleLogout}
-            className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
+            className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
             title="Log out"
           >
             <LogOut size={18} />

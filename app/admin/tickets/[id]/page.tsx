@@ -35,10 +35,10 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
       <div className="flex items-center gap-3">
-        <Link href="/admin/tickets" className="text-gray-500 hover:text-gray-900">
+        <Link href="/admin/tickets" className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
           <ArrowLeft size={20} />
         </Link>
-        <h1 className="text-xl font-bold text-gray-900 truncate">{ticket.title}</h1>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">{ticket.title}</h1>
       </div>
 
       {/* Status + Priority */}
@@ -54,26 +54,26 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
 
       {/* Client info */}
       {client && (
-        <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-2">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-2">
           <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Client</p>
-          <div className="flex items-center gap-2 text-sm text-gray-700">
+          <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
             <Building2 size={15} className="text-gray-400" />
             <span className="font-medium">{client.company_name}</span>
             <span className="text-gray-400">·</span>
             <span>{client.sub_store}</span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-700">
+          <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
             <Mail size={15} className="text-gray-400" />
             <a href={`mailto:${client.email}`} className="hover:underline">{client.email}</a>
           </div>
           {client.phone && (
-            <div className="flex items-center gap-2 text-sm text-gray-700">
+            <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
               <Phone size={15} className="text-gray-400" />
               <a href={`tel:${client.phone}`} className="hover:underline">{client.phone}</a>
             </div>
           )}
           {client.address && (
-            <div className="flex items-center gap-2 text-sm text-gray-700">
+            <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
               <MapPin size={15} className="text-gray-400" />
               <span>{client.address}</span>
             </div>
@@ -82,9 +82,9 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
       )}
 
       {/* Ticket description */}
-      <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
         <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Description</p>
-        <p className="text-sm text-gray-700 leading-relaxed">{ticket.description}</p>
+        <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed">{ticket.description}</p>
 
         {ticket.photo_urls?.length > 0 && (
           <div>
@@ -106,12 +106,12 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
       {/* Quotes sent */}
       {(quotes?.length ?? 0) > 0 && (
         <div>
-          <p className="font-semibold text-gray-900 mb-2">Quotes Sent</p>
+          <p className="font-semibold text-gray-900 dark:text-white mb-2">Quotes Sent</p>
           <div className="space-y-2">
             {(quotes as Quote[]).map(q => (
-              <div key={q.id} className="bg-white border border-gray-200 rounded-xl p-4">
+              <div key={q.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                  <p className="text-lg font-bold">{formatCurrency(q.amount)}</p>
+                  <p className="text-lg font-bold dark:text-white">{formatCurrency(q.amount)}</p>
                   <Badge className={
                     q.status === 'accepted' ? 'bg-green-100 text-green-800' :
                     q.status === 'declined' ? 'bg-gray-100 text-gray-700' :
@@ -120,7 +120,7 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
                     {QUOTE_STATUS_LABELS[q.status]}
                   </Badge>
                 </div>
-                <p className="text-sm text-gray-600 mt-1">{q.description}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{q.description}</p>
                 {q.valid_until && <p className="text-xs text-gray-400 mt-1">Valid until: {formatDate(q.valid_until)}</p>}
               </div>
             ))}

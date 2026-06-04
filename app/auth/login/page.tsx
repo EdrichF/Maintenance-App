@@ -50,7 +50,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
@@ -58,9 +58,9 @@ export default function LoginPage() {
           <span className="text-2xl font-bold text-brand-600">ConnexServ</span>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8">
-          <h1 className="text-xl font-semibold text-gray-900 mb-1">Welcome back</h1>
-          <p className="text-sm text-gray-500 mb-6">Log in to your account.</p>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sm:p-8">
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">Welcome back</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Log in to your account.</p>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <Input
@@ -81,7 +81,7 @@ export default function LoginPage() {
             />
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm rounded-lg px-4 py-3">
                 {error}
               </div>
             )}
@@ -91,7 +91,7 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <p className="mt-4 text-center text-sm text-gray-500">
+          <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
             New here?{' '}
             <Link href="/auth/signup" className="text-brand-600 hover:underline font-medium">
               Create an account

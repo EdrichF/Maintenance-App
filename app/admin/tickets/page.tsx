@@ -30,7 +30,7 @@ export default async function AdminTicketsPage({
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold text-gray-900">All Tickets</h1>
+      <h1 className="text-xl font-bold text-gray-900 dark:text-white">All Tickets</h1>
 
       {/* Filters */}
       <div className="flex gap-2 flex-wrap">
@@ -39,7 +39,7 @@ export default async function AdminTicketsPage({
           className={`px-3 py-1 rounded-full text-sm border transition-colors ${
             !searchParams.status && !searchParams.priority
               ? 'bg-brand-600 text-white border-brand-600'
-              : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'
+              : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400'
           }`}
         >
           All
@@ -51,7 +51,7 @@ export default async function AdminTicketsPage({
             className={`px-3 py-1 rounded-full text-sm border transition-colors ${
               searchParams.status === s
                 ? 'bg-brand-600 text-white border-brand-600'
-                : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'
+                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400'
             }`}
           >
             {STATUS_LABELS[s as keyof typeof STATUS_LABELS]}
@@ -60,22 +60,22 @@ export default async function AdminTicketsPage({
       </div>
 
       {!tickets?.length ? (
-        <div className="bg-white border border-dashed border-gray-300 rounded-xl p-10 text-center">
+        <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-10 text-center">
           <p className="text-sm text-gray-400">No tickets found.</p>
         </div>
       ) : (
         <div className="space-y-2">
           {(tickets as (Ticket & { profiles: any })[]).map(ticket => (
             <Link key={ticket.id} href={`/admin/tickets/${ticket.id}`}>
-              <div className="bg-white border border-gray-200 rounded-xl px-4 py-4 hover:border-brand-300 transition-colors">
+              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-4 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 truncate">{ticket.title}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">
+                    <p className="font-semibold text-gray-900 dark:text-white truncate">{ticket.title}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                       {ticket.profiles?.company_name} — {ticket.profiles?.sub_store}
                     </p>
-                    <p className="text-xs text-gray-500">{ticket.profiles?.full_name}</p>
-                    <p className="text-xs text-gray-400 mt-1">{formatDate(ticket.created_at)}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{ticket.profiles?.full_name}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{formatDate(ticket.created_at)}</p>
                   </div>
                   <div className="flex flex-col gap-1 items-end shrink-0">
                     <Badge className={PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}>

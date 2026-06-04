@@ -24,7 +24,7 @@ export function UpdateStatusForm({ ticketId, currentStatus }: { ticketId: string
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Update Status</p>
       <div className="grid grid-cols-3 gap-2">
         {STATUSES.map(s => (
@@ -35,7 +35,7 @@ export function UpdateStatusForm({ ticketId, currentStatus }: { ticketId: string
             className={`py-1.5 px-2 rounded-lg text-xs font-medium border transition-all ${
               status === s
                 ? 'bg-brand-600 text-white border-brand-600'
-                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-400'
             }`}
           >
             {STATUS_LABELS[s]}

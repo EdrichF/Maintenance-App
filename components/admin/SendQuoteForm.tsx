@@ -1,10 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
+import { useDropzone } from 'react-dropzone'
+import { UploadCloud, X, FileText, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
+import { createClient } from '@/lib/supabase/client'
 
 interface QuoteForm {
   amount: number
@@ -17,17 +20,64 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [file, setFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<QuoteForm>()
+
+  const onDrop = useCallback((accepted: File[]) => {
+    if (accepted[0]) setFile(accepted[0])
+  }, [])
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    multiple: false,
+    maxSize: 10 * 1024 * 1024, // 10 MB
+    accept: {
+      'application/pdf': ['.pdf'],
+      'image/*': ['.png', '.jpg', '.jpeg', '.webp'],
+      'application/msword': ['.doc'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+    },
+  })
+
+  async function uploadFile(file: File): Promise<string | null> {
+    const supabase = createClient()
+    const ext = file.name.split('.').pop()
+    const path = `${ticketId}/${Date.now()}.${ext}`
+    const { error } = await supabase.storage
+      .from('quote-attachments')
+      .upload(path, file, { upsert: true })
+    if (error) return null
+    const { data } = supabase.storage.from('quote-attachments').getPublicUrl(path)
+    return data.publicUrl
+  }
 
   async function onSubmit(values: QuoteForm) {
     setLoading(true)
     setError('')
 
+    let fileUrl: string | null = null
+    if (file) {
+      setUploading(true)
+      fileUrl = await uploadFile(file)
+      setUploading(false)
+      if (!fileUrl) {
+        setError('File upload failed. Check the quote-attachments storage bucket exists.')
+        setLoading(false)
+        return
+      }
+    }
+
     const res = await fetch('/api/quotes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...values, ticket_id: ticketId, amount: Number(values.amount) }),
+      body: JSON.stringify({
+        ...values,
+        ticket_id: ticketId,
+        amount: Number(values.amount),
+        file_url: fileUrl,
+      }),
     })
 
     if (!res.ok) {
@@ -38,6 +88,7 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
     }
 
     reset()
+    setFile(null)
     setOpen(false)
     router.refresh()
     setLoading(false)
@@ -52,8 +103,8 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
   }
 
   return (
-    <div className="bg-white border border-brand-200 rounded-xl p-5 space-y-4">
-      <h3 className="font-semibold text-gray-900">Send Quote</h3>
+    <div className="bg-white dark:bg-gray-800 border border-brand-200 dark:border-gray-700 rounded-xl p-5 space-y-4">
+      <h3 className="font-semibold text-gray-900 dark:text-white">Send Quote</h3>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <Input
@@ -67,9 +118,9 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
         />
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
           <textarea
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
             rows={3}
             placeholder="Describe what the quote covers..."
             {...register('description', { required: 'Description is required' })}
@@ -84,13 +135,66 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
           {...register('valid_until')}
         />
 
+        {/* File upload */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Attachment <span className="text-gray-400 font-normal">(optional — PDF, Word, or image, max 10 MB)</span>
+          </label>
+
+          {file ? (
+            <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
+              <FileText size={18} className="text-brand-600 shrink-0" />
+              <span className="text-sm text-gray-700 dark:text-gray-200 truncate flex-1">{file.name}</span>
+              <span className="text-xs text-gray-400 shrink-0">{(file.size / 1024).toFixed(0)} KB</span>
+              <button
+                type="button"
+                onClick={() => setFile(null)}
+                className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          ) : (
+            <div
+              {...getRootProps()}
+              className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                isDragActive
+                  ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/20'
+                  : 'border-gray-300 dark:border-gray-600 hover:border-brand-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+              }`}
+            >
+              <input {...getInputProps()} />
+              <UploadCloud size={28} className={`mx-auto mb-2 ${isDragActive ? 'text-brand-500' : 'text-gray-400'}`} />
+              {isDragActive ? (
+                <p className="text-sm text-brand-600 font-medium">Drop it here…</p>
+              ) : (
+                <>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Drag & drop a file, or{' '}
+                    <span className="text-brand-600 font-medium">browse</span>
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">PDF, Word, PNG, JPG up to 10 MB</p>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">{error}</div>
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm rounded-lg px-4 py-3">
+            {error}
+          </div>
         )}
 
         <div className="flex gap-2">
-          <Button type="submit" loading={loading} className="flex-1">Send Quote</Button>
-          <Button type="button" variant="secondary" onClick={() => setOpen(false)} className="flex-1">Cancel</Button>
+          <Button type="submit" loading={loading} className="flex-1" disabled={uploading}>
+            {uploading ? (
+              <><Loader2 size={14} className="animate-spin mr-1.5" /> Uploading…</>
+            ) : 'Send Quote'}
+          </Button>
+          <Button type="button" variant="secondary" onClick={() => { setOpen(false); setFile(null) }} className="flex-1">
+            Cancel
+          </Button>
         </div>
       </form>
     </div>

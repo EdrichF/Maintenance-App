@@ -63,7 +63,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
@@ -71,9 +71,9 @@ export default function SignupPage() {
           <span className="text-2xl font-bold text-brand-600">ConnexServ</span>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8">
-          <h1 className="text-xl font-semibold text-gray-900 mb-1">Create your account</h1>
-          <p className="text-sm text-gray-500 mb-6">Submit maintenance requests anytime.</p>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sm:p-8">
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">Create your account</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Submit maintenance requests anytime.</p>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* Personal */}
@@ -149,7 +149,7 @@ export default function SignupPage() {
             />
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm rounded-lg px-4 py-3">
                 {error}
               </div>
             )}
@@ -159,7 +159,7 @@ export default function SignupPage() {
             </Button>
           </form>
 
-          <p className="mt-4 text-center text-sm text-gray-500">
+          <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
             Already have an account?{' '}
             <Link href="/auth/login" className="text-brand-600 hover:underline font-medium">
               Log in

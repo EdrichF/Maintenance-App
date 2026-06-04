@@ -93,13 +93,13 @@ export default function NewTicketPage() {
   return (
     <div className="max-w-lg mx-auto">
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/client/tickets" className="text-gray-500 hover:text-gray-900">
+        <Link href="/client/tickets" className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
           <ArrowLeft size={20} />
         </Link>
-        <h1 className="text-xl font-bold text-gray-900">New Maintenance Ticket</h1>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">New Maintenance Ticket</h1>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-2xl p-6">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Title */}
           <Input
@@ -112,11 +112,11 @@ export default function NewTicketPage() {
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Description
             </label>
             <textarea
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent placeholder-gray-400 resize-none"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent placeholder-gray-400 resize-none"
               rows={4}
               placeholder="Describe the problem in detail..."
               {...register('description', { required: 'Description is required' })}
@@ -128,7 +128,7 @@ export default function NewTicketPage() {
 
           {/* Priority */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Priority</label>
             <div className="grid grid-cols-4 gap-2">
               {PRIORITIES.map(p => (
                 <button
@@ -136,7 +136,7 @@ export default function NewTicketPage() {
                   type="button"
                   onClick={() => setValue('priority', p.value)}
                   className={`py-2 rounded-lg border-2 text-sm font-medium transition-all ${
-                    priority === p.value ? p.color + ' border-opacity-100' : 'border-gray-200 text-gray-500 bg-white'
+                    priority === p.value ? p.color + ' border-opacity-100' : 'border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-700'
                   }`}
                 >
                   {p.label}
@@ -147,7 +147,7 @@ export default function NewTicketPage() {
 
           {/* Photos */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Photos <span className="text-gray-400 font-normal">(up to 5)</span>
             </label>
 
@@ -173,12 +173,12 @@ export default function NewTicketPage() {
               <div
                 {...getRootProps()}
                 className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
-                  isDragActive ? 'border-brand-400 bg-brand-50' : 'border-gray-300 hover:border-brand-300'
+                  isDragActive ? 'border-brand-400 bg-brand-50 dark:bg-brand-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-brand-300 dark:hover:bg-gray-700/50'
                 }`}
               >
                 <input {...getInputProps()} />
                 <Upload className="mx-auto text-gray-400 mb-2" size={24} />
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   {isDragActive ? 'Drop photos here' : 'Tap to upload or drag & drop'}
                 </p>
                 <p className="text-xs text-gray-400 mt-1">PNG, JPG up to 10MB</p>
@@ -187,7 +187,7 @@ export default function NewTicketPage() {
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm rounded-lg px-4 py-3">
               {error}
             </div>
           )}
