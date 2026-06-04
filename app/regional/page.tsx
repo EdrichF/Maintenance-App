@@ -304,7 +304,7 @@ export default async function RegionalDashboard() {
                   </div>
                 ))}
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
