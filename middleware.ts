@@ -22,40 +22,56 @@ export async function middleware(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-
   const path = request.nextUrl.pathname
 
-  // Protect client routes
-  if (path.startsWith('/client') && !user) {
-    return NextResponse.redirect(new URL('/auth/login', request.url))
-  }
-
-  // Protect admin routes
-  if (path.startsWith('/admin')) {
-    if (!user) {
-      return NextResponse.redirect(new URL('/auth/login', request.url))
-    }
-    // Check admin role
-    const { data: profile } = await supabase
+  async function getRole() {
+    if (!user) return null
+    const { data } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single()
+    return data?.role ?? null
+  }
 
-    if (profile?.role !== 'admin') {
-      return NextResponse.redirect(new URL('/client', request.url))
+  // Store manager routes
+  if (path.startsWith('/client')) {
+    if (!user) return NextResponse.redirect(new URL('/auth/login', request.url))
+    const role = await getRole()
+    if (role !== 'client' && role !== 'store_manager') {
+      return NextResponse.redirect(new URL('/auth/login', request.url))
     }
+  }
+
+  // Regional manager routes
+  if (path.startsWith('/regional')) {
+    if (!user) return NextResponse.redirect(new URL('/auth/login', request.url))
+    const role = await getRole()
+    if (role !== 'regional_manager') {
+      return NextResponse.redirect(new URL('/auth/login', request.url))
+    }
+  }
+
+  // Admin routes
+  if (path.startsWith('/admin')) {
+    if (!user) return NextResponse.redirect(new URL('/auth/login', request.url))
+    const role = await getRole()
+    if (role !== 'admin') {
+      return NextResponse.redirect(new URL('/auth/login', request.url))
+    }
+  }
+
+  // Settings — any authenticated user
+  if (path.startsWith('/settings')) {
+    if (!user) return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 
   // Redirect logged-in users away from auth pages
   if (user && (path === '/auth/login' || path === '/auth/signup')) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    const dest = profile?.role === 'admin' ? '/admin' : '/client'
+    const role = await getRole()
+    let dest = '/client'
+    if (role === 'admin') dest = '/admin'
+    else if (role === 'regional_manager') dest = '/regional'
     return NextResponse.redirect(new URL(dest, request.url))
   }
 
@@ -63,5 +79,12 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/client/:path*', '/admin/:path*', '/auth/:path*'],
+  matcher: [
+    '/client/:path*',
+    '/admin/:path*',
+    '/regional/:path*',
+    '/settings',
+    '/settings/:path*',
+    '/auth/:path*',
+  ],
 }
