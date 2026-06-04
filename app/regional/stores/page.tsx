@@ -1,15 +1,16 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Store, ArrowRight, Phone, Mail, MapPin } from 'lucide-react'
 import { formatDate, formatCurrency, STATUS_COLORS, STATUS_LABELS } from '@/lib/utils'
 
 export default async function RegionalStoresPage() {
-  const supabase = createClient()
+  const supabase    = createClient()
+  const adminClient = createAdminClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: stores } = await supabase
+  const { data: stores } = await adminClient
     .from('profiles')
     .select(`
       id, full_name, company_name, sub_store, email, phone, address,

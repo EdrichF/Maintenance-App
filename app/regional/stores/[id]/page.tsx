@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -13,12 +13,13 @@ import {
 import type { Ticket, Quote } from '@/lib/types'
 
 export default async function RegionalStoreDetailPage({ params }: { params: { id: string } }) {
-  const supabase = createClient()
+  const supabase    = createClient()
+  const adminClient = createAdminClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  // Ensure this store belongs to this RM
-  const { data: store } = await supabase
+  // Use admin client to bypass RLS — still scoped to this RM's stores
+  const { data: store } = await adminClient
     .from('profiles')
     .select('*')
     .eq('id', params.id)
@@ -28,7 +29,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
 
   if (!store) notFound()
 
-  const { data: tickets } = await supabase
+  const { data: tickets } = await adminClient
     .from('tickets')
     .select('*, quotes(*)')
     .eq('client_id', params.id)

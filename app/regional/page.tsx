@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -13,7 +13,8 @@ import {
 import type { Ticket, Quote } from '@/lib/types'
 
 export default async function RegionalDashboard() {
-  const supabase = createClient()
+  const supabase      = createClient()
+  const adminClient   = createAdminClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
@@ -25,8 +26,8 @@ export default async function RegionalDashboard() {
 
   if (rmProfile?.role !== 'regional_manager') redirect('/auth/login')
 
-  // Fetch all stores under this RM with their tickets + quotes
-  const { data: stores } = await supabase
+  // Use admin client to bypass RLS on other users' profiles
+  const { data: stores } = await adminClient
     .from('profiles')
     .select(`
       id, full_name, company_name, sub_store, email, phone, address,
@@ -303,7 +304,7 @@ export default async function RegionalDashboard() {
                   </div>
                 ))}
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
