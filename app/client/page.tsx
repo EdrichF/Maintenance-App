@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Plus, Ticket, Clock, CheckCircle } from 'lucide-react'
+import { Plus, Ticket, Clock, CheckCircle, Hash } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { BranchCodeBadge } from '@/components/client/BranchCodeBadge'
 import { STATUS_COLORS, STATUS_LABELS, PRIORITY_COLORS, PRIORITY_LABELS, formatDate } from '@/lib/utils'
 import type { Ticket as TicketType } from '@/lib/types'
 
@@ -45,6 +46,9 @@ export default async function ClientDashboard() {
           </Button>
         </Link>
       </div>
+
+      {/* Branch code */}
+      <BranchCodeBadge branchCode={profile?.branch_code ?? null} />
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">

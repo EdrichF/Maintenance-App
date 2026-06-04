@@ -35,10 +35,23 @@ export default function SignupPage() {
 
     const supabase = createClient()
 
+    const branchCode = values.branch_code.trim().toUpperCase()
+
     const { data, error: authError } = await supabase.auth.signUp({
       email: values.email,
       password: values.password,
-      options: { data: { full_name: values.full_name } },
+      // Pass all profile fields in metadata so the DB trigger captures them
+      // even when email confirmation is enabled and there's no session yet.
+      options: {
+        data: {
+          full_name:    values.full_name,
+          phone:        values.phone,
+          address:      values.address,
+          company_name: values.company_name,
+          sub_store:    values.sub_store,
+          branch_code:  branchCode,
+        },
+      },
     })
 
     if (authError) {
@@ -47,21 +60,28 @@ export default function SignupPage() {
       return
     }
 
-    if (data.user) {
-      const { error: profileError } = await supabase.from('profiles').update({
-        full_name:    values.full_name,
-        phone:        values.phone,
-        address:      values.address,
-        company_name: values.company_name,
-        sub_store:    values.sub_store,
-        branch_code:  values.branch_code.trim().toUpperCase(),
-      }).eq('id', data.user.id)
-
-      if (profileError?.message?.includes('unique') ||
-          profileError?.message?.includes('branch_code')) {
-        setError('That branch code is already in use. Please choose a different one.')
-        setLoading(false)
-        return
+    // If a session exists (email confirmation disabled) also update via the
+    // API route so data is definitely saved regardless of trigger state.
+    if (data.session && data.user) {
+      const res = await fetch('/api/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          full_name:    values.full_name,
+          phone:        values.phone,
+          address:      values.address,
+          company_name: values.company_name,
+          sub_store:    values.sub_store,
+          branch_code:  branchCode,
+        }),
+      })
+      if (!res.ok) {
+        const d = await res.json()
+        if (d.error?.includes('unique') || d.error?.includes('branch_code')) {
+          setError('That branch code is already in use. Please choose a different one.')
+          setLoading(false)
+          return
+        }
       }
     }
 
