@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Plus, Archive } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { CollapsibleArchive } from '@/components/ui/CollapsibleArchive'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
@@ -73,16 +74,13 @@ export default async function ClientTicketsPage() {
             )}
           </div>
 
-          {archived.length > 0 && (
-            <div>
-              <h2 className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
-                <Archive size={14} /> Archive ({archived.length})
-              </h2>
-              <div className="space-y-2 opacity-70">
-                {archived.map(t => <TicketRow key={t.id} ticket={t as Ticket} />)}
+          <CollapsibleArchive count={archived.length}>
+            {archived.map(t => (
+              <div key={t.id} className="px-4 py-3 opacity-75 hover:opacity-100 transition-opacity">
+                <TicketRow ticket={t as Ticket} />
               </div>
-            </div>
-          )}
+            ))}
+          </CollapsibleArchive>
         </>
       )}
     </div>

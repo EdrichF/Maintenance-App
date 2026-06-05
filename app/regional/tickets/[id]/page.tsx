@@ -3,7 +3,6 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Building2, Mail, Phone, MapPin, Image as ImageIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
-import { SendQuoteForm } from '@/components/admin/SendQuoteForm'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
@@ -43,7 +42,6 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
     (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   )
   const hasPendingQuote = quotes.some((q: any) => q.status === 'pending')
-  const canSendQuote    = !['completed', 'cancelled'].includes(ticket.status) && !hasPendingQuote
 
   return (
     <div className="max-w-2xl space-y-5">
@@ -124,14 +122,6 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
           </div>
         )}
       </div>
-
-      {/* Send quote */}
-      {canSendQuote && (
-        <div>
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Send Quote</p>
-          <SendQuoteForm ticketId={ticket.id} />
-        </div>
-      )}
 
       {hasPendingQuote && (
         <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl px-4 py-3 text-sm text-yellow-700 dark:text-yellow-400">

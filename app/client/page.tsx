@@ -1,9 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Plus, Ticket, Clock, CheckCircle, Hash } from 'lucide-react'
+import { Plus, Ticket, Clock, CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { BranchCodeBadge } from '@/components/client/BranchCodeBadge'
 import { STATUS_COLORS, STATUS_LABELS, PRIORITY_COLORS, PRIORITY_LABELS, formatDate } from '@/lib/utils'
 import type { Ticket as TicketType } from '@/lib/types'
 
@@ -38,6 +37,11 @@ export default async function ClientDashboard() {
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             {profile?.company_name} — {profile?.sub_store}
+            {profile?.branch_code && (
+              <span className="ml-2 font-mono text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-1.5 py-0.5 rounded">
+                {profile.branch_code}
+              </span>
+            )}
           </p>
         </div>
         <Link href="/client/tickets/new">
@@ -46,9 +50,6 @@ export default async function ClientDashboard() {
           </Button>
         </Link>
       </div>
-
-      {/* Branch code */}
-      <BranchCodeBadge branchCode={profile?.branch_code ?? null} />
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">

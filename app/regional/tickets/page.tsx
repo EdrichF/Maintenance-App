@@ -2,6 +2,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/Badge'
+import { CollapsibleArchive } from '@/components/ui/CollapsibleArchive'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
@@ -42,7 +43,9 @@ export default async function RegionalTicketsPage() {
     hasQuote: (t.quotes ?? []).length > 0,
   }))
 
-  // Group by status for the filter pills
+  const active   = ticketList.filter(t => !['completed','cancelled'].includes(t.status))
+  const archived = ticketList.filter(t =>  ['completed','cancelled'].includes(t.status))
+
   const counts = {
     all:         ticketList.length,
     open:        ticketList.filter(t => t.status === 'open').length,
@@ -91,7 +94,7 @@ export default async function RegionalTicketsPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          {ticketList.map((ticket: any) => (
+          {active.map((ticket: any) => (
             <Link key={ticket.id} href={`/regional/tickets/${ticket.id}`}>
               <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
                 <div className="flex items-center justify-between gap-3">
@@ -114,6 +117,26 @@ export default async function RegionalTicketsPage() {
               </div>
             </Link>
           ))}
+
+          <CollapsibleArchive count={archived.length}>
+            {archived.map((ticket: any) => (
+              <Link key={ticket.id} href={`/regional/tickets/${ticket.id}`}>
+                <div className="px-4 py-3 opacity-75 hover:opacity-100 transition-opacity hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm text-gray-700 dark:text-gray-300 truncate">{ticket.title}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                        {ticket.store?.company_name} — {ticket.store?.sub_store} · {formatDate(ticket.updated_at)}
+                      </p>
+                    </div>
+                    <Badge className={STATUS_COLORS[ticket.status as keyof typeof STATUS_COLORS]}>
+                      {STATUS_LABELS[ticket.status as keyof typeof STATUS_LABELS]}
+                    </Badge>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </CollapsibleArchive>
         </div>
       )}
     </div>

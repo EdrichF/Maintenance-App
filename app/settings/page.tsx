@@ -83,11 +83,14 @@ export default function SettingsPage() {
     )
   }
 
+  const isStoreManager = role === 'store_manager' || role === 'client'
+  const sectionLabel   = isStoreManager ? 'Store Information' : 'Profile Information'
+
   return (
     <div className="max-w-lg mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your account and store information.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your account information.</p>
       </div>
 
       {/* Account info (read-only) */}
@@ -114,43 +117,50 @@ export default function SettingsPage() {
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
         <div className="flex items-center gap-2 mb-4">
           <Building2 size={16} className="text-brand-600" />
-          <h2 className="font-semibold text-gray-900 dark:text-white text-sm">Store Information</h2>
+          <h2 className="font-semibold text-gray-900 dark:text-white text-sm">{sectionLabel}</h2>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input
             id="full_name"
-            label="Contact Name"
+            label="Full Name"
             placeholder="Jane Smith"
             error={errors.full_name?.message}
-            {...register('full_name', { required: 'Contact name is required' })}
+            {...register('full_name', { required: 'Full name is required' })}
           />
           <Input
             id="company_name"
             label="Company Name"
             placeholder="Acme Corporation"
             error={errors.company_name?.message}
-            {...register('company_name', { required: 'Company name is required' })}
+            {...register('company_name')}
           />
-          <Input
-            id="sub_store"
-            label="Branch / Sub-Store"
-            placeholder="e.g. Cape Town Branch"
-            error={errors.sub_store?.message}
-            {...register('sub_store', { required: 'Branch name is required' })}
-          />
-          <div>
-            <Input
-              id="branch_code"
-              label="Branch Code"
-              placeholder="e.g. CPT001"
-              error={errors.branch_code?.message}
-              {...register('branch_code')}
-            />
-            <p className="mt-1 text-xs text-gray-400">
-              Unique identifier used by your regional manager to link your store.
-            </p>
-          </div>
+
+          {/* Store-manager-only fields */}
+          {isStoreManager && (
+            <>
+              <Input
+                id="sub_store"
+                label="Branch / Sub-Store"
+                placeholder="e.g. Cape Town Branch"
+                error={errors.sub_store?.message}
+                {...register('sub_store')}
+              />
+              <div>
+                <Input
+                  id="branch_code"
+                  label="Branch Code"
+                  placeholder="e.g. CPT001"
+                  error={errors.branch_code?.message}
+                  {...register('branch_code')}
+                />
+                <p className="mt-1 text-xs text-gray-400">
+                  Unique identifier used by your regional manager to link your store.
+                </p>
+              </div>
+            </>
+          )}
+
           <Input
             id="phone"
             type="tel"
