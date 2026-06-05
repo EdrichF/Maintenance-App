@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Phone, Mail, MapPin, Building2 } from 'lucide-react'
+import { BackButton } from '@/components/ui/BackButton'
+import { Phone, Mail, MapPin, Building2 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { SendQuoteForm } from '@/components/admin/SendQuoteForm'
 import { UpdateStatusForm } from '@/components/admin/UpdateStatusForm'
@@ -35,9 +36,7 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
       <div className="flex items-center gap-3">
-        <Link href="/admin/tickets" className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
-          <ArrowLeft size={20} />
-        </Link>
+        <BackButton />
         <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">{ticket.title}</h1>
       </div>
 

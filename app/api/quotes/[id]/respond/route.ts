@@ -20,7 +20,7 @@ export async function PATCH(
   }
 
   const { status } = await request.json()
-  if (!['accepted', 'declined'].includes(status)) {
+  if (!['accepted', 'declined', 'pending'].includes(status)) {
     return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
   }
 
@@ -38,7 +38,10 @@ export async function PATCH(
 
   await adminClient.from('quotes').update({ status }).eq('id', params.id)
 
-  const ticketStatus = status === 'accepted' ? 'accepted' : 'open'
+  // Map quote status to ticket status
+  const ticketStatus = status === 'accepted' ? 'accepted'
+    : status === 'pending'  ? 'quoted'
+    : 'open'
   await adminClient.from('tickets').update({ status: ticketStatus }).eq('id', quote.ticket_id)
 
   if (ticket?.client_id) {

@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Clock, CheckCircle, FileText } from 'lucide-react'
+import { BackButton } from '@/components/ui/BackButton'
+import { Clock, CheckCircle, FileText } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { EditTicketForm } from '@/components/client/EditTicketForm'
 import {
@@ -40,9 +41,7 @@ export default async function ClientTicketDetailPage({ params }: { params: { id:
   return (
     <div className="max-w-lg mx-auto space-y-4">
       <div className="flex items-center gap-3">
-        <Link href="/client/tickets" className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
-          <ArrowLeft size={20} />
-        </Link>
+        <BackButton />
         <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">{t.title}</h1>
       </div>
 

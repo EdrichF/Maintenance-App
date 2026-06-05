@@ -154,9 +154,6 @@ export default function SettingsPage() {
                   error={errors.branch_code?.message}
                   {...register('branch_code')}
                 />
-                <p className="mt-1 text-xs text-gray-400">
-                  Unique identifier used by your regional manager to link your store.
-                </p>
               </div>
             </>
           )}

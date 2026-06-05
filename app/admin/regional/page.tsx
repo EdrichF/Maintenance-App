@@ -1,8 +1,15 @@
+import { Suspense } from 'react'
 import { createAdminClient } from '@/lib/supabase/server'
 import { Users, Store, Mail, Phone, MapPin, AlertCircle } from 'lucide-react'
+import { SearchInput } from '@/components/ui/SearchInput'
 
-export default async function AdminRegionalPage() {
+export default async function AdminRegionalPage({
+  searchParams,
+}: {
+  searchParams: { q?: string }
+}) {
   const adminClient = createAdminClient()
+  const q = (searchParams.q ?? '').toLowerCase().trim()
 
   const { data: regionalManagers } = await adminClient
     .from('profiles')
@@ -28,21 +35,40 @@ export default async function AdminRegionalPage() {
     }
   }
 
+  // Apply search filter across RM name/email and their stores
+  const filteredRMs = q
+    ? (regionalManagers ?? []).filter(rm => {
+        const matchRM =
+          rm.full_name?.toLowerCase().includes(q) ||
+          rm.email?.toLowerCase().includes(q) ||
+          rm.company_name?.toLowerCase().includes(q) ||
+          rm.phone?.includes(q)
+        const matchStore = (storesByRM[rm.id] ?? []).some((s: any) =>
+          s.company_name?.toLowerCase().includes(q) ||
+          s.sub_store?.toLowerCase().includes(q) ||
+          s.branch_code?.toLowerCase().includes(q) ||
+          s.email?.toLowerCase().includes(q)
+        )
+        return matchRM || matchStore
+      })
+    : (regionalManagers ?? [])
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Regional Managers</h1>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Clients</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
             {regionalManagers?.length ?? 0} manager{regionalManagers?.length !== 1 ? 's' : ''} · {stores?.length ?? 0} store{stores?.length !== 1 ? 's' : ''} total
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs text-gray-400 bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-lg">
-          <Users size={13} /> Roles assigned at registration
-        </div>
       </div>
 
-      {!regionalManagers?.length ? (
+      <Suspense>
+        <SearchInput placeholder="Search by name, email, branch code…" />
+      </Suspense>
+
+      {!filteredRMs.length ? (
         <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 text-center">
           <Users size={32} className="mx-auto text-gray-300 mb-3" />
           <p className="text-gray-400 text-sm">No regional managers registered yet.</p>
@@ -50,7 +76,7 @@ export default async function AdminRegionalPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {(regionalManagers ?? []).map(rm => {
+          {filteredRMs.map(rm => {
             const rmStores = storesByRM[rm.id] ?? []
             return (
               <div key={rm.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">

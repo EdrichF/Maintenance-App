@@ -8,7 +8,6 @@ import { createClient } from '@/lib/supabase/client'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Upload, X, ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
 import type { Priority } from '@/lib/types'
 
 interface TicketForm {
@@ -93,9 +92,9 @@ export default function NewTicketPage() {
   return (
     <div className="max-w-lg mx-auto">
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/client/tickets" className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
+        <button onClick={() => router.back()} className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
           <ArrowLeft size={20} />
-        </Link>
+        </button>
         <h1 className="text-xl font-bold text-gray-900 dark:text-white">New Maintenance Ticket</h1>
       </div>
 

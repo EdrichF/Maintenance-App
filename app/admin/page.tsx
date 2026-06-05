@@ -17,10 +17,14 @@ export default async function AdminDashboard() {
     .select('*, profiles(full_name, company_name, sub_store)')
     .order('created_at', { ascending: false })
 
+  const total    = tickets?.length ?? 0
   const open     = tickets?.filter(t => t.status === 'open').length ?? 0
   const urgent   = tickets?.filter(t => t.priority === 'urgent' && t.status === 'open').length ?? 0
   const quoted   = tickets?.filter(t => t.status === 'quoted').length ?? 0
   const active   = tickets?.filter(t => t.status === 'in_progress').length ?? 0
+  const completed = tickets?.filter(t => t.status === 'completed').length ?? 0
+  const completionPct = total > 0 ? Math.round((completed / total) * 100) : 0
+  const openActivePct = total > 0 ? Math.round(((open + active + quoted) / total) * 100) : 0
 
   return (
     <div className="space-y-6">
@@ -45,6 +49,25 @@ export default async function AdminDashboard() {
           </div>
         ))}
       </div>
+
+      {/* Completion bar */}
+      {total > 0 && (
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-medium text-gray-700 dark:text-gray-200">Ticket Completion</span>
+            <span className="text-gray-500 dark:text-gray-400">{completed} of {total} completed</span>
+          </div>
+          <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden flex">
+            <div className="h-full bg-green-500 transition-all" style={{ width: `${completionPct}%` }} title={`${completionPct}% completed`} />
+            <div className="h-full bg-blue-400 transition-all" style={{ width: `${openActivePct}%` }} title={`${openActivePct}% open/active`} />
+          </div>
+          <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />{completionPct}% Completed</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-blue-400 inline-block" />{openActivePct}% Open / Active</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-gray-200 dark:bg-gray-600 inline-block" />{100 - completionPct - openActivePct}% Other</span>
+          </div>
+        </div>
+      )}
 
       {/* Recent tickets */}
       <div>

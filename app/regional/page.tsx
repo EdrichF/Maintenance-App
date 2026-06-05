@@ -46,9 +46,15 @@ export default async function RegionalDashboard() {
   const allTickets = storeList.flatMap((s: any) => s.tickets ?? [])
   const allQuotes  = allTickets.flatMap((t: any) => t.quotes ?? [])
 
+  const totalTickets     = allTickets.length
+  const completedTickets = allTickets.filter((t: any) => t.status === 'completed').length
+  const openActiveTickets = allTickets.filter((t: any) => ['open','quoted','accepted','in_progress'].includes(t.status)).length
+  const completionPct  = totalTickets > 0 ? Math.round((completedTickets  / totalTickets) * 100) : 0
+  const openActivePct  = totalTickets > 0 ? Math.round((openActiveTickets / totalTickets) * 100) : 0
+
   const stats = {
     totalStores:     storeList.length,
-    openTickets:     allTickets.filter((t: any) => ['open', 'quoted', 'accepted', 'in_progress'].includes(t.status)).length,
+    openTickets:     openActiveTickets,
     urgentTickets:   allTickets.filter((t: any) => t.priority === 'urgent' && !['completed','cancelled'].includes(t.status)).length,
     pendingQuotes:   allQuotes.filter((q: any) => q.status === 'pending').length,
     completedThisMonth: allTickets.filter((t: any) => {
@@ -130,7 +136,7 @@ export default async function RegionalDashboard() {
       {/* Summary stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         {[
-          { label: 'Stores',          value: stats.totalStores,        icon: Store,       color: 'text-brand-600 bg-brand-50 dark:bg-brand-900/30' },
+          { label: 'Stores you manage', value: stats.totalStores,        icon: Store,       color: 'text-brand-600 bg-brand-50 dark:bg-brand-900/30' },
           { label: 'Open Tickets',    value: stats.openTickets,        icon: FileText,    color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' },
           { label: 'Urgent',          value: stats.urgentTickets,      icon: AlertCircle, color: 'text-red-600 bg-red-50 dark:bg-red-900/30' },
           { label: 'Pending Quotes',  value: stats.pendingQuotes,      icon: Clock,       color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30' },
@@ -150,6 +156,25 @@ export default async function RegionalDashboard() {
           </div>
         ))}
       </div>
+
+      {/* Completion bar */}
+      {totalTickets > 0 && (
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-medium text-gray-700 dark:text-gray-200">Ticket Completion</span>
+            <span className="text-gray-500 dark:text-gray-400">{completedTickets} of {totalTickets} completed</span>
+          </div>
+          <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden flex">
+            <div className="h-full bg-green-500 transition-all" style={{ width: `${completionPct}%` }} />
+            <div className="h-full bg-blue-400 transition-all" style={{ width: `${openActivePct}%` }} />
+          </div>
+          <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />{completionPct}% Completed</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-blue-400 inline-block" />{openActivePct}% Open / Active</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-gray-200 dark:bg-gray-600 inline-block" />{100 - completionPct - openActivePct}% Other</span>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 

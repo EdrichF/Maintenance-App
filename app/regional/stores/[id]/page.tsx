@@ -1,8 +1,9 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
+import { BackButton } from '@/components/ui/BackButton'
 import {
-  ArrowLeft, Phone, Mail, MapPin, Building2,
+  Phone, Mail, MapPin, Building2,
   FileText, CheckCircle, Clock, Archive,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
@@ -72,9 +73,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
     <div className="space-y-6 max-w-4xl">
 
       <div className="flex items-center gap-3">
-        <Link href="/regional/stores" className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
-          <ArrowLeft size={20} />
-        </Link>
+        <BackButton />
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">{store.company_name}</h1>
           <p className="text-sm text-brand-600 dark:text-brand-400">{store.sub_store}</p>
@@ -262,13 +261,4 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
                     ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                     : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
                 }`}>
-                  {q.status === 'accepted' ? 'Approved' : 'Declined'}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
+     

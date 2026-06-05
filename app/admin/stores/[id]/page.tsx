@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Mail, Phone, MapPin, Building2 } from 'lucide-react'
+import { BackButton } from '@/components/ui/BackButton'
+import { Mail, Phone, MapPin, Building2 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { AssignRMForm } from '@/components/admin/AssignRMForm'
 import {
@@ -42,9 +43,7 @@ export default async function AdminStoreDetailPage({ params }: { params: { id: s
   return (
     <div className="max-w-2xl space-y-5">
       <div className="flex items-center gap-3">
-        <Link href="/admin/stores" className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
-          <ArrowLeft size={20} />
-        </Link>
+        <BackButton />
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">{store.company_name}</h1>
           <p className="text-sm text-brand-600 dark:text-brand-400">{store.sub_store}</p>

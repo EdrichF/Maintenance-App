@@ -1,7 +1,8 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Building2, Mail, Phone, MapPin, Image as ImageIcon } from 'lucide-react'
+import { BackButton } from '@/components/ui/BackButton'
+import { Building2, Mail, Phone, MapPin, Image as ImageIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import {
   STATUS_COLORS, STATUS_LABELS,
@@ -48,9 +49,7 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
 
       {/* Back */}
       <div className="flex items-center gap-3">
-        <Link href="/regional/tickets" className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
-          <ArrowLeft size={20} />
-        </Link>
+        <BackButton />
         <div className="flex-1 min-w-0">
           <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">{ticket.title}</h1>
           <p className="text-sm text-brand-600 dark:text-brand-400">{store.company_name} — {store.sub_store}</p>
