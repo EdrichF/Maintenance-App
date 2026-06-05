@@ -1,0 +1,338 @@
+import { createAdminClient } from '@/lib/supabase/server'
+import { formatCurrency } from '@/lib/utils'
+import {
+  BarChart2, Ticket, CheckCircle, Clock,
+  AlertCircle, TrendingUp, Users, Store, FileText,
+} from 'lucide-react'
+
+function Bar({ value, max, color }: { value: number; max: number; color: string }) {
+  const pct = max > 0 ? Math.round((value / max) * 100) : 0
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex-1 h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+        <div className={`h-full rounded-full ${color} transition-all`} style={{ width: `${pct}%` }} />
+      </div>
+      <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 w-8 text-right">{value}</span>
+    </div>
+  )
+}
+
+function DonutRing({ pct, color }: { pct: number; color: string }) {
+  const r = 36
+  const circ = 2 * Math.PI * r
+  const dash = (pct / 100) * circ
+  return (
+    <svg width="90" height="90" viewBox="0 0 90 90">
+      <circle cx="45" cy="45" r={r} fill="none" stroke="currentColor" strokeWidth="10"
+        className="text-gray-100 dark:text-gray-700" />
+      <circle cx="45" cy="45" r={r} fill="none" strokeWidth="10"
+        stroke={color} strokeDasharray={`${dash} ${circ}`}
+        strokeLinecap="round" transform="rotate(-90 45 45)" />
+      <text x="45" y="49" textAnchor="middle" fontSize="14" fontWeight="bold"
+        fill="currentColor" className="text-gray-900 dark:text-white">
+        {pct}%
+      </text>
+    </svg>
+  )
+}
+
+export default async function AdminStatsPage() {
+  const db = createAdminClient()
+
+  const [
+    { data: tickets },
+    { data: quotes },
+    { data: profiles },
+  ] = await Promise.all([
+    db.from('tickets').select('id, status, priority, created_at, updated_at, client_id'),
+    db.from('quotes').select('id, status, amount, created_at'),
+    db.from('profiles').select('id, role, company_name, sub_store, regional_manager_id'),
+  ])
+
+  const t  = tickets  ?? []
+  const q  = quotes   ?? []
+  const p  = profiles ?? []
+
+  // ── Ticket stats ─────────────────────────────────────────
+  const byStatus = {
+    open:        t.filter(x => x.status === 'open').length,
+    quoted:      t.filter(x => x.status === 'quoted').length,
+    accepted:    t.filter(x => x.status === 'accepted').length,
+    in_progress: t.filter(x => x.status === 'in_progress').length,
+    completed:   t.filter(x => x.status === 'completed').length,
+    cancelled:   t.filter(x => x.status === 'cancelled').length,
+  }
+  const byPriority = {
+    urgent: t.filter(x => x.priority === 'urgent').length,
+    high:   t.filter(x => x.priority === 'high').length,
+    medium: t.filter(x => x.priority === 'medium').length,
+    low:    t.filter(x => x.priority === 'low').length,
+  }
+
+  // ── Quote stats ───────────────────────────────────────────
+  const qTotal    = q.length
+  const qAccepted = q.filter(x => x.status === 'accepted').length
+  const qDeclined = q.filter(x => x.status === 'declined').length
+  const qPending  = q.filter(x => x.status === 'pending').length
+  const qValue    = q.filter(x => x.status === 'accepted').reduce((s, x) => s + (x.amount ?? 0), 0)
+  const acceptRate = (qAccepted + qDeclined) > 0
+    ? Math.round((qAccepted / (qAccepted + qDeclined)) * 100) : 0
+
+  // ── People stats ──────────────────────────────────────────
+  const stores = p.filter(x => x.role === 'store_manager' || x.role === 'client')
+  const rms    = p.filter(x => x.role === 'regional_manager')
+  const unassigned = stores.filter(x => !x.regional_manager_id).length
+
+  // ── Monthly tickets (last 6 months) ──────────────────────
+  const months: { label: string; count: number }[] = []
+  for (let i = 5; i >= 0; i--) {
+    const d     = new Date()
+    d.setMonth(d.getMonth() - i)
+    const yr    = d.getFullYear()
+    const mo    = d.getMonth()
+    const label = d.toLocaleDateString('en-ZA', { month: 'short' })
+    const count = t.filter(x => {
+      const cd = new Date(x.created_at)
+      return cd.getFullYear() === yr && cd.getMonth() === mo
+    }).length
+    months.push({ label, count })
+  }
+  const monthMax = Math.max(...months.map(m => m.count), 1)
+
+  // ── Top stores by ticket count ────────────────────────────
+  const storeCounts: Record<string, { name: string; count: number }> = {}
+  for (const tk of t) {
+    const store = stores.find(s => s.id === tk.client_id)
+    if (!store) continue
+    const key = store.id
+    if (!storeCounts[key]) storeCounts[key] = { name: `${store.company_name ?? '?'} — ${store.sub_store ?? '?'}`, count: 0 }
+    storeCounts[key].count++
+  }
+  const topStores = Object.values(storeCounts).sort((a, b) => b.count - a.count).slice(0, 6)
+  const topMax = topStores[0]?.count ?? 1
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <BarChart2 size={20} className="text-brand-600" /> Statistics
+        </h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Overview of all activity across the platform</p>
+      </div>
+
+      {/* ── Key numbers ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: 'Total Tickets',    value: t.length,    icon: Ticket,      color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' },
+          { label: 'Open / Active',    value: byStatus.open + byStatus.quoted + byStatus.accepted + byStatus.in_progress,
+                                              icon: Clock,      color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30' },
+          { label: 'Completed',        value: byStatus.completed, icon: CheckCircle, color: 'text-green-600 bg-green-50 dark:bg-green-900/30' },
+          { label: 'Urgent Open',      value: t.filter(x => x.priority === 'urgent' && !['completed','cancelled'].includes(x.status)).length,
+                                              icon: AlertCircle, color: 'text-red-600 bg-red-50 dark:bg-red-900/30' },
+        ].map(s => (
+          <div key={s.label} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 flex items-center gap-3">
+            <div className={`p-2 rounded-lg shrink-0 ${s.color}`}><s.icon size={18} /></div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{s.value}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{s.label}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        {/* ── Ticket status breakdown ── */}
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+          <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-4 flex items-center gap-2">
+            <Ticket size={14} className="text-brand-600" /> Tickets by Status
+          </h2>
+          <div className="space-y-3">
+            {[
+              { label: 'Open',        value: byStatus.open,        color: 'bg-blue-500' },
+              { label: 'Quoted',      value: byStatus.quoted,      color: 'bg-purple-500' },
+              { label: 'Accepted',    value: byStatus.accepted,    color: 'bg-teal-500' },
+              { label: 'In Progress', value: byStatus.in_progress, color: 'bg-yellow-500' },
+              { label: 'Completed',   value: byStatus.completed,   color: 'bg-green-500' },
+              { label: 'Cancelled',   value: byStatus.cancelled,   color: 'bg-gray-400' },
+            ].map(row => (
+              <div key={row.label}>
+                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
+                  <span>{row.label}</span>
+                </div>
+                <Bar value={row.value} max={t.length || 1} color={row.color} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Priority breakdown ── */}
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+          <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-4 flex items-center gap-2">
+            <AlertCircle size={14} className="text-red-500" /> Tickets by Priority
+          </h2>
+          <div className="space-y-3">
+            {[
+              { label: 'Urgent', value: byPriority.urgent, color: 'bg-red-500' },
+              { label: 'High',   value: byPriority.high,   color: 'bg-orange-500' },
+              { label: 'Medium', value: byPriority.medium, color: 'bg-yellow-500' },
+              { label: 'Low',    value: byPriority.low,    color: 'bg-green-500' },
+            ].map(row => (
+              <div key={row.label}>
+                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
+                  <span>{row.label}</span>
+                </div>
+                <Bar value={row.value} max={t.length || 1} color={row.color} />
+              </div>
+            ))}
+          </div>
+
+          {/* Summary tiles */}
+          <div className="grid grid-cols-2 gap-2 mt-5 pt-4 border-t border-gray-100 dark:border-gray-700">
+            {[
+              { label: 'Urgent', value: byPriority.urgent, color: 'text-red-600' },
+              { label: 'High',   value: byPriority.high,   color: 'text-orange-500' },
+              { label: 'Medium', value: byPriority.medium, color: 'text-yellow-600' },
+              { label: 'Low',    value: byPriority.low,    color: 'text-green-600' },
+            ].map(s => (
+              <div key={s.label} className="text-center">
+                <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
+                <p className="text-xs text-gray-400">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Quote stats ── */}
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+          <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-4 flex items-center gap-2">
+            <FileText size={14} className="text-purple-500" /> Quotes
+          </h2>
+          <div className="flex items-center justify-center mb-4">
+            <div className="text-center">
+              <DonutRing pct={acceptRate} color="#22c55e" />
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Acceptance rate</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-2 pt-3 border-t border-gray-100 dark:border-gray-700 text-center">
+            <div>
+              <p className="text-xl font-bold text-green-600">{qAccepted}</p>
+              <p className="text-xs text-gray-400">Accepted</p>
+            </div>
+            <div>
+              <p className="text-xl font-bold text-yellow-600">{qPending}</p>
+              <p className="text-xs text-gray-400">Pending</p>
+            </div>
+            <div>
+              <p className="text-xl font-bold text-gray-500">{qDeclined}</p>
+              <p className="text-xs text-gray-400">Declined</p>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 text-center">
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(qValue)}</p>
+            <p className="text-xs text-gray-400">Total accepted value</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+        {/* ── Monthly ticket volume ── */}
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+          <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-5 flex items-center gap-2">
+            <TrendingUp size={14} className="text-brand-600" /> Monthly Ticket Volume
+          </h2>
+          <div className="flex items-end gap-2 h-32">
+            {months.map(m => {
+              const heightPct = monthMax > 0 ? (m.count / monthMax) * 100 : 0
+              return (
+                <div key={m.label} className="flex-1 flex flex-col items-center gap-1">
+                  <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">{m.count || ''}</span>
+                  <div className="w-full flex items-end" style={{ height: '90px' }}>
+                    <div
+                      className="w-full rounded-t-md bg-brand-500 dark:bg-brand-600 transition-all"
+                      style={{ height: `${Math.max(heightPct, m.count > 0 ? 4 : 0)}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-gray-400">{m.label}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* ── People & coverage ── */}
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 space-y-4">
+          <h2 className="font-semibold text-gray-900 dark:text-white text-sm flex items-center gap-2">
+            <Users size={14} className="text-brand-600" /> People & Coverage
+          </h2>
+          <div className="grid grid-cols-3 gap-3 text-center">
+            <div className="bg-brand-50 dark:bg-brand-900/20 rounded-xl p-3">
+              <p className="text-2xl font-bold text-brand-700 dark:text-brand-400">{rms.length}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Regional Managers</p>
+            </div>
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3">
+              <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">{stores.length}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Stores</p>
+            </div>
+            <div className={`${unassigned > 0 ? 'bg-orange-50 dark:bg-orange-900/20' : 'bg-green-50 dark:bg-green-900/20'} rounded-xl p-3`}>
+              <p className={`text-2xl font-bold ${unassigned > 0 ? 'text-orange-600' : 'text-green-600'}`}>{unassigned}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Unassigned</p>
+            </div>
+          </div>
+
+          {/* Coverage bar */}
+          <div>
+            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1.5">
+              <span>Store coverage</span>
+              <span>{stores.length > 0 ? Math.round(((stores.length - unassigned) / stores.length) * 100) : 0}% assigned</span>
+            </div>
+            <div className="h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-green-500 rounded-full"
+                style={{ width: `${stores.length > 0 ? Math.round(((stores.length - unassigned) / stores.length) * 100) : 0}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Avg tickets per store */}
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <div className="text-center border border-gray-100 dark:border-gray-700 rounded-xl p-3">
+              <p className="text-xl font-bold text-gray-900 dark:text-white">
+                {stores.length > 0 ? (t.length / stores.length).toFixed(1) : '0'}
+              </p>
+              <p className="text-xs text-gray-400">Avg tickets / store</p>
+            </div>
+            <div className="text-center border border-gray-100 dark:border-gray-700 rounded-xl p-3">
+              <p className="text-xl font-bold text-gray-900 dark:text-white">
+                {rms.length > 0 ? (stores.length / rms.length).toFixed(1) : '0'}
+              </p>
+              <p className="text-xs text-gray-400">Avg stores / RM</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Top stores ── */}
+      {topStores.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+          <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-4 flex items-center gap-2">
+            <Store size={14} className="text-brand-600" /> Top Stores by Ticket Volume
+          </h2>
+          <div className="space-y-3">
+            {topStores.map((s, i) => (
+              <div key={s.name}>
+                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
+                  <span className="font-medium text-gray-700 dark:text-gray-200">
+                    <span className="text-gray-400 mr-1.5">#{i + 1}</span>{s.name}
+                  </span>
+                </div>
+                <Bar value={s.count} max={topMax} color="bg-brand-500" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

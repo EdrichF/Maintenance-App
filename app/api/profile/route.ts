@@ -24,15 +24,19 @@ export async function PATCH(request: Request) {
   if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
 
   const body = await request.json()
-  const { full_name, phone, address, company_name, sub_store, branch_code } = body
+  const { full_name, phone, address, company_name, sub_store, branch_code, role } = body
 
   const updateData: Record<string, unknown> = {
     full_name, phone, address, company_name, sub_store,
   }
-  // Always write branch_code: normalise to uppercase when provided, clear when empty
+  // Allow role to be set on first signup (store_manager / regional_manager only — never admin)
+  if (role === 'store_manager' || role === 'regional_manager') {
+    updateData.role = role
+  }
+  // Normalise branch_code to uppercase; clear when empty
   if (branch_code?.trim()) {
     updateData.branch_code = branch_code.trim().toUpperCase()
-  } else if (branch_code === '') {
+  } else if (branch_code === '' || branch_code === null) {
     updateData.branch_code = null
   }
 
