@@ -14,10 +14,10 @@ export const PRIORITY_LABELS: Record<Priority, string> = {
 }
 
 export const PRIORITY_COLORS: Record<Priority, string> = {
-  low:    'bg-green-100  text-green-800  dark:bg-green-900/40  dark:text-green-300',
-  medium: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300',
-  high:   'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300',
-  urgent: 'bg-red-100    text-red-800    dark:bg-red-900/40    dark:text-red-300',
+  low:    'bg-green-100  text-green-700  dark:bg-green-950  dark:text-green-400',
+  medium: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400',
+  high:   'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400',
+  urgent: 'bg-red-100    text-red-700    dark:bg-red-950    dark:text-red-400',
 }
 
 export const STATUS_LABELS: Record<TicketStatus, string> = {
@@ -30,12 +30,12 @@ export const STATUS_LABELS: Record<TicketStatus, string> = {
 }
 
 export const STATUS_COLORS: Record<TicketStatus, string> = {
-  open:        'bg-blue-100   text-blue-800   dark:bg-blue-900/40   dark:text-blue-300',
-  quoted:      'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300',
-  accepted:    'bg-teal-100   text-teal-800   dark:bg-teal-900/40   dark:text-teal-300',
-  in_progress: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300',
-  completed:   'bg-green-100  text-green-800  dark:bg-green-900/40  dark:text-green-300',
-  cancelled:   'bg-gray-100   text-gray-700   dark:bg-gray-700/60   dark:text-gray-300',
+  open:        'bg-blue-100   text-blue-700   dark:bg-blue-950   dark:text-blue-400',
+  quoted:      'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-400',
+  accepted:    'bg-teal-100   text-teal-700   dark:bg-teal-950   dark:text-teal-400',
+  in_progress: 'bg-amber-100  text-amber-700  dark:bg-amber-950  dark:text-amber-400',
+  completed:   'bg-green-100  text-green-700  dark:bg-green-950  dark:text-green-400',
+  cancelled:   'bg-gray-100   text-gray-600   dark:bg-gray-800   dark:text-gray-400',
 }
 
 export const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {
