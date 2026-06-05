@@ -195,22 +195,24 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
         ) : (
           <div className="space-y-2">
             {openTickets.map(ticket => (
-              <div key={ticket.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{formatDate(ticket.created_at)}</p>
-                  </div>
-                  <div className="flex flex-col gap-1 items-end shrink-0">
-                    <Badge className={PRIORITY_COLORS[ticket.priority]}>
-                      {PRIORITY_LABELS[ticket.priority]}
-                    </Badge>
-                    <Badge className={STATUS_COLORS[ticket.status]}>
-                      {STATUS_LABELS[ticket.status]}
-                    </Badge>
+              <Link key={ticket.id} href={`/regional/tickets/${ticket.id}`}>
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{formatDate(ticket.created_at)}</p>
+                    </div>
+                    <div className="flex flex-col gap-1 items-end shrink-0">
+                      <Badge className={PRIORITY_COLORS[ticket.priority]}>
+                        {PRIORITY_LABELS[ticket.priority]}
+                      </Badge>
+                      <Badge className={STATUS_COLORS[ticket.status]}>
+                        {STATUS_LABELS[ticket.status]}
+                      </Badge>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

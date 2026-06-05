@@ -21,15 +21,15 @@ export async function POST(request: Request) {
   const adminClient = createAdminClient()
   const normalised = branch_code.trim().toUpperCase()
 
-  // Use ilike for case-insensitive match and trim stored values
+  // Try exact match first (stored values are uppercased), then fall back to
+  // case-insensitive search in case of legacy data saved without normalisation.
   const { data: stores, error: queryError } = await adminClient
     .from('profiles')
     .select('id, company_name, sub_store, regional_manager_id, branch_code')
-    .ilike('branch_code', normalised)
+    .or(`branch_code.eq.${normalised},branch_code.ilike.${normalised}`)
     .in('role', ['store_manager', 'client'])
 
   if (queryError) {
-    // Column may not exist yet
     if (queryError.message?.includes('branch_code') || queryError.code === '42703') {
       return NextResponse.json({
         error: 'The branch_code column does not exist yet. Please run the migration SQL in your Supabase SQL Editor first.',
@@ -39,8 +39,21 @@ export async function POST(request: Request) {
   }
 
   if (!stores || stores.length === 0) {
+    // Diagnostic: count how many stores have any branch_code set at all
+    const { data: allStores } = await adminClient
+      .from('profiles')
+      .select('branch_code')
+      .in('role', ['store_manager', 'client'])
+      .not('branch_code', 'is', null)
+
+    const storedCodes = (allStores ?? []).map((s: any) => s.branch_code).filter(Boolean)
+
+    const hint = storedCodes.length === 0
+      ? ' No stores have set a branch code yet — ask the store manager to set one in their Settings page.'
+      : ` Branch codes on file: ${storedCodes.join(', ')}.`
+
     return NextResponse.json({
-      error: `No store found with branch code "${normalised}". Make sure the store manager has set their branch code in Settings.`,
+      error: `No store found with branch code "${normalised}".${hint}`,
     }, { status: 404 })
   }
 
