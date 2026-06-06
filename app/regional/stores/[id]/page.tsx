@@ -11,7 +11,7 @@ import { QuoteApprovalCard } from '@/components/regional/QuoteApprovalCard'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
-  QUOTE_STATUS_LABELS, formatDate, formatCurrency,
+  QUOTE_STATUS_LABELS, formatDate, formatDateTime, formatCurrency,
 } from '@/lib/utils'
 import type { Ticket, Quote } from '@/lib/types'
 
@@ -313,7 +313,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
               <div key={q.id} className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{q.ticketTitle}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{formatCurrency(q.amount)} · {formatDate(q.created_at)}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{formatCurrency(q.amount)} · {formatDateTime(q.created_at)}</p>
                   {q.decline_reason && (
                     <p className="text-xs text-red-500 mt-0.5">Reason: {q.decline_reason}</p>
                   )}

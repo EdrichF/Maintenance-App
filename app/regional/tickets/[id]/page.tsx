@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/Badge'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
-  QUOTE_STATUS_LABELS, formatDate, formatCurrency,
+  QUOTE_STATUS_LABELS, formatDate, formatDateTime, formatCurrency,
 } from '@/lib/utils'
 
 export default async function RegionalTicketDetailPage({ params }: { params: { id: string } }) {
@@ -138,7 +138,7 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(q.amount)}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{formatDate(q.created_at)}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{formatDateTime(q.created_at)}</p>
                   </div>
                   <span className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0 ${
                     q.status === 'accepted' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :

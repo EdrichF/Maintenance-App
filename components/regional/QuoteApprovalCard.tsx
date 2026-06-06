@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { FileText, CheckCircle, XCircle, RotateCcw, AlertTriangle } from 'lucide-react'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils'
 import type { Quote } from '@/lib/types'
 
 interface Props {
@@ -74,7 +74,7 @@ export function QuoteApprovalCard({ quote, ticketTitle, ticketId }: Props) {
         <div className="min-w-0">
           <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{ticketTitle}</p>
           <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(quote.amount)}</p>
-          <p className="text-xs text-gray-400 mt-0.5">{formatDate(quote.created_at)}</p>
+          <p className="text-xs text-gray-400 mt-0.5">{formatDateTime(quote.created_at)}</p>
         </div>
         <span className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full ${statusColors[quote.status] ?? ''}`}>
           {quote.status.charAt(0).toUpperCase() + quote.status.slice(1)}

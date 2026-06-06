@@ -58,3 +58,10 @@ export function formatDate(dateString: string) {
     day: 'numeric', month: 'short', year: 'numeric',
   })
 }
+
+export function formatDateTime(dateString: string) {
+  return new Date(dateString).toLocaleString('en-ZA', {
+    day: 'numeric', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  })
+}

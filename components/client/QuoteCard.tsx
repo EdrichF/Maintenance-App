@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { formatCurrency, formatDate, QUOTE_STATUS_LABELS } from '@/lib/utils'
+import { formatCurrency, formatDate, formatDateTime, QUOTE_STATUS_LABELS } from '@/lib/utils'
 import { FileText } from 'lucide-react'
 import type { Quote } from '@/lib/types'
 
@@ -47,7 +47,7 @@ export function QuoteCard({ quote, ticketId }: QuoteCardProps) {
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(quote.amount)}</p>
-          <p className="text-xs text-gray-400 mt-0.5">{formatDate(quote.created_at)}</p>
+          <p className="text-xs text-gray-400 mt-0.5">{formatDateTime(quote.created_at)}</p>
         </div>
         <Badge className={statusColors[quote.status] ?? ''}>
           {QUOTE_STATUS_LABELS[quote.status]}

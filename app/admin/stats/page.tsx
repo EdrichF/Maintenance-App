@@ -109,7 +109,7 @@ export default async function AdminStatsPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: 'Total Tickets',  value: t.length,           icon: Ticket,      color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' },
-          { label: 'Open / Active',  value: activeTickets,      icon: Clock,       color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30' },
+          { label: 'Open Tickets',   value: openTickets,        icon: Clock,       color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30' },
           { label: 'Completed',      value: byStatus.completed, icon: CheckCircle, color: 'text-green-600 bg-green-50 dark:bg-green-900/30' },
           { label: 'Urgent Open',    value: t.filter(x => x.priority === 'urgent' && !['completed','cancelled','declined'].includes(x.status)).length,
                                             icon: AlertCircle,  color: 'text-red-600 bg-red-50 dark:bg-red-900/30' },
