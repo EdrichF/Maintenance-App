@@ -31,7 +31,7 @@ export default function NewTicketPage() {
   const [previews, setPreviews] = useState<string[]>([])
 
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<TicketForm>({
-    defaultValues: { priority: 'medium' },
+    defaultValues: { priority: 'low' },
   })
   const priority = watch('priority')
 
@@ -55,6 +55,10 @@ export default function NewTicketPage() {
   }
 
   async function onSubmit(values: TicketForm) {
+    if (photos.length < 2) {
+      setError('Please upload at least 2 photos of the issue before submitting.')
+      return
+    }
     setLoading(true)
     setError('')
 
@@ -147,7 +151,8 @@ export default function NewTicketPage() {
           {/* Photos */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Photos <span className="text-gray-400 font-normal">(up to 5)</span>
+              Photos <span className="text-red-500">*</span>
+              <span className="text-gray-400 font-normal ml-1">(minimum 2, up to 5)</span>
             </label>
 
             {/* Previews */}
@@ -168,6 +173,11 @@ export default function NewTicketPage() {
               </div>
             )}
 
+            {photos.length > 0 && photos.length < 2 && (
+              <p className="text-xs text-amber-600 dark:text-amber-400 mb-2">
+                Add {2 - photos.length} more photo{2 - photos.length !== 1 ? 's' : ''} — at least 2 required.
+              </p>
+            )}
             {photos.length < 5 && (
               <div
                 {...getRootProps()}

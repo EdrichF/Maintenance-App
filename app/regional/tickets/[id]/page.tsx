@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { BackButton } from '@/components/ui/BackButton'
 import { Building2, Mail, Phone, MapPin, Image as ImageIcon } from 'lucide-react'
+import { QuoteApprovalCard } from '@/components/regional/QuoteApprovalCard'
 import { Badge } from '@/components/ui/Badge'
 import {
   STATUS_COLORS, STATUS_LABELS,
@@ -122,11 +123,15 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
         )}
       </div>
 
-      {hasPendingQuote && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl px-4 py-3 text-sm text-yellow-700 dark:text-yellow-400">
-          A quote is currently pending the store manager's response.
-        </div>
-      )}
+      {/* Pending quotes — RM approves/declines here */}
+      {quotes.filter((q: any) => q.status === 'pending').map((q: any) => (
+        <QuoteApprovalCard
+          key={q.id}
+          quote={q}
+          ticketTitle={ticket.title}
+          ticketId={ticket.id}
+        />
+      ))}
 
       {/* Quote history */}
       {quotes.length > 0 && (
@@ -134,19 +139,29 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Quote History</p>
           <div className="space-y-3">
             {quotes.map((q: any) => (
-              <div key={q.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-2">
+              <div key={q.id} className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-2 ${q.file_url ? 'cursor-pointer hover:border-brand-300 dark:hover:border-brand-600 transition-colors' : ''}`}
+                onClick={() => q.file_url && window.open(q.file_url, '_blank')}
+              >
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(q.amount)}</p>
                     <p className="text-xs text-gray-400 mt-0.5">{formatDateTime(q.created_at)}</p>
                   </div>
-                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full shrink-0 ${
-                    q.status === 'accepted' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                    q.status === 'declined' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                    'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                  }`}>
-                    {QUOTE_STATUS_LABELS[q.status as keyof typeof QUOTE_STATUS_LABELS]}
-                  </span>
+                  <div className="flex flex-col items-end gap-1.5 shrink-0">
+                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+                      q.status === 'accepted' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                      q.status === 'declined' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                      'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                    }`}>
+                      {QUOTE_STATUS_LABELS[q.status as keyof typeof QUOTE_STATUS_LABELS]}
+                    </span>
+                    {q.file_url && (
+                      <span className="text-xs text-brand-600 dark:text-brand-400 flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Open quote
+                      </span>
+                    )}
+                  </div>
                 </div>
                 {q.description && (
                   <p className="text-sm text-gray-600 dark:text-gray-300">{q.description}</p>
@@ -154,11 +169,8 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
                 {q.valid_until && (
                   <p className="text-xs text-gray-400">Valid until: {formatDate(q.valid_until)}</p>
                 )}
-                {q.file_url && (
-                  <a href={q.file_url} target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs text-brand-600 hover:underline">
-                    View attachment
-                  </a>
+                {q.decline_reason && (
+                  <p className="text-xs text-red-500">Reason: {q.decline_reason}</p>
                 )}
               </div>
             ))}

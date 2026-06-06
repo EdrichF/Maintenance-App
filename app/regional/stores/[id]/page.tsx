@@ -76,7 +76,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
     .filter((q: any) => q.status === 'pending')
 
   const archivedQuotes = ticketList
-    .flatMap(t => (t.quotes ?? []).map((q: any) => ({ ...q, ticketTitle: t.title })))
+    .flatMap(t => (t.quotes ?? []).map((q: any) => ({ ...q, ticketTitle: t.title, ticketId: t.id })))
     .filter((q: any) => q.status !== 'pending')
     .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
@@ -132,23 +132,34 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
           )}
         </div>
 
-        {/* Ticket summary — now includes Approved */}
+        {/* Ticket summary */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Ticket Summary</p>
           <div className="grid grid-cols-3 gap-3">
-            {[
-              { label: 'Total',       value: ticketList.length,         color: 'text-gray-900 dark:text-white' },
-              { label: 'Open Tickets',value: openTickets.length,        color: 'text-blue-600' },
-              { label: 'Approved',    value: inProgressTickets.length,  color: 'text-teal-600' },
-              { label: 'In Progress', value: ticketList.filter(t => t.status === 'in_progress').length, color: 'text-yellow-600' },
-              { label: 'Completed',   value: completedTickets.length,   color: 'text-green-600' },
-              { label: 'Cancelled',   value: cancelledTickets.length,   color: 'text-gray-400' },
-            ].map(s => (
-              <div key={s.label}>
-                <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">{s.label}</p>
-              </div>
-            ))}
+            <div>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{ticketList.length}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">Total</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-blue-600">{openTickets.length}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">Open Tickets</p>
+            </div>
+            <a href="#in-progress" className="group cursor-pointer">
+              <p className="text-2xl font-bold text-teal-600 group-hover:underline">{inProgressTickets.length}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">Approved</p>
+            </a>
+            <div>
+              <p className="text-2xl font-bold text-yellow-600">{ticketList.filter(t => t.status === 'in_progress').length}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">In Progress</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-green-600">{completedTickets.length}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">Completed</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-400">{cancelledTickets.length}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">Cancelled</p>
+            </div>
           </div>
         </div>
 
@@ -199,16 +210,14 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
             <div>
               <p className="font-semibold text-gray-900 dark:text-white">{formatCurrency(pendingValue)}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Value of {pendingQ} quote{pendingQ !== 1 ? 's' : ''} awaiting store manager acceptance
+                Value of {pendingQ} quote{pendingQ !== 1 ? 's' : ''} awaiting your approval
               </p>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── TICKETS (first) ─────────────────────────────────── */}
-
-      {/* Open Tickets */}
+      {/* ── OPEN TICKETS ─────────────────────────────────── */}
       {openTickets.length > 0 && (
         <div>
           <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
@@ -221,56 +230,15 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
         </div>
       )}
 
-      {/* In Progress / Accepted */}
+      {/* ── IN PROGRESS / APPROVED ─────────────────────────── */}
       {inProgressTickets.length > 0 && (
-        <div>
+        <div id="in-progress">
           <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
             <Clock size={16} className="text-yellow-500" />
-            In Progress ({inProgressTickets.length})
+            In Progress / Approved ({inProgressTickets.length})
           </h2>
           <div className="space-y-2">
             {inProgressTickets.map(t => <TicketRow key={t.id} ticket={t} />)}
-          </div>
-        </div>
-      )}
-
-      {/* Completed */}
-      {completedTickets.length > 0 && (
-        <div>
-          <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-            <CheckCircle size={16} className="text-green-500" />
-            Completed ({completedTickets.length})
-          </h2>
-          <div className="space-y-2 opacity-80">
-            {completedTickets.map(t => <TicketRow key={t.id} ticket={t} />)}
-          </div>
-        </div>
-      )}
-
-      {/* Declined */}
-      {declinedTickets.length > 0 && (
-        <div>
-          <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-            <span className="w-4 h-4 rounded-full bg-red-500 inline-flex items-center justify-center shrink-0">
-              <span className="text-white text-xs font-bold">!</span>
-            </span>
-            Declined ({declinedTickets.length})
-          </h2>
-          <div className="space-y-2">
-            {declinedTickets.map(t => <TicketRow key={t.id} ticket={t} />)}
-          </div>
-        </div>
-      )}
-
-      {/* Cancelled */}
-      {cancelledTickets.length > 0 && (
-        <div>
-          <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-            <Archive size={16} className="text-gray-400" />
-            Cancelled ({cancelledTickets.length})
-          </h2>
-          <div className="space-y-2 opacity-60">
-            {cancelledTickets.map(t => <TicketRow key={t.id} ticket={t} />)}
           </div>
         </div>
       )}
@@ -281,8 +249,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
         </div>
       )}
 
-      {/* ── QUOTES (second) ─────────────────────────────────── */}
-
+      {/* ── QUOTES AWAITING APPROVAL ─────────────────────────── */}
       {pendingQuotes.length > 0 && (
         <div>
           <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
@@ -302,6 +269,48 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
         </div>
       )}
 
+      {/* ── COMPLETED ─────────────────────────────────── */}
+      {completedTickets.length > 0 && (
+        <div>
+          <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <CheckCircle size={16} className="text-green-500" />
+            Completed ({completedTickets.length})
+          </h2>
+          <div className="space-y-2 opacity-80">
+            {completedTickets.map(t => <TicketRow key={t.id} ticket={t} />)}
+          </div>
+        </div>
+      )}
+
+      {/* ── DECLINED ─────────────────────────────────── */}
+      {declinedTickets.length > 0 && (
+        <div>
+          <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <span className="w-4 h-4 rounded-full bg-red-500 inline-flex items-center justify-center shrink-0">
+              <span className="text-white text-xs font-bold">!</span>
+            </span>
+            Declined ({declinedTickets.length})
+          </h2>
+          <div className="space-y-2">
+            {declinedTickets.map(t => <TicketRow key={t.id} ticket={t} />)}
+          </div>
+        </div>
+      )}
+
+      {/* ── CANCELLED ─────────────────────────────────── */}
+      {cancelledTickets.length > 0 && (
+        <div>
+          <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <Archive size={16} className="text-gray-400" />
+            Cancelled ({cancelledTickets.length})
+          </h2>
+          <div className="space-y-2 opacity-60">
+            {cancelledTickets.map(t => <TicketRow key={t.id} ticket={t} />)}
+          </div>
+        </div>
+      )}
+
+      {/* ── QUOTE ARCHIVE ─────────────────────────────────── */}
       {archivedQuotes.length > 0 && (
         <div>
           <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
@@ -310,22 +319,24 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
           </h2>
           <div className="space-y-2">
             {(archivedQuotes as any[]).map((q: any) => (
-              <div key={q.id} className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{q.ticketTitle}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{formatCurrency(q.amount)} · {formatDateTime(q.created_at)}</p>
-                  {q.decline_reason && (
-                    <p className="text-xs text-red-500 mt-0.5">Reason: {q.decline_reason}</p>
-                  )}
+              <Link key={q.id} href={`/regional/tickets/${q.ticketId}`}>
+                <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 flex items-center justify-between gap-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{q.ticketTitle}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{formatCurrency(q.amount)} · {formatDateTime(q.created_at)}</p>
+                    {q.decline_reason && (
+                      <p className="text-xs text-red-500 mt-0.5">Reason: {q.decline_reason}</p>
+                    )}
+                  </div>
+                  <span className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full ${
+                    q.status === 'accepted'
+                      ? 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400'
+                      : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                  }`}>
+                    {q.status === 'accepted' ? 'Approved' : 'Declined'}
+                  </span>
                 </div>
-                <span className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full ${
-                  q.status === 'accepted'
-                    ? 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400'
-                    : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-                }`}>
-                  {q.status === 'accepted' ? 'Approved' : 'Declined'}
-                </span>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

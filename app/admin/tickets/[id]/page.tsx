@@ -32,6 +32,8 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
     .order('created_at', { ascending: false })
 
   const client = (ticket as any).profiles
+  const hasAcceptedQuote = (quotes ?? []).some((q: any) => q.status === 'accepted')
+  const canUpdateStatus = hasAcceptedQuote || ['accepted', 'in_progress'].includes((ticket as Ticket).status)
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
@@ -99,8 +101,14 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
         )}
       </div>
 
-      {/* Update status */}
-      <UpdateStatusForm ticketId={params.id} currentStatus={(ticket as Ticket).status} />
+      {/* Update status — only shown once a quote has been accepted */}
+      {canUpdateStatus ? (
+        <UpdateStatusForm ticketId={params.id} currentStatus={(ticket as Ticket).status} />
+      ) : (
+        <div className="bg-gray-50 dark:bg-gray-800/50 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-xs text-gray-400 text-center">
+          Status can be updated once a quote has been accepted.
+        </div>
+      )}
 
       {/* Quotes sent */}
       {(quotes?.length ?? 0) > 0 && (

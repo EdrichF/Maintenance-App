@@ -69,6 +69,10 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
       setError('Please select a Valid Until date. All quotes must have an expiry.')
       return
     }
+    if (!file) {
+      setError('Please attach the quote document (PDF, Word, or image) before submitting.')
+      return
+    }
     setLoading(true)
     setError('')
 
@@ -187,7 +191,7 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
         {/* File upload */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Attachment <span className="text-gray-400 font-normal">(optional — PDF, Word, or image, max 10 MB)</span>
+            Attachment <span className="text-red-500">*</span> <span className="text-gray-400 font-normal">(PDF, Word, or image, max 10 MB)</span>
           </label>
           {file ? (
             <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">

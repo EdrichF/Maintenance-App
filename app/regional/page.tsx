@@ -315,21 +315,23 @@ export default async function RegionalDashboard() {
             ) : (
               <div className="space-y-2">
                 {recentTickets.map((ticket: any) => (
-                  <div key={ticket.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{ticket.title}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
-                      {ticket.store?.company_name} — {ticket.store?.sub_store}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <Badge className={`text-xs ${PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}`}>
-                        {PRIORITY_LABELS[ticket.priority as keyof typeof PRIORITY_LABELS]}
-                      </Badge>
-                      <Badge className={`text-xs ${STATUS_COLORS[ticket.status as keyof typeof STATUS_COLORS]}`}>
-                        {STATUS_LABELS[ticket.status as keyof typeof STATUS_LABELS]}
-                      </Badge>
+                  <Link key={ticket.id} href={`/regional/tickets/${ticket.id}`}>
+                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{ticket.title}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                        {ticket.store?.company_name} — {ticket.store?.sub_store}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <Badge className={`text-xs ${PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}`}>
+                          {PRIORITY_LABELS[ticket.priority as keyof typeof PRIORITY_LABELS]}
+                        </Badge>
+                        <Badge className={`text-xs ${STATUS_COLORS[ticket.status as keyof typeof STATUS_COLORS]}`}>
+                          {STATUS_LABELS[ticket.status as keyof typeof STATUS_LABELS]}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{formatDate(ticket.created_at)}</p>
                     </div>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{formatDate(ticket.created_at)}</p>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}
