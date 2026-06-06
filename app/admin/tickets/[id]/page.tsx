@@ -5,6 +5,7 @@ import { BackButton } from '@/components/ui/BackButton'
 import { Phone, Mail, MapPin, Building2 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { SendQuoteForm } from '@/components/admin/SendQuoteForm'
+import { SubmitCompletionForm } from '@/components/admin/SubmitCompletionForm'
 import { UpdateStatusForm } from '@/components/admin/UpdateStatusForm'
 import {
   STATUS_COLORS, STATUS_LABELS,
@@ -31,9 +32,16 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
     .eq('ticket_id', params.id)
     .order('created_at', { ascending: false })
 
+  const { data: completions } = await supabase
+    .from('completions')
+    .select('*')
+    .eq('ticket_id', params.id)
+    .order('created_at', { ascending: false })
+
   const client = (ticket as any).profiles
   const hasAcceptedQuote = (quotes ?? []).some((q: any) => q.status === 'accepted')
-  const canUpdateStatus = hasAcceptedQuote || ['accepted', 'in_progress'].includes((ticket as Ticket).status)
+  const canUpdateStatus = (hasAcceptedQuote || ['accepted', 'in_progress'].includes((ticket as Ticket).status))
+    && !['pending_sign_off', 'snag', 'completed'].includes((ticket as Ticket).status)
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
@@ -145,6 +153,48 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     View attached quote
                   </a>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Submit for sign-off — shown when in_progress */}
+      {(ticket as Ticket).status === 'in_progress' && (
+        <SubmitCompletionForm ticketId={params.id} />
+      )}
+
+      {/* Completion history */}
+      {(completions?.length ?? 0) > 0 && (
+        <div>
+          <p className="font-semibold text-gray-900 dark:text-white mb-2">COC/POC History</p>
+          <div className="space-y-3">
+            {completions!.map((comp: any) => (
+              <div key={comp.id} className={`border rounded-xl p-4 space-y-2 ${comp.status === 'approved' ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/40' : comp.status === 'rejected' ? 'bg-rose-50 dark:bg-rose-900/10 border-rose-200 dark:border-rose-800/40' : 'bg-orange-50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-800/40'}`}>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">Submission</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Submitted: {formatDate(comp.created_at)}</p>
+                  </div>
+                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${comp.status === 'approved' ? 'bg-green-100 text-green-700' : comp.status === 'rejected' ? 'bg-rose-100 text-rose-700' : 'bg-orange-100 text-orange-700'}`}>
+                    {comp.status === 'approved' ? 'Approved' : comp.status === 'rejected' ? 'Rejected' : 'Pending Review'}
+                  </span>
+                </div>
+                {comp.reject_reason && <p className="text-xs text-rose-600 dark:text-rose-400">Reason: {comp.reject_reason}</p>}
+                {comp.coc_url && (
+                  <a href={comp.coc_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-brand-600 hover:underline">
+                    View COC
+                  </a>
+                )}
+                {comp.poc_urls?.length > 0 && (
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {comp.poc_urls.map((url: string, i: number) => (
+                      <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                        <img src={url} alt="" className="w-full aspect-square object-cover rounded-lg" />
+                      </a>
+                    ))}
+                  </div>
                 )}
               </div>
             ))}

@@ -28,6 +28,8 @@ export const STATUS_LABELS: Record<TicketStatus, string> = {
   completed:   'Completed',
   cancelled:   'Cancelled',
   declined:    'Declined',
+  pending_sign_off: 'Pending Sign-off',
+  snag:        'Snag',
 }
 
 export const STATUS_COLORS: Record<TicketStatus, string> = {
@@ -38,6 +40,8 @@ export const STATUS_COLORS: Record<TicketStatus, string> = {
   completed:   'bg-green-100  text-green-700  dark:bg-green-950  dark:text-green-400',
   cancelled:   'bg-gray-100   text-gray-600   dark:bg-gray-800   dark:text-gray-400',
   declined:    'bg-red-100    text-red-700    dark:bg-red-950    dark:text-red-400',
+  pending_sign_off: 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400',
+  snag:        'bg-rose-100   text-rose-700   dark:bg-rose-950   dark:text-rose-400',
 }
 
 export const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {

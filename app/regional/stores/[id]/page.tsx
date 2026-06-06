@@ -132,34 +132,23 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
           )}
         </div>
 
-        {/* Ticket summary */}
+        {/* Ticket summary — each number links to tickets tab filtered by status + store */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Ticket Summary</p>
           <div className="grid grid-cols-3 gap-3">
-            <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{ticketList.length}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">Total</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-blue-600">{openTickets.length}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">Open Tickets</p>
-            </div>
-            <a href="#in-progress" className="group cursor-pointer">
-              <p className="text-2xl font-bold text-teal-600 group-hover:underline">{inProgressTickets.length}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">Approved</p>
-            </a>
-            <div>
-              <p className="text-2xl font-bold text-yellow-600">{ticketList.filter(t => t.status === 'in_progress').length}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">In Progress</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-green-600">{completedTickets.length}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">Completed</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-400">{cancelledTickets.length}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">Cancelled</p>
-            </div>
+            {[
+              { label: 'Total',       value: ticketList.length,                                         color: 'text-gray-900 dark:text-white', href: `/regional/tickets?store=${params.id}` },
+              { label: 'Open Tickets',value: openTickets.length,                                        color: 'text-blue-600',  href: `/regional/tickets?status=open&store=${params.id}` },
+              { label: 'Approved',    value: inProgressTickets.length,                                  color: 'text-teal-600',  href: `/regional/tickets?status=accepted&store=${params.id}` },
+              { label: 'In Progress', value: ticketList.filter(t => t.status === 'in_progress').length, color: 'text-yellow-600',href: `/regional/tickets?status=in_progress&store=${params.id}` },
+              { label: 'Completed',   value: completedTickets.length,                                   color: 'text-green-600', href: `/regional/tickets?status=completed&store=${params.id}` },
+              { label: 'Cancelled',   value: cancelledTickets.length,                                   color: 'text-gray-400',  href: `/regional/tickets?status=cancelled&store=${params.id}` },
+            ].map(s => (
+              <Link key={s.label} href={s.href} className="group">
+                <p className={`text-2xl font-bold ${s.color} group-hover:underline`}>{s.value}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">{s.label}</p>
+              </Link>
+            ))}
           </div>
         </div>
 

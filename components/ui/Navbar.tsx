@@ -20,11 +20,13 @@ const NAV_LINKS: Record<NavRole, { href: string; label: string }[]> = {
     { href: '/admin/tickets',  label: 'Tickets'   },
     { href: '/admin/regional', label: 'Clients'   },
     { href: '/admin/stats',    label: 'Stats'     },
+    { href: '/admin/snag',     label: 'Snag'      },
   ],
   regional: [
     { href: '/regional',         label: 'Dashboard' },
     { href: '/regional/tickets', label: 'Tickets'   },
     { href: '/regional/stores',  label: 'Stores'    },
+    { href: '/regional/signoff', label: 'Sign-off'  },
   ],
   client: [
     { href: '/client',         label: 'Dashboard' },

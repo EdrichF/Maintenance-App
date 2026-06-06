@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { BackButton } from '@/components/ui/BackButton'
 import { Building2, Mail, Phone, MapPin, Image as ImageIcon } from 'lucide-react'
+import { CompletionReviewCard } from '@/components/regional/CompletionReviewCard'
 import { QuoteApprovalCard } from '@/components/regional/QuoteApprovalCard'
 import { Badge } from '@/components/ui/Badge'
 import {
@@ -39,6 +40,14 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
     .single()
 
   if (!store) notFound()
+
+  const { data: completionsData } = await adminClient
+    .from('completions')
+    .select('*')
+    .eq('ticket_id', params.id)
+    .order('created_at', { ascending: false })
+
+  const latestCompletion = (completionsData ?? [])[0] ?? null
 
   const quotes = (ticket.quotes ?? []).sort(
     (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -132,6 +141,17 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
           ticketId={ticket.id}
         />
       ))}
+
+      {/* COC/POC review — shown when pending_sign_off */}
+      {ticket.status === 'pending_sign_off' && latestCompletion && (
+        <div>
+          <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-orange-500"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            Sign-off Required
+          </h2>
+          <CompletionReviewCard completion={latestCompletion} />
+        </div>
+      )}
 
       {/* Quote history */}
       {quotes.length > 0 && (

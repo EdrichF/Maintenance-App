@@ -17,8 +17,8 @@ export async function PATCH(
   // Admin updating status only
   if (profile?.role === 'admin') {
     const { status } = body
-    if (!['in_progress', 'completed'].includes(status)) {
-      return NextResponse.json({ error: 'Admins can only set In Progress or Completed' }, { status: 400 })
+    if (!['in_progress', 'completed', 'pending_sign_off', 'snag'].includes(status)) {
+      return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
     const { data, error } = await adminClient
       .from('tickets').update({ status }).eq('id', params.id).select().single()

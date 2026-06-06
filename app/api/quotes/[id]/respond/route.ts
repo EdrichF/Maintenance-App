@@ -73,7 +73,7 @@ export async function PATCH(
       type:    status === 'accepted' ? 'quote_accepted' : 'quote_declined',
       title:   status === 'accepted' ? 'Quote Approved' : 'Quote Declined',
       message: status === 'accepted'
-        ? `Your quote of R${quote.amount} for "${ticket.title}" has been approved.`
+        ? `Your quote for "${ticket.title}" has been approved and work will proceed.`
         : `The quote for "${ticket.title}" was declined.${reasonNote} A new quote will follow.`,
       link: `/client/tickets/${quote.ticket_id}`,
     })

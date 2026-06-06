@@ -1,4 +1,5 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 import { NextResponse } from 'next/server'
 
 // POST /api/quotes — admin only
@@ -41,14 +42,33 @@ export async function POST(request: Request) {
     .single()
 
   if (ticket) {
+    // Notify store manager (without amount)
     await adminClient.from('notifications').insert({
       user_id: ticket.client_id,
       type: 'new_quote',
       title: 'Quote Received',
-      message: `You have received a quote of R${amount} for your ticket: "${ticket.title}"`,
+      message: `A quote has been submitted for your ticket: "${ticket.title}". Please await regional manager approval.`,
       link: `/client/tickets/${ticket_id}`,
     })
+
+    // Notify regional manager to approve the quote
+    const { data: storeProfile } = await adminClient
+      .from('profiles')
+      .select('regional_manager_id')
+      .eq('id', ticket.client_id)
+      .single()
+
+    if (storeProfile?.regional_manager_id) {
+      await adminClient.from('notifications').insert({
+        user_id: storeProfile.regional_manager_id,
+        type: 'new_quote',
+        title: 'Quote Awaiting Your Approval',
+        message: `A quote has been submitted for "${ticket.title}" and requires your approval.`,
+        link: `/regional/tickets/${ticket_id}`,
+      })
+    }
   }
 
+  revalidatePath('/client')
   return NextResponse.json({ quote }, { status: 201 })
 }

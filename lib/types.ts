@@ -1,5 +1,5 @@
 export type Priority = 'low' | 'medium' | 'high' | 'urgent'
-export type TicketStatus = 'open' | 'quoted' | 'accepted' | 'in_progress' | 'completed' | 'cancelled' | 'declined'
+export type TicketStatus = 'open' | 'quoted' | 'accepted' | 'in_progress' | 'completed' | 'cancelled' | 'declined' | 'pending_sign_off' | 'snag'
 export type QuoteStatus = 'pending' | 'accepted' | 'declined'
 export type UserRole = 'client' | 'store_manager' | 'regional_manager' | 'admin'
 
@@ -57,4 +57,21 @@ export interface Notification {
 
 export function isStoreManager(role: UserRole | string | null) {
   return role === 'store_manager' || role === 'client'
+}
+
+export interface Completion {
+  id: string
+  ticket_id: string
+  admin_id: string
+  coc_url: string | null
+  poc_urls: string[]
+  status: 'pending' | 'approved' | 'rejected'
+  reject_reason: string | null
+  notes: string | null
+  reviewed_by: string | null
+  reviewed_at: string | null
+  created_at: string
+  updated_at: string
+  tickets?: Ticket
+  profiles?: Profile
 }
