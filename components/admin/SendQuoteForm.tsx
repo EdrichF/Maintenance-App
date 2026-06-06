@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { useDropzone } from 'react-dropzone'
-import { UploadCloud, X, FileText, Loader2 } from 'lucide-react'
+import { UploadCloud, X, FileText, Loader2, Calendar } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { createClient } from '@/lib/supabase/client'
@@ -15,6 +15,19 @@ interface QuoteForm {
   valid_until: string
 }
 
+function addDays(days: number): string {
+  const d = new Date()
+  d.setDate(d.getDate() + days)
+  return d.toISOString().split('T')[0]   // YYYY-MM-DD
+}
+
+const PRESETS = [
+  { label: '7 days',   days: 7   },
+  { label: '14 days',  days: 14  },
+  { label: '1 month',  days: 30  },
+  { label: '3 months', days: 90  },
+] as const
+
 export function SendQuoteForm({ ticketId }: { ticketId: string }) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
@@ -23,7 +36,7 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
   const [file, setFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<QuoteForm>()
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<QuoteForm>()
 
   const onDrop = useCallback((accepted: File[]) => {
     if (accepted[0]) setFile(accepted[0])
@@ -128,12 +141,61 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
           {errors.description && <p className="mt-1 text-xs text-red-600">{errors.description.message}</p>}
         </div>
 
-        <Input
-          id="valid_until"
-          type="date"
-          label="Valid Until (optional)"
-          {...register('valid_until')}
-        />
+        {/* Valid Until — preset buttons + optional manual date */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Valid Until <span className="text-gray-400 font-normal">(optional)</span>
+          </label>
+
+          {/* Preset buttons */}
+          <div className="flex flex-wrap gap-2 mb-2">
+            {PRESETS.map(p => {
+              const val = addDays(p.days)
+              const isActive = watch('valid_until') === val
+              return (
+                <button
+                  key={p.label}
+                  type="button"
+                  onClick={() => setValue('valid_until', val)}
+                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                    isActive
+                      ? 'bg-brand-600 text-white border-brand-600'
+                      : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-brand-400 dark:hover:border-brand-500'
+                  }`}
+                >
+                  <Calendar size={11} />
+                  {p.label}
+                </button>
+              )
+            })}
+            {watch('valid_until') && (
+              <button
+                type="button"
+                onClick={() => setValue('valid_until', '')}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 dark:border-gray-600 text-gray-400 hover:text-red-500 hover:border-red-300 dark:hover:border-red-700 transition-all bg-white dark:bg-gray-700"
+              >
+                <X size={11} /> Clear
+              </button>
+            )}
+          </div>
+
+          {/* Show the selected date in a readable format, with a manual override option */}
+          {watch('valid_until') ? (
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Valid until:{' '}
+              <span className="font-medium text-gray-700 dark:text-gray-200">
+                {new Date(watch('valid_until') + 'T00:00:00').toLocaleDateString('en-ZA', {
+                  day: 'numeric', month: 'long', year: 'numeric',
+                })}
+              </span>
+            </p>
+          ) : (
+            <p className="text-xs text-gray-400">No expiry — quote stays valid indefinitely.</p>
+          )}
+
+          {/* Hidden input that holds the actual value */}
+          <input type="hidden" {...register('valid_until')} />
+        </div>
 
         {/* File upload */}
         <div>
