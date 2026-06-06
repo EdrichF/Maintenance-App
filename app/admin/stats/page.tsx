@@ -162,7 +162,6 @@ export default async function AdminStatsPage() {
               { label: 'In Progress',  value: byStatus.in_progress, color: 'bg-yellow-500' },
               { label: 'Completed',    value: byStatus.completed,   color: 'bg-green-500' },
               { label: 'Declined',     value: byStatus.declined,    color: 'bg-red-500' },
-              { label: 'Cancelled',    value: byStatus.cancelled,   color: 'bg-gray-400' },
             ].map(row => (
               <div key={row.label}>
                 <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">

@@ -4,6 +4,7 @@ import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { CollapsibleArchive } from '@/components/ui/CollapsibleArchive'
+import { TicketPipeline } from '@/components/ui/TicketPipeline'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
@@ -20,6 +21,7 @@ function TicketRow({ ticket }: { ticket: Ticket }) {
             <p className="font-semibold text-gray-900 dark:text-white truncate">{ticket.title}</p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{ticket.description}</p>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{formatDate(ticket.created_at)}</p>
+            <TicketPipeline status={ticket.status} />
           </div>
           <div className="flex flex-col gap-1 items-end shrink-0">
             <Badge className={PRIORITY_COLORS[ticket.priority]}>

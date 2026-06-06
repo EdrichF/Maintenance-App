@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui/Badge'
 import { CollapsibleArchive } from '@/components/ui/CollapsibleArchive'
 import { SearchInput } from '@/components/ui/SearchInput'
+import { TicketPipeline } from '@/components/ui/TicketPipeline'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
@@ -13,7 +14,7 @@ import {
 export default async function RegionalTicketsPage({
   searchParams,
 }: {
-  searchParams: { status?: string; q?: string }
+  searchParams: { status?: string; q?: string; store?: string }
 }) {
   const supabase    = createClient()
   const adminClient = createAdminClient()
@@ -48,15 +49,21 @@ export default async function RegionalTicketsPage({
 
   // Apply filters
   const activeStatus = searchParams.status ?? ''
+  const activeStore  = searchParams.store  ?? ''
   const searchQuery  = (searchParams.q ?? '').toLowerCase().trim()
+
+  const activeStoreName = activeStore
+    ? (() => { const s = storeMap[activeStore]; return s ? `${s.company_name} — ${s.sub_store}` : '' })()
+    : ''
 
   const filtered = allTickets.filter((t: any) => {
     const matchesStatus = !activeStatus || t.status === activeStatus
+    const matchesStore  = !activeStore  || t.client_id === activeStore
     const matchesSearch = !searchQuery ||
       t.title.toLowerCase().includes(searchQuery) ||
       t.store?.company_name?.toLowerCase().includes(searchQuery) ||
       t.store?.sub_store?.toLowerCase().includes(searchQuery)
-    return matchesStatus && matchesSearch
+    return matchesStatus && matchesStore && matchesSearch
   })
 
   const active   = filtered.filter((t: any) => !['completed','cancelled','declined'].includes(t.status))
@@ -83,6 +90,7 @@ export default async function RegionalTicketsPage({
   function filterHref(status: string) {
     const params = new URLSearchParams()
     if (status) params.set('status', status)
+    if (activeStore) params.set('store', activeStore)
     if (searchQuery) params.set('q', searchQuery)
     const qs = params.toString()
     return `/regional/tickets${qs ? `?${qs}` : ''}`
@@ -93,9 +101,24 @@ export default async function RegionalTicketsPage({
       <div>
         <h1 className="text-xl font-bold text-gray-900 dark:text-white">All Tickets</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-          {allTickets.length} ticket{allTickets.length !== 1 ? 's' : ''} across {storeIds.length} store{storeIds.length !== 1 ? 's' : ''}
+          {filtered.length} of {allTickets.length} ticket{allTickets.length !== 1 ? 's' : ''} across {storeIds.length} store{storeIds.length !== 1 ? 's' : ''}
         </p>
       </div>
+
+      {/* Active store filter banner */}
+      {activeStoreName && (
+        <div className="flex items-center justify-between bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800/40 rounded-xl px-4 py-2.5">
+          <p className="text-sm font-medium text-brand-700 dark:text-brand-300">
+            Filtered by store: <span className="font-semibold">{activeStoreName}</span>
+          </p>
+          <Link
+            href={`/regional/tickets${activeStatus ? `?status=${activeStatus}` : ''}`}
+            className="text-xs text-brand-600 dark:text-brand-400 hover:underline"
+          >
+            Clear store filter ×
+          </Link>
+        </div>
+      )}
 
       {/* Search */}
       <SearchInput placeholder="Search by ticket title or store name…" />
@@ -143,6 +166,7 @@ export default async function RegionalTicketsPage({
                       {ticket.store?.company_name} — {ticket.store?.sub_store}
                     </p>
                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{formatDate(ticket.created_at)}</p>
+                    <TicketPipeline status={ticket.status as any} />
                   </div>
                   <div className="flex flex-col gap-1 items-end shrink-0">
                     <Badge className={PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}>

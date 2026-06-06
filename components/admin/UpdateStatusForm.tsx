@@ -42,7 +42,7 @@ export function UpdateStatusForm({ ticketId, currentStatus }: { ticketId: string
                 : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-400'
             }`}
           >
-            {STATUS_LABELS[s]}
+            {s === 'completed' ? 'Job Complete' : STATUS_LABELS[s]}
           </button>
         ))}
       </div>

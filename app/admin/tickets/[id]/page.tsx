@@ -10,7 +10,7 @@ import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
   QUOTE_STATUS_LABELS,
-  formatDate, formatCurrency,
+  formatDate, formatDateTime, formatCurrency,
 } from '@/lib/utils'
 import type { Ticket, Quote } from '@/lib/types'
 
@@ -116,19 +116,36 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
           <p className="font-semibold text-gray-900 dark:text-white mb-2">Quotes Sent</p>
           <div className="space-y-2">
             {(quotes as Quote[]).map(q => (
-              <div key={q.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-lg font-bold dark:text-white">{formatCurrency(q.amount)}</p>
+              <div key={q.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-1.5">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-lg font-bold dark:text-white">{formatCurrency(q.amount)}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Sent: {formatDateTime(q.created_at)}</p>
+                  </div>
                   <Badge className={
-                    q.status === 'accepted' ? 'bg-green-100 text-green-800' :
-                    q.status === 'declined' ? 'bg-gray-100 text-gray-700' :
-                    'bg-yellow-100 text-yellow-800'
+                    q.status === 'accepted' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                    q.status === 'declined' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
                   }>
                     {QUOTE_STATUS_LABELS[q.status]}
                   </Badge>
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{q.description}</p>
-                {q.valid_until && <p className="text-xs text-gray-400 mt-1">Valid until: {formatDate(q.valid_until)}</p>}
+                <p className="text-sm text-gray-600 dark:text-gray-300">{q.description}</p>
+                {q.valid_until && <p className="text-xs text-gray-400">Valid until: {formatDate(q.valid_until)}</p>}
+                {(q as any).decline_reason && (
+                  <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/40 px-3 py-2">
+                    <p className="text-xs font-medium text-red-600 dark:text-red-400">
+                      Declined by regional manager — Reason: {(q as any).decline_reason}
+                    </p>
+                  </div>
+                )}
+                {(q as any).file_url && (
+                  <a href={(q as any).file_url} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-brand-600 dark:text-brand-400 hover:underline">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    View attached quote
+                  </a>
+                )}
               </div>
             ))}
           </div>

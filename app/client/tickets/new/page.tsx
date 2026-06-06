@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { useDropzone } from 'react-dropzone'
 import { createClient } from '@/lib/supabase/client'
-import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Upload, X, ArrowLeft } from 'lucide-react'
 import type { Priority } from '@/lib/types'
@@ -15,6 +14,20 @@ interface TicketForm {
   description: string
   priority: Priority
 }
+
+
+const TICKET_CATEGORIES = [
+  'General Maintenance',
+  'Electrical',
+  'Plumbing',
+  'Painting',
+  'Fixtures',
+  'HVAC',
+  'Fire Equipment',
+  'CCTV',
+  'Data Points',
+  'Shopfront',
+] as const
 
 const PRIORITIES: { value: Priority; label: string; color: string }[] = [
   { value: 'low',    label: 'Low',    color: 'border-green-400 bg-green-50 text-green-700' },
@@ -104,14 +117,22 @@ export default function NewTicketPage() {
 
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          {/* Title */}
-          <Input
-            id="title"
-            label="Title"
-            placeholder="e.g. Broken air conditioner in unit 3"
-            error={errors.title?.message}
-            {...register('title', { required: 'Title is required' })}
-          />
+          {/* Category dropdown */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Category <span className="text-red-500">*</span>
+            </label>
+            <select
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+              {...register('title', { required: 'Please select a category' })}
+            >
+              <option value="">Select a category…</option>
+              {TICKET_CATEGORIES.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+            {errors.title && <p className="mt-1 text-xs text-red-600">{errors.title.message}</p>}
+          </div>
 
           {/* Description */}
           <div>
@@ -173,6 +194,11 @@ export default function NewTicketPage() {
               </div>
             )}
 
+            {photos.length > 0 && photos.length < 2 && (
+              <p className="text-xs text-amber-600 dark:text-amber-400 mb-2">
+                Add {2 - photos.length} more photo{2 - photos.length !== 1 ? 's' : ''} — at least 2 required.
+              </p>
+            )}
             {photos.length > 0 && photos.length < 2 && (
               <p className="text-xs text-amber-600 dark:text-amber-400 mb-2">
                 Add {2 - photos.length} more photo{2 - photos.length !== 1 ? 's' : ''} — at least 2 required.

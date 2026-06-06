@@ -41,5 +41,6 @@ export async function POST(request: Request) {
   }
 
   revalidatePath('/client')
+  revalidatePath('/client')
   return NextResponse.json({ ticket }, { status: 201 })
 }

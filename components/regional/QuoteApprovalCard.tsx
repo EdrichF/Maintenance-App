@@ -22,8 +22,9 @@ const DECLINE_REASONS = [
 
 export function QuoteApprovalCard({ quote, ticketTitle, ticketId }: Props) {
   const router = useRouter()
-  const [loading,       setLoading]       = useState<'accept' | 'decline' | 'revert' | null>(null)
-  const [confirming,    setConfirming]     = useState(false)
+  const [loading,          setLoading]          = useState<'accept' | 'decline' | 'revert' | null>(null)
+  const [confirmingAccept, setConfirmingAccept]  = useState(false)
+  const [confirming,       setConfirming]        = useState(false)
   const [selectedReason, setSelectedReason] = useState<string>('')
   const [otherReason,    setOtherReason]    = useState('')
   const [reasonError,    setReasonError]    = useState('')
@@ -51,6 +52,7 @@ export function QuoteApprovalCard({ quote, ticketTitle, ticketId }: Props) {
     }
     setLoading(null)
     setConfirming(false)
+    setConfirmingAccept(false)
     setSelectedReason('')
     setOtherReason('')
     setReasonError('')
@@ -100,14 +102,31 @@ export function QuoteApprovalCard({ quote, ticketTitle, ticketId }: Props) {
       )}
 
       {/* Pending — approve / decline */}
-      {quote.status === 'pending' && !confirming && (
+      {quote.status === 'pending' && !confirming && !confirmingAccept && (
         <div className="flex gap-2 pt-1">
-          <Button onClick={() => respond('accepted')} loading={loading === 'accept'} size="sm" className="flex-1">
+          <Button onClick={() => setConfirmingAccept(true)} size="sm" className="flex-1">
             <CheckCircle size={14} className="mr-1.5" /> Approve
           </Button>
           <Button onClick={() => setConfirming(true)} variant="danger" size="sm" className="flex-1">
             <XCircle size={14} className="mr-1.5" /> Decline
           </Button>
+        </div>
+      )}
+
+      {/* Approve confirmation */}
+      {quote.status === 'pending' && confirmingAccept && (
+        <div className="rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 p-3 space-y-3">
+          <p className="text-sm font-medium text-green-700 dark:text-green-400 flex items-center gap-2">
+            <CheckCircle size={15} /> Confirm approval of {formatCurrency(quote.amount)}?
+          </p>
+          <div className="flex gap-2">
+            <Button onClick={() => respond('accepted')} loading={loading === 'accept'} size="sm" className="flex-1">
+              Yes, Approve
+            </Button>
+            <Button onClick={() => setConfirmingAccept(false)} variant="secondary" size="sm" className="flex-1" disabled={loading !== null}>
+              Cancel
+            </Button>
+          </div>
         </div>
       )}
 
