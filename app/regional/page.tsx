@@ -66,6 +66,9 @@ export default async function RegionalDashboard() {
     totalQuoteValue: allQuotes
       .filter((q: any) => q.status === 'accepted')
       .reduce((sum: number, q: any) => sum + (q.amount ?? 0), 0),
+    pendingQuoteValue: allQuotes
+      .filter((q: any) => q.status === 'pending')
+      .reduce((sum: number, q: any) => sum + (q.amount ?? 0), 0),
   }
 
   // Stores needing attention (have urgent/high open tickets)
@@ -134,7 +137,7 @@ export default async function RegionalDashboard() {
       </div>
 
       {/* Summary stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
         {[
           { label: 'Stores you manage', value: stats.totalStores,        icon: Store,       color: 'text-brand-600 bg-brand-50 dark:bg-brand-900/30' },
           { label: 'Open Tickets',    value: stats.openTickets,        icon: FileText,    color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' },
@@ -142,6 +145,7 @@ export default async function RegionalDashboard() {
           { label: 'Pending Quotes',  value: stats.pendingQuotes,      icon: Clock,       color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30' },
           { label: 'Done This Month', value: stats.completedThisMonth, icon: CheckCircle, color: 'text-green-600 bg-green-50 dark:bg-green-900/30' },
           { label: 'Quote Value',     value: formatCurrency(stats.totalQuoteValue), icon: TrendingUp, color: 'text-purple-600 bg-purple-50 dark:bg-purple-900/30', isText: true },
+          { label: 'Pending Value',    value: formatCurrency(stats.pendingQuoteValue), icon: Clock,      color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30', isText: true },
         ].map(stat => (
           <div key={stat.label} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 flex flex-col gap-2">
             <div className={`p-2 rounded-lg w-fit ${stat.color}`}>

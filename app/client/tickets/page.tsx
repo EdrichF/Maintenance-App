@@ -4,7 +4,6 @@ import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { CollapsibleArchive } from '@/components/ui/CollapsibleArchive'
-import { TicketPipeline } from '@/components/ui/TicketPipeline'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
@@ -21,7 +20,6 @@ function TicketRow({ ticket }: { ticket: Ticket }) {
             <p className="font-semibold text-gray-900 dark:text-white truncate">{ticket.title}</p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{ticket.description}</p>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{formatDate(ticket.created_at)}</p>
-            <TicketPipeline status={ticket.status} />
           </div>
           <div className="flex flex-col gap-1 items-end shrink-0">
             <Badge className={PRIORITY_COLORS[ticket.priority]}>
@@ -50,6 +48,19 @@ export default async function ClientTicketsPage() {
   const active   = (tickets ?? []).filter(t => !['completed','cancelled'].includes(t.status))
   const archived = (tickets ?? []).filter(t =>  ['completed','cancelled'].includes(t.status))
 
+
+  const allTickets = tickets ?? []
+  const statusCounts = {
+    open:        allTickets.filter((t: any) => t.status === 'open').length,
+    quoted:      allTickets.filter((t: any) => t.status === 'quoted').length,
+    accepted:    allTickets.filter((t: any) => t.status === 'accepted').length,
+    in_progress: allTickets.filter((t: any) => t.status === 'in_progress').length,
+    completed:   allTickets.filter((t: any) => t.status === 'completed').length,
+    declined:    allTickets.filter((t: any) => t.status === 'declined').length,
+    cancelled:   allTickets.filter((t: any) => t.status === 'cancelled').length,
+  }
+  const totalCount = allTickets.length
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -58,6 +69,34 @@ export default async function ClientTicketsPage() {
           <Button size="sm"><Plus size={16} className="mr-1" />New Ticket</Button>
         </Link>
       </div>
+
+      {/* Ticket status breakdown bar */}
+      {totalCount > 0 && (
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-medium text-gray-700 dark:text-gray-200">Ticket Status Breakdown</span>
+            <span className="text-gray-500 dark:text-gray-400">{totalCount} ticket{totalCount !== 1 ? 's' : ''}</span>
+          </div>
+          <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden flex gap-px">
+            {statusCounts.open > 0 && <div className="h-full bg-blue-500 transition-all" style={{ width: `${Math.round((statusCounts.open/totalCount)*100)}%` }} />}
+            {statusCounts.quoted > 0 && <div className="h-full bg-purple-500 transition-all" style={{ width: `${Math.round((statusCounts.quoted/totalCount)*100)}%` }} />}
+            {statusCounts.accepted > 0 && <div className="h-full bg-teal-500 transition-all" style={{ width: `${Math.round((statusCounts.accepted/totalCount)*100)}%` }} />}
+            {statusCounts.in_progress > 0 && <div className="h-full bg-amber-500 transition-all" style={{ width: `${Math.round((statusCounts.in_progress/totalCount)*100)}%` }} />}
+            {statusCounts.completed > 0 && <div className="h-full bg-green-500 transition-all" style={{ width: `${Math.round((statusCounts.completed/totalCount)*100)}%` }} />}
+            {statusCounts.declined > 0 && <div className="h-full bg-red-500 transition-all" style={{ width: `${Math.round((statusCounts.declined/totalCount)*100)}%` }} />}
+            {statusCounts.cancelled > 0 && <div className="h-full bg-gray-400 transition-all" style={{ width: `${Math.round((statusCounts.cancelled/totalCount)*100)}%` }} />}
+          </div>
+          <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-gray-500 dark:text-gray-400">
+            {statusCounts.open > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />Open ({statusCounts.open})</span>}
+            {statusCounts.quoted > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-purple-500 inline-block" />Quoted ({statusCounts.quoted})</span>}
+            {statusCounts.accepted > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-teal-500 inline-block" />Accepted ({statusCounts.accepted})</span>}
+            {statusCounts.in_progress > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />In Progress ({statusCounts.in_progress})</span>}
+            {statusCounts.completed > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />Completed ({statusCounts.completed})</span>}
+            {statusCounts.declined > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500 inline-block" />Declined ({statusCounts.declined})</span>}
+            {statusCounts.cancelled > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-gray-400 inline-block" />Cancelled ({statusCounts.cancelled})</span>}
+          </div>
+        </div>
+      )}
 
       {active.length === 0 && archived.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-10 text-center">

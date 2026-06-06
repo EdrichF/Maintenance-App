@@ -103,7 +103,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
       </div>
 
       {/* Info + summary grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
         {/* Store contact */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-2">
@@ -198,24 +198,28 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Pending quote value block */}
-      {pendingValue > 0 && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800/40 rounded-xl p-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/30">
-              <Clock size={16} className="text-yellow-600 dark:text-yellow-400" />
-            </div>
+        {/* Pending Quotes card */}
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Pending Quotes</p>
+          <div className="space-y-3">
             <div>
-              <p className="font-semibold text-gray-900 dark:text-white">{formatCurrency(pendingValue)}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Value of {pendingQ} quote{pendingQ !== 1 ? 's' : ''} awaiting your approval
-              </p>
+              <p className="text-xl font-bold text-yellow-600 dark:text-yellow-400">{formatCurrency(pendingValue)}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Total value awaiting approval</p>
+            </div>
+            <div className="flex gap-4">
+              <div>
+                <p className="text-lg font-bold text-yellow-600">{pendingQ}</p>
+                <p className="text-xs text-gray-400">Pending</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-gray-400">{allQuotes.length - acceptedQ - declinedQ - pendingQ}</p>
+                <p className="text-xs text-gray-400">No quote yet</p>
+              </div>
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* ── OPEN TICKETS ─────────────────────────────────── */}
       {openTickets.length > 0 && (
