@@ -18,22 +18,22 @@ interface QuoteForm {
 function addDays(days: number): string {
   const d = new Date()
   d.setDate(d.getDate() + days)
-  return d.toISOString().split('T')[0]   // YYYY-MM-DD
+  return d.toISOString().split('T')[0]
 }
 
 const PRESETS = [
-  { label: '7 days',   days: 7   },
-  { label: '14 days',  days: 14  },
-  { label: '1 month',  days: 30  },
-  { label: '3 months', days: 90  },
+  { label: '7 days',   days: 7  },
+  { label: '14 days',  days: 14 },
+  { label: '1 month',  days: 30 },
+  { label: '3 months', days: 90 },
 ] as const
 
 export function SendQuoteForm({ ticketId }: { ticketId: string }) {
   const router = useRouter()
-  const [open, setOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [file, setFile] = useState<File | null>(null)
+  const [open,      setOpen]      = useState(false)
+  const [loading,   setLoading]   = useState(false)
+  const [error,     setError]     = useState('')
+  const [file,      setFile]      = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
 
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<QuoteForm>()
@@ -45,7 +45,7 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     multiple: false,
-    maxSize: 10 * 1024 * 1024, // 10 MB
+    maxSize: 10 * 1024 * 1024,
     accept: {
       'application/pdf': ['.pdf'],
       'image/*': ['.png', '.jpg', '.jpeg', '.webp'],
@@ -56,17 +56,19 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
 
   async function uploadFile(file: File): Promise<string | null> {
     const supabase = createClient()
-    const ext = file.name.split('.').pop()
+    const ext  = file.name.split('.').pop()
     const path = `${ticketId}/${Date.now()}.${ext}`
-    const { error } = await supabase.storage
-      .from('quote-attachments')
-      .upload(path, file, { upsert: true })
+    const { error } = await supabase.storage.from('quote-attachments').upload(path, file, { upsert: true })
     if (error) return null
     const { data } = supabase.storage.from('quote-attachments').getPublicUrl(path)
     return data.publicUrl
   }
 
   async function onSubmit(values: QuoteForm) {
+    if (!values.valid_until) {
+      setError('Please select a Valid Until date. All quotes must have an expiry.')
+      return
+    }
     setLoading(true)
     setError('')
 
@@ -141,13 +143,11 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
           {errors.description && <p className="mt-1 text-xs text-red-600">{errors.description.message}</p>}
         </div>
 
-        {/* Valid Until — preset buttons + optional manual date */}
+        {/* Valid Until — preset buttons (required) */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            Valid Until <span className="text-gray-400 font-normal">(optional)</span>
+            Valid Until <span className="text-red-500">*</span>
           </label>
-
-          {/* Preset buttons */}
           <div className="flex flex-wrap gap-2 mb-2">
             {PRESETS.map(p => {
               const val = addDays(p.days)
@@ -168,20 +168,9 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
                 </button>
               )
             })}
-            {watch('valid_until') && (
-              <button
-                type="button"
-                onClick={() => setValue('valid_until', '')}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 dark:border-gray-600 text-gray-400 hover:text-red-500 hover:border-red-300 dark:hover:border-red-700 transition-all bg-white dark:bg-gray-700"
-              >
-                <X size={11} /> Clear
-              </button>
-            )}
           </div>
-
-          {/* Show the selected date in a readable format, with a manual override option */}
           {watch('valid_until') ? (
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
               Valid until:{' '}
               <span className="font-medium text-gray-700 dark:text-gray-200">
                 {new Date(watch('valid_until') + 'T00:00:00').toLocaleDateString('en-ZA', {
@@ -190,10 +179,8 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
               </span>
             </p>
           ) : (
-            <p className="text-xs text-gray-400">No expiry — quote stays valid indefinitely.</p>
+            <p className="text-xs text-red-500 mt-2">Required — please select an expiry date above.</p>
           )}
-
-          {/* Hidden input that holds the actual value */}
           <input type="hidden" {...register('valid_until')} />
         </div>
 
@@ -202,17 +189,12 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Attachment <span className="text-gray-400 font-normal">(optional — PDF, Word, or image, max 10 MB)</span>
           </label>
-
           {file ? (
             <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
               <FileText size={18} className="text-brand-600 shrink-0" />
               <span className="text-sm text-gray-700 dark:text-gray-200 truncate flex-1">{file.name}</span>
               <span className="text-xs text-gray-400 shrink-0">{(file.size / 1024).toFixed(0)} KB</span>
-              <button
-                type="button"
-                onClick={() => setFile(null)}
-                className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors"
-              >
+              <button type="button" onClick={() => setFile(null)} className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors">
                 <X size={16} />
               </button>
             </div>
@@ -232,8 +214,7 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
               ) : (
                 <>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Drag & drop a file, or{' '}
-                    <span className="text-brand-600 font-medium">browse</span>
+                    Drag & drop a file, or <span className="text-brand-600 font-medium">browse</span>
                   </p>
                   <p className="text-xs text-gray-400 mt-1">PDF, Word, PNG, JPG up to 10 MB</p>
                 </>

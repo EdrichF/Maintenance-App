@@ -43,8 +43,8 @@ export default async function RegionalTicketsPage() {
     hasQuote: (t.quotes ?? []).length > 0,
   }))
 
-  const active   = ticketList.filter(t => !['completed','cancelled'].includes(t.status))
-  const archived = ticketList.filter(t =>  ['completed','cancelled'].includes(t.status))
+  const active   = ticketList.filter(t => !['completed','cancelled','declined'].includes(t.status))
+  const archived = ticketList.filter(t =>  ['completed','cancelled','declined'].includes(t.status))
 
   const counts = {
     all:         ticketList.length,

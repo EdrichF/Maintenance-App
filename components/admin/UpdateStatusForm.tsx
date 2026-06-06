@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
 import { STATUS_LABELS } from '@/lib/utils'
 import type { TicketStatus } from '@/lib/types'
@@ -31,7 +30,7 @@ export function UpdateStatusForm({ ticketId, currentStatus }: { ticketId: string
   return (
     <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Update Status</p>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {STATUSES.map(s => (
           <button
             key={s}

@@ -26,8 +26,8 @@ export default async function AdminTicketsPage({
 
   const { data: tickets } = await query
 
-  const activeStatuses = ['open', 'quoted', 'accepted', 'in_progress']
-  const filterStatuses = ['open', 'quoted', 'accepted', 'in_progress', 'completed', 'cancelled']
+  const activeStatuses = ['open', 'quoted', 'accepted', 'in_progress', 'declined']
+  const filterStatuses = ['open', 'quoted', 'accepted', 'in_progress', 'completed', 'cancelled', 'declined']
 
   const noFilter = !searchParams.status && !searchParams.priority
   const active   = noFilter ? (tickets ?? []).filter((t: any) => activeStatuses.includes(t.status))        : (tickets ?? [])

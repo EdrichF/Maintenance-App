@@ -19,7 +19,7 @@ export function QuoteCard({ quote, ticketId }: QuoteCardProps) {
   const [error,      setError]      = useState('')
   const [confirming, setConfirming] = useState(false)
 
-  const statusColors = {
+  const statusColors: Record<string, string> = {
     pending:  'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-400',
     accepted: 'bg-green-100  text-green-800  dark:bg-green-950  dark:text-green-400',
     declined: 'bg-gray-100   text-gray-700   dark:bg-gray-800   dark:text-gray-400',
@@ -49,7 +49,7 @@ export function QuoteCard({ quote, ticketId }: QuoteCardProps) {
           <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(quote.amount)}</p>
           <p className="text-xs text-gray-400 mt-0.5">{formatDate(quote.created_at)}</p>
         </div>
-        <Badge className={statusColors[quote.status]}>
+        <Badge className={statusColors[quote.status] ?? ''}>
           {QUOTE_STATUS_LABELS[quote.status]}
         </Badge>
       </div>
@@ -60,7 +60,6 @@ export function QuoteCard({ quote, ticketId }: QuoteCardProps) {
         <p className="text-xs text-gray-400">Valid until: {formatDate(quote.valid_until)}</p>
       )}
 
-      {/* Attachment */}
       {(quote as any).file_url && (
         <a
           href={(quote as any).file_url}
@@ -68,16 +67,12 @@ export function QuoteCard({ quote, ticketId }: QuoteCardProps) {
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 text-sm text-brand-600 hover:underline"
         >
-          <FileText size={15} />
-          View attachment
+          <FileText size={15} /> View attachment
         </a>
       )}
 
-      {error && (
-        <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
-      )}
+      {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
 
-      {/* Action buttons — only show if still pending */}
       {quote.status === 'pending' && !confirming && (
         <div className="flex gap-2 pt-1">
           <Button onClick={() => respond('accepted')} loading={loading === 'accept'} className="flex-1" size="sm">

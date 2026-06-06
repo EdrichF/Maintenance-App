@@ -10,10 +10,7 @@ export async function PATCH(
   if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
 
   const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+    .from('profiles').select('role').eq('id', user.id).single()
 
   const role = profile?.role ?? ''
   const isStoreManager = role === 'store_manager' || role === 'client'
@@ -27,7 +24,6 @@ export async function PATCH(
   const body = await request.json()
   const { status, decline_reason } = body
 
-  // Store managers can only accept or decline (not revert to pending)
   const allowedStatuses = isStoreManager
     ? ['accepted', 'declined']
     : ['accepted', 'declined', 'pending']
@@ -48,32 +44,29 @@ export async function PATCH(
 
   const ticket = quote.tickets as any
 
-  // Store managers can only respond to quotes on their own tickets
   if (isStoreManager && ticket?.client_id !== user.id) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  // Build update payload — include decline_reason when provided
   const quoteUpdate: Record<string, unknown> = { status }
   if (status === 'declined' && decline_reason) {
     quoteUpdate.decline_reason = decline_reason
   } else if (status !== 'declined') {
-    quoteUpdate.decline_reason = null   // clear any prior reason on revert
+    quoteUpdate.decline_reason = null
   }
 
   await adminClient.from('quotes').update(quoteUpdate).eq('id', params.id)
 
-  // Ticket status follows quote status
+  // RM decline → ticket becomes 'declined' so admin knows to act
+  // Store manager decline → ticket goes back to 'open' for new quote
   const ticketStatus = status === 'accepted' ? 'accepted'
     : status === 'pending'  ? 'quoted'
+    : isRM                  ? 'declined'
     : 'open'
   await adminClient.from('tickets').update({ status: ticketStatus }).eq('id', quote.ticket_id)
 
-  // ── Notifications ──────────────────────────────────────────────────────────
-
   const reasonNote = decline_reason ? ` Reason: "${decline_reason}".` : ''
 
-  // Notify the store manager (client) about their quote status
   if (ticket?.client_id && !isStoreManager) {
     await adminClient.from('notifications').insert({
       user_id: ticket.client_id,
@@ -86,7 +79,6 @@ export async function PATCH(
     })
   }
 
-  // Notify admins
   const { data: admins } = await adminClient
     .from('profiles').select('id').eq('role', 'admin')
 

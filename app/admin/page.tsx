@@ -18,7 +18,7 @@ export default async function AdminDashboard() {
     .order('created_at', { ascending: false })
 
   const total    = tickets?.length ?? 0
-  const open     = tickets?.filter(t => t.status === 'open').length ?? 0
+  const open     = tickets?.filter(t => t.status === 'open' || t.status === 'declined').length ?? 0
   const urgent   = tickets?.filter(t => t.priority === 'urgent' && t.status === 'open').length ?? 0
   const quoted   = tickets?.filter(t => t.status === 'quoted').length ?? 0
   const active   = tickets?.filter(t => t.status === 'in_progress').length ?? 0
@@ -33,7 +33,7 @@ export default async function AdminDashboard() {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Open',       value: open,   icon: List,         color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' },
+          { label: 'Open Tickets', value: open,   icon: List,         color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' },
           { label: 'Urgent',     value: urgent, icon: AlertCircle,  color: 'text-red-600 bg-red-50 dark:bg-red-900/30' },
           { label: 'Quoted',     value: quoted, icon: Clock,        color: 'text-purple-600 bg-purple-50 dark:bg-purple-900/30' },
           { label: 'In Progress',value: active, icon: CheckCircle,  color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30' },
@@ -50,21 +50,24 @@ export default async function AdminDashboard() {
         ))}
       </div>
 
-      {/* Completion bar */}
+      {/* Completed vs Open Tickets bar */}
       {total > 0 && (
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-gray-700 dark:text-gray-200">Ticket Completion</span>
+            <span className="font-medium text-gray-700 dark:text-gray-200">Completed vs Open Tickets</span>
             <span className="text-gray-500 dark:text-gray-400">{completed} of {total} completed</span>
           </div>
           <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden flex">
-            <div className="h-full bg-green-500 transition-all" style={{ width: `${completionPct}%` }} title={`${completionPct}% completed`} />
-            <div className="h-full bg-blue-400 transition-all" style={{ width: `${openActivePct}%` }} title={`${openActivePct}% open/active`} />
+            <div className="h-full bg-green-500 transition-all rounded-l-full" style={{ width: `${completionPct}%` }} />
+            <div className="h-full bg-blue-400 transition-all" style={{ width: `${openActivePct}%` }} />
           </div>
-          <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />{completionPct}% Completed</span>
-            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-blue-400 inline-block" />{openActivePct}% Open / Active</span>
-            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-gray-200 dark:bg-gray-600 inline-block" />{100 - completionPct - openActivePct}% Other</span>
+          <div className="flex items-center gap-6 text-xs">
+            <span className="flex items-center gap-1.5 font-medium text-green-700 dark:text-green-400">
+              <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />{completionPct}% Completed ({completed})
+            </span>
+            <span className="flex items-center gap-1.5 font-medium text-blue-600 dark:text-blue-400">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-400 inline-block" />{openActivePct}% Open Tickets ({open + quoted + active})
+            </span>
           </div>
         </div>
       )}

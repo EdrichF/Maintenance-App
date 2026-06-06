@@ -18,18 +18,13 @@ function Bar({ value, max, color }: { value: number; max: number; color: string 
 }
 
 function DonutRing({ pct, color }: { pct: number; color: string }) {
-  const r = 36
-  const circ = 2 * Math.PI * r
-  const dash = (pct / 100) * circ
+  const r = 36, circ = 2 * Math.PI * r, dash = (pct / 100) * circ
   return (
     <svg width="90" height="90" viewBox="0 0 90 90">
-      <circle cx="45" cy="45" r={r} fill="none" stroke="currentColor" strokeWidth="10"
-        className="text-gray-100 dark:text-gray-700" />
-      <circle cx="45" cy="45" r={r} fill="none" strokeWidth="10"
-        stroke={color} strokeDasharray={`${dash} ${circ}`}
-        strokeLinecap="round" transform="rotate(-90 45 45)" />
-      <text x="45" y="49" textAnchor="middle" fontSize="14" fontWeight="bold"
-        fill="currentColor" className="text-gray-900 dark:text-white">
+      <circle cx="45" cy="45" r={r} fill="none" stroke="currentColor" strokeWidth="10" className="text-gray-100 dark:text-gray-700" />
+      <circle cx="45" cy="45" r={r} fill="none" strokeWidth="10" stroke={color}
+        strokeDasharray={`${dash} ${circ}`} strokeLinecap="round" transform="rotate(-90 45 45)" />
+      <text x="45" y="49" textAnchor="middle" fontSize="14" fontWeight="bold" fill="currentColor" className="text-gray-900 dark:text-white">
         {pct}%
       </text>
     </svg>
@@ -39,21 +34,16 @@ function DonutRing({ pct, color }: { pct: number; color: string }) {
 export default async function AdminStatsPage() {
   const db = createAdminClient()
 
-  const [
-    { data: tickets },
-    { data: quotes },
-    { data: profiles },
-  ] = await Promise.all([
+  const [{ data: tickets }, { data: quotes }, { data: profiles }] = await Promise.all([
     db.from('tickets').select('id, status, priority, created_at, updated_at, client_id'),
     db.from('quotes').select('id, status, amount, created_at'),
     db.from('profiles').select('id, role, company_name, sub_store, regional_manager_id'),
   ])
 
-  const t  = tickets  ?? []
-  const q  = quotes   ?? []
-  const p  = profiles ?? []
+  const t = tickets  ?? []
+  const q = quotes   ?? []
+  const p = profiles ?? []
 
-  // ── Ticket stats ─────────────────────────────────────────
   const byStatus = {
     open:        t.filter(x => x.status === 'open').length,
     quoted:      t.filter(x => x.status === 'quoted').length,
@@ -61,6 +51,7 @@ export default async function AdminStatsPage() {
     in_progress: t.filter(x => x.status === 'in_progress').length,
     completed:   t.filter(x => x.status === 'completed').length,
     cancelled:   t.filter(x => x.status === 'cancelled').length,
+    declined:    t.filter(x => x.status === 'declined').length,
   }
   const byPriority = {
     urgent: t.filter(x => x.priority === 'urgent').length,
@@ -69,44 +60,38 @@ export default async function AdminStatsPage() {
     low:    t.filter(x => x.priority === 'low').length,
   }
 
-  // ── Quote stats ───────────────────────────────────────────
-  const qTotal    = q.length
   const qAccepted = q.filter(x => x.status === 'accepted').length
   const qDeclined = q.filter(x => x.status === 'declined').length
   const qPending  = q.filter(x => x.status === 'pending').length
   const qValue    = q.filter(x => x.status === 'accepted').reduce((s, x) => s + (x.amount ?? 0), 0)
-  const acceptRate = (qAccepted + qDeclined) > 0
-    ? Math.round((qAccepted / (qAccepted + qDeclined)) * 100) : 0
+  const acceptRate = (qAccepted + qDeclined) > 0 ? Math.round((qAccepted / (qAccepted + qDeclined)) * 100) : 0
 
-  // ── People stats ──────────────────────────────────────────
-  const stores = p.filter(x => x.role === 'store_manager' || x.role === 'client')
-  const rms    = p.filter(x => x.role === 'regional_manager')
+  const totalTickets  = t.length
+  const openTickets   = byStatus.open + byStatus.quoted + byStatus.accepted + byStatus.in_progress + byStatus.declined
+  const completionPct = totalTickets > 0 ? Math.round((byStatus.completed / totalTickets) * 100) : 0
+  const openPct       = totalTickets > 0 ? Math.round((openTickets         / totalTickets) * 100) : 0
+
+  const stores     = p.filter(x => x.role === 'store_manager' || x.role === 'client')
+  const rms        = p.filter(x => x.role === 'regional_manager')
   const unassigned = stores.filter(x => !x.regional_manager_id).length
 
-  // ── Monthly tickets (last 6 months) ──────────────────────
   const months: { label: string; count: number }[] = []
   for (let i = 5; i >= 0; i--) {
-    const d     = new Date()
-    d.setMonth(d.getMonth() - i)
-    const yr    = d.getFullYear()
-    const mo    = d.getMonth()
-    const label = d.toLocaleDateString('en-ZA', { month: 'short' })
-    const count = t.filter(x => {
-      const cd = new Date(x.created_at)
-      return cd.getFullYear() === yr && cd.getMonth() === mo
-    }).length
-    months.push({ label, count })
+    const d = new Date(); d.setMonth(d.getMonth() - i)
+    const yr = d.getFullYear(), mo = d.getMonth()
+    months.push({
+      label: d.toLocaleDateString('en-ZA', { month: 'short' }),
+      count: t.filter(x => { const cd = new Date(x.created_at); return cd.getFullYear() === yr && cd.getMonth() === mo }).length,
+    })
   }
   const monthMax = Math.max(...months.map(m => m.count), 1)
 
-  // ── Top stores by ticket count ────────────────────────────
   const storeCounts: Record<string, { name: string; count: number }> = {}
   for (const tk of t) {
     const store = stores.find(s => s.id === tk.client_id)
     if (!store) continue
-    const key = store.id
-    if (!storeCounts[key]) storeCounts[key] = { name: `${store.company_name ?? '?'} — ${store.sub_store ?? '?'}`, count: 0 }
-    storeCounts[key].count++
+    if (!storeCounts[store.id]) storeCounts[store.id] = { name: `${store.company_name ?? '?'} — ${store.sub_store ?? '?'}`, count: 0 }
+    storeCounts[store.id].count++
   }
   const topStores = Object.values(storeCounts).sort((a, b) => b.count - a.count).slice(0, 6)
   const topMax = topStores[0]?.count ?? 1
@@ -120,15 +105,14 @@ export default async function AdminStatsPage() {
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Overview of all activity across the platform</p>
       </div>
 
-      {/* ── Key numbers ── */}
+      {/* Key numbers */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Total Tickets',    value: t.length,    icon: Ticket,      color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' },
-          { label: 'Open / Active',    value: byStatus.open + byStatus.quoted + byStatus.accepted + byStatus.in_progress,
-                                              icon: Clock,      color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30' },
-          { label: 'Completed',        value: byStatus.completed, icon: CheckCircle, color: 'text-green-600 bg-green-50 dark:bg-green-900/30' },
-          { label: 'Urgent Open',      value: t.filter(x => x.priority === 'urgent' && !['completed','cancelled'].includes(x.status)).length,
-                                              icon: AlertCircle, color: 'text-red-600 bg-red-50 dark:bg-red-900/30' },
+          { label: 'Total Tickets',  value: t.length,           icon: Ticket,      color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' },
+          { label: 'Open / Active',  value: activeTickets,      icon: Clock,       color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30' },
+          { label: 'Completed',      value: byStatus.completed, icon: CheckCircle, color: 'text-green-600 bg-green-50 dark:bg-green-900/30' },
+          { label: 'Urgent Open',    value: t.filter(x => x.priority === 'urgent' && !['completed','cancelled','declined'].includes(x.status)).length,
+                                            icon: AlertCircle,  color: 'text-red-600 bg-red-50 dark:bg-red-900/30' },
         ].map(s => (
           <div key={s.label} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 flex items-center gap-3">
             <div className={`p-2 rounded-lg shrink-0 ${s.color}`}><s.icon size={18} /></div>
@@ -140,21 +124,45 @@ export default async function AdminStatsPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      {/* Completed vs Open Tickets bar */}
+      {totalTickets > 0 && (
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 space-y-3">
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-semibold text-gray-900 dark:text-white">Completed vs Open Tickets</span>
+            <span className="text-gray-500 dark:text-gray-400">{byStatus.completed} of {totalTickets} completed</span>
+          </div>
+          <div className="h-4 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden flex">
+            <div className="h-full bg-green-500 transition-all rounded-l-full" style={{ width: `${completionPct}%` }} />
+            <div className="h-full bg-blue-400 transition-all" style={{ width: `${openPct}%` }} />
+          </div>
+          <div className="flex items-center gap-6 text-xs">
+            <span className="flex items-center gap-1.5 font-medium text-green-700 dark:text-green-400">
+              <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />
+              {completionPct}% Completed ({byStatus.completed})
+            </span>
+            <span className="flex items-center gap-1.5 font-medium text-blue-600 dark:text-blue-400">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-400 inline-block" />
+              {openPct}% Open Tickets ({openTickets})
+            </span>
+          </div>
+        </div>
+      )}
 
-        {/* ── Ticket status breakdown ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Ticket status breakdown */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-4 flex items-center gap-2">
             <Ticket size={14} className="text-brand-600" /> Tickets by Status
           </h2>
           <div className="space-y-3">
             {[
-              { label: 'Open',        value: byStatus.open,        color: 'bg-blue-500' },
-              { label: 'Quoted',      value: byStatus.quoted,      color: 'bg-purple-500' },
-              { label: 'Accepted',    value: byStatus.accepted,    color: 'bg-teal-500' },
-              { label: 'In Progress', value: byStatus.in_progress, color: 'bg-yellow-500' },
-              { label: 'Completed',   value: byStatus.completed,   color: 'bg-green-500' },
-              { label: 'Cancelled',   value: byStatus.cancelled,   color: 'bg-gray-400' },
+              { label: 'Open Tickets', value: byStatus.open,        color: 'bg-blue-500' },
+              { label: 'Quoted',       value: byStatus.quoted,      color: 'bg-purple-500' },
+              { label: 'Accepted',     value: byStatus.accepted,    color: 'bg-teal-500' },
+              { label: 'In Progress',  value: byStatus.in_progress, color: 'bg-yellow-500' },
+              { label: 'Completed',    value: byStatus.completed,   color: 'bg-green-500' },
+              { label: 'Declined',     value: byStatus.declined,    color: 'bg-red-500' },
+              { label: 'Cancelled',    value: byStatus.cancelled,   color: 'bg-gray-400' },
             ].map(row => (
               <div key={row.label}>
                 <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
@@ -166,7 +174,7 @@ export default async function AdminStatsPage() {
           </div>
         </div>
 
-        {/* ── Priority breakdown ── */}
+        {/* Priority breakdown */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-4 flex items-center gap-2">
             <AlertCircle size={14} className="text-red-500" /> Tickets by Priority
@@ -179,15 +187,11 @@ export default async function AdminStatsPage() {
               { label: 'Low',    value: byPriority.low,    color: 'bg-green-500' },
             ].map(row => (
               <div key={row.label}>
-                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
-                  <span>{row.label}</span>
-                </div>
+                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1"><span>{row.label}</span></div>
                 <Bar value={row.value} max={t.length || 1} color={row.color} />
               </div>
             ))}
           </div>
-
-          {/* Summary tiles */}
           <div className="grid grid-cols-2 gap-2 mt-5 pt-4 border-t border-gray-100 dark:border-gray-700">
             {[
               { label: 'Urgent', value: byPriority.urgent, color: 'text-red-600' },
@@ -203,7 +207,7 @@ export default async function AdminStatsPage() {
           </div>
         </div>
 
-        {/* ── Quote stats ── */}
+        {/* Quote stats */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-4 flex items-center gap-2">
             <FileText size={14} className="text-purple-500" /> Quotes
@@ -215,18 +219,9 @@ export default async function AdminStatsPage() {
             </div>
           </div>
           <div className="grid grid-cols-3 gap-2 pt-3 border-t border-gray-100 dark:border-gray-700 text-center">
-            <div>
-              <p className="text-xl font-bold text-green-600">{qAccepted}</p>
-              <p className="text-xs text-gray-400">Accepted</p>
-            </div>
-            <div>
-              <p className="text-xl font-bold text-yellow-600">{qPending}</p>
-              <p className="text-xs text-gray-400">Pending</p>
-            </div>
-            <div>
-              <p className="text-xl font-bold text-gray-500">{qDeclined}</p>
-              <p className="text-xs text-gray-400">Declined</p>
-            </div>
+            <div><p className="text-xl font-bold text-green-600">{qAccepted}</p><p className="text-xs text-gray-400">Accepted</p></div>
+            <div><p className="text-xl font-bold text-yellow-600">{qPending}</p><p className="text-xs text-gray-400">Pending</p></div>
+            <div><p className="text-xl font-bold text-gray-500">{qDeclined}</p><p className="text-xs text-gray-400">Declined</p></div>
           </div>
           <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 text-center">
             <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(qValue)}</p>
@@ -236,8 +231,7 @@ export default async function AdminStatsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-
-        {/* ── Monthly ticket volume ── */}
+        {/* Monthly ticket volume */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-5 flex items-center gap-2">
             <TrendingUp size={14} className="text-brand-600" /> Monthly Ticket Volume
@@ -249,10 +243,8 @@ export default async function AdminStatsPage() {
                 <div key={m.label} className="flex-1 flex flex-col items-center gap-1">
                   <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">{m.count || ''}</span>
                   <div className="w-full flex items-end" style={{ height: '90px' }}>
-                    <div
-                      className="w-full rounded-t-md bg-brand-500 dark:bg-brand-600 transition-all"
-                      style={{ height: `${Math.max(heightPct, m.count > 0 ? 4 : 0)}%` }}
-                    />
+                    <div className="w-full rounded-t-md bg-brand-500 dark:bg-brand-600 transition-all"
+                      style={{ height: `${Math.max(heightPct, m.count > 0 ? 4 : 0)}%` }} />
                   </div>
                   <span className="text-xs text-gray-400">{m.label}</span>
                 </div>
@@ -261,7 +253,7 @@ export default async function AdminStatsPage() {
           </div>
         </div>
 
-        {/* ── People & coverage ── */}
+        {/* People & coverage */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 space-y-4">
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm flex items-center gap-2">
             <Users size={14} className="text-brand-600" /> People & Coverage
@@ -280,22 +272,16 @@ export default async function AdminStatsPage() {
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Unassigned</p>
             </div>
           </div>
-
-          {/* Coverage bar */}
           <div>
             <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1.5">
               <span>Store coverage</span>
               <span>{stores.length > 0 ? Math.round(((stores.length - unassigned) / stores.length) * 100) : 0}% assigned</span>
             </div>
             <div className="h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-green-500 rounded-full"
-                style={{ width: `${stores.length > 0 ? Math.round(((stores.length - unassigned) / stores.length) * 100) : 0}%` }}
-              />
+              <div className="h-full bg-green-500 rounded-full"
+                style={{ width: `${stores.length > 0 ? Math.round(((stores.length - unassigned) / stores.length) * 100) : 0}%` }} />
             </div>
           </div>
-
-          {/* Avg tickets per store */}
           <div className="grid grid-cols-2 gap-3 pt-2">
             <div className="text-center border border-gray-100 dark:border-gray-700 rounded-xl p-3">
               <p className="text-xl font-bold text-gray-900 dark:text-white">
@@ -313,7 +299,7 @@ export default async function AdminStatsPage() {
         </div>
       </div>
 
-      {/* ── Top stores ── */}
+      {/* Top stores */}
       {topStores.length > 0 && (
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-4 flex items-center gap-2">

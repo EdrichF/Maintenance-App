@@ -46,16 +46,16 @@ export default async function RegionalDashboard() {
   const allTickets = storeList.flatMap((s: any) => s.tickets ?? [])
   const allQuotes  = allTickets.flatMap((t: any) => t.quotes ?? [])
 
-  const totalTickets     = allTickets.length
-  const completedTickets = allTickets.filter((t: any) => t.status === 'completed').length
-  const openActiveTickets = allTickets.filter((t: any) => ['open','quoted','accepted','in_progress'].includes(t.status)).length
-  const completionPct  = totalTickets > 0 ? Math.round((completedTickets  / totalTickets) * 100) : 0
-  const openActivePct  = totalTickets > 0 ? Math.round((openActiveTickets / totalTickets) * 100) : 0
+  const totalTickets      = allTickets.length
+  const completedTickets  = allTickets.filter((t: any) => t.status === 'completed').length
+  const openActiveTickets = allTickets.filter((t: any) => ['open','quoted','accepted','in_progress','declined'].includes(t.status)).length
+  const completionPct     = totalTickets > 0 ? Math.round((completedTickets  / totalTickets) * 100) : 0
+  const openPct           = totalTickets > 0 ? Math.round((openActiveTickets / totalTickets) * 100) : 0
 
   const stats = {
     totalStores:     storeList.length,
     openTickets:     openActiveTickets,
-    urgentTickets:   allTickets.filter((t: any) => t.priority === 'urgent' && !['completed','cancelled'].includes(t.status)).length,
+    urgentTickets:   allTickets.filter((t: any) => t.priority === 'urgent' && !['completed','cancelled','declined'].includes(t.status)).length,
     pendingQuotes:   allQuotes.filter((q: any) => q.status === 'pending').length,
     completedThisMonth: allTickets.filter((t: any) => {
       if (t.status !== 'completed') return false
@@ -72,10 +72,10 @@ export default async function RegionalDashboard() {
   const storesNeedingAttention = storeList
     .map((s: any) => {
       const urgent = (s.tickets ?? []).filter((t: any) =>
-        t.priority === 'urgent' && !['completed','cancelled'].includes(t.status)
+        t.priority === 'urgent' && !['completed','cancelled','declined'].includes(t.status)
       ).length
       const high = (s.tickets ?? []).filter((t: any) =>
-        t.priority === 'high' && !['completed','cancelled'].includes(t.status)
+        t.priority === 'high' && !['completed','cancelled','declined'].includes(t.status)
       ).length
       return { ...s, urgentCount: urgent, highCount: high }
     })
@@ -157,21 +157,24 @@ export default async function RegionalDashboard() {
         ))}
       </div>
 
-      {/* Completion bar */}
+      {/* Completed vs Open Tickets bar */}
       {totalTickets > 0 && (
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-gray-700 dark:text-gray-200">Ticket Completion</span>
+            <span className="font-medium text-gray-700 dark:text-gray-200">Completed vs Open Tickets</span>
             <span className="text-gray-500 dark:text-gray-400">{completedTickets} of {totalTickets} completed</span>
           </div>
           <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden flex">
-            <div className="h-full bg-green-500 transition-all" style={{ width: `${completionPct}%` }} />
-            <div className="h-full bg-blue-400 transition-all" style={{ width: `${openActivePct}%` }} />
+            <div className="h-full bg-green-500 transition-all rounded-l-full" style={{ width: `${completionPct}%` }} />
+            <div className="h-full bg-blue-400 transition-all" style={{ width: `${openPct}%` }} />
           </div>
-          <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />{completionPct}% Completed</span>
-            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-blue-400 inline-block" />{openActivePct}% Open / Active</span>
-            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-gray-200 dark:bg-gray-600 inline-block" />{100 - completionPct - openActivePct}% Other</span>
+          <div className="flex items-center gap-6 text-xs">
+            <span className="flex items-center gap-1.5 font-medium text-green-700 dark:text-green-400">
+              <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />{completionPct}% Completed ({completedTickets})
+            </span>
+            <span className="flex items-center gap-1.5 font-medium text-blue-600 dark:text-blue-400">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-400 inline-block" />{openPct}% Open Tickets ({openActiveTickets})
+            </span>
           </div>
         </div>
       )}

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { BackButton } from '@/components/ui/BackButton'
 import {
   Phone, Mail, MapPin, Building2,
-  FileText, CheckCircle, Clock, Archive,
+  FileText, CheckCircle, Clock, Archive, AlertCircle,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { QuoteApprovalCard } from '@/components/regional/QuoteApprovalCard'
@@ -14,6 +14,29 @@ import {
   QUOTE_STATUS_LABELS, formatDate, formatCurrency,
 } from '@/lib/utils'
 import type { Ticket, Quote } from '@/lib/types'
+
+function TicketRow({ ticket }: { ticket: Ticket }) {
+  return (
+    <Link href={`/regional/tickets/${ticket.id}`}>
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
+            <p className="text-xs text-gray-400 mt-0.5">{formatDate(ticket.created_at)}</p>
+          </div>
+          <div className="flex flex-col gap-1 items-end shrink-0">
+            <Badge className={PRIORITY_COLORS[ticket.priority]}>
+              {PRIORITY_LABELS[ticket.priority]}
+            </Badge>
+            <Badge className={STATUS_COLORS[ticket.status]}>
+              {STATUS_LABELS[ticket.status]}
+            </Badge>
+          </div>
+        </div>
+      </div>
+    </Link>
+  )
+}
 
 export default async function RegionalStoreDetailPage({ params }: { params: { id: string } }) {
   const supabase    = createClient()
@@ -40,38 +63,37 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
   const ticketList = (tickets ?? []) as (Ticket & { quotes: Quote[] })[]
   const allQuotes  = ticketList.flatMap(t => t.quotes ?? [])
 
-  const stats = {
-    total:      ticketList.length,
-    open:       ticketList.filter(t => t.status === 'open').length,
-    inProgress: ticketList.filter(t => t.status === 'in_progress').length,
-    completed:  ticketList.filter(t => t.status === 'completed').length,
-    pendingQ:   allQuotes.filter(q => q.status === 'pending').length,
-    acceptedQ:  allQuotes.filter(q => q.status === 'accepted').length,
-    totalValue: allQuotes
-      .filter(q => q.status === 'accepted')
-      .reduce((s, q) => s + (q.amount ?? 0), 0),
-  }
+  // Ticket groups
+  const openTickets       = ticketList.filter(t => t.status === 'open' || t.status === 'quoted')
+  const declinedTickets   = ticketList.filter(t => t.status === 'declined')
+  const inProgressTickets = ticketList.filter(t => t.status === 'in_progress' || t.status === 'accepted')
+  const completedTickets  = ticketList.filter(t => t.status === 'completed')
+  const cancelledTickets  = ticketList.filter(t => t.status === 'cancelled')
 
-  const declined = allQuotes.filter(q => q.status === 'declined').length
-  const acceptanceRate = (stats.acceptedQ + declined) > 0
-    ? Math.round((stats.acceptedQ / (stats.acceptedQ + declined)) * 100)
-    : null
-
-  const openTickets   = ticketList.filter(t => !['completed','cancelled'].includes(t.status))
-  const closedTickets = ticketList.filter(t =>  ['completed','cancelled'].includes(t.status))
-
+  // Quote groups
   const pendingQuotes = ticketList
-    .flatMap(t => (t.quotes ?? []).map(q => ({ ...q, ticketTitle: t.title, ticketId: t.id })))
-    .filter(q => q.status === 'pending')
+    .flatMap(t => (t.quotes ?? []).map((q: any) => ({ ...q, ticketTitle: t.title, ticketId: t.id })))
+    .filter((q: any) => q.status === 'pending')
 
   const archivedQuotes = ticketList
-    .flatMap(t => (t.quotes ?? []).map(q => ({ ...q, ticketTitle: t.title })))
-    .filter(q => q.status !== 'pending')
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .flatMap(t => (t.quotes ?? []).map((q: any) => ({ ...q, ticketTitle: t.title })))
+    .filter((q: any) => q.status !== 'pending')
+    .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+
+  // Stats
+  const acceptedQ   = allQuotes.filter((q: any) => q.status === 'accepted').length
+  const declinedQ   = allQuotes.filter((q: any) => q.status === 'declined').length
+  const pendingQ    = allQuotes.filter((q: any) => q.status === 'pending').length
+  const acceptedValue = allQuotes.filter((q: any) => q.status === 'accepted').reduce((s: number, q: any) => s + (q.amount ?? 0), 0)
+  const pendingValue  = allQuotes.filter((q: any) => q.status === 'pending').reduce((s: number, q: any) => s + (q.amount ?? 0), 0)
+  const acceptanceRate = (acceptedQ + declinedQ) > 0
+    ? Math.round((acceptedQ / (acceptedQ + declinedQ)) * 100)
+    : null
 
   return (
     <div className="space-y-6 max-w-4xl">
 
+      {/* Header */}
       <div className="flex items-center gap-3">
         <BackButton />
         <div>
@@ -80,15 +102,15 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
         </div>
       </div>
 
-      {/* Info + stats grid */}
+      {/* Info + summary grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
+        {/* Store contact */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-2">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Store Contact</p>
           {store.full_name && (
             <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
-              <Building2 size={14} className="text-gray-400 shrink-0" />
-              <span>{store.full_name}</span>
+              <Building2 size={14} className="text-gray-400 shrink-0" /><span>{store.full_name}</span>
             </div>
           )}
           {store.email && (
@@ -105,34 +127,37 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
           )}
           {store.address && (
             <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
-              <MapPin size={14} className="text-gray-400 shrink-0" />
-              <span>{store.address}</span>
+              <MapPin size={14} className="text-gray-400 shrink-0" /><span>{store.address}</span>
             </div>
           )}
         </div>
 
+        {/* Ticket summary — now includes Approved */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Ticket Summary</p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             {[
-              { label: 'Total',       value: stats.total,      color: 'text-gray-900 dark:text-white' },
-              { label: 'Open',        value: stats.open,       color: 'text-blue-600' },
-              { label: 'In Progress', value: stats.inProgress, color: 'text-yellow-600' },
-              { label: 'Completed',   value: stats.completed,  color: 'text-green-600' },
+              { label: 'Total',       value: ticketList.length,         color: 'text-gray-900 dark:text-white' },
+              { label: 'Open Tickets',value: openTickets.length,        color: 'text-blue-600' },
+              { label: 'Approved',    value: inProgressTickets.length,  color: 'text-teal-600' },
+              { label: 'In Progress', value: ticketList.filter(t => t.status === 'in_progress').length, color: 'text-yellow-600' },
+              { label: 'Completed',   value: completedTickets.length,   color: 'text-green-600' },
+              { label: 'Cancelled',   value: cancelledTickets.length,   color: 'text-gray-400' },
             ].map(s => (
               <div key={s.label}>
                 <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{s.label}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">{s.label}</p>
               </div>
             ))}
           </div>
         </div>
 
+        {/* Quote summary */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Quote Summary</p>
           <div className="space-y-3">
             <div>
-              <p className="text-2xl font-bold text-green-600 dark:text-green-400">{formatCurrency(stats.totalValue)}</p>
+              <p className="text-xl font-bold text-green-600 dark:text-green-400">{formatCurrency(acceptedValue)}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">Total accepted value</p>
             </div>
             {acceptanceRate !== null && (
@@ -148,19 +173,116 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
             )}
             <div className="flex gap-3">
               <div>
-                <p className="text-lg font-bold text-yellow-600">{stats.pendingQ}</p>
+                <p className="text-lg font-bold text-yellow-600">{pendingQ}</p>
                 <p className="text-xs text-gray-400">Pending</p>
               </div>
               <div>
-                <p className="text-lg font-bold text-green-600 dark:text-green-400">{stats.acceptedQ}</p>
+                <p className="text-lg font-bold text-green-600 dark:text-green-400">{acceptedQ}</p>
                 <p className="text-xs text-gray-400">Accepted</p>
+              </div>
+              <div>
+                <p className="text-lg font-bold text-red-500">{declinedQ}</p>
+                <p className="text-xs text-gray-400">Declined</p>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Pending quotes awaiting approval */}
+      {/* Pending quote value block */}
+      {pendingValue > 0 && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-800/40 rounded-xl p-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/30">
+              <Clock size={16} className="text-yellow-600 dark:text-yellow-400" />
+            </div>
+            <div>
+              <p className="font-semibold text-gray-900 dark:text-white">{formatCurrency(pendingValue)}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Value of {pendingQ} quote{pendingQ !== 1 ? 's' : ''} awaiting store manager acceptance
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── TICKETS (first) ─────────────────────────────────── */}
+
+      {/* Open Tickets */}
+      {openTickets.length > 0 && (
+        <div>
+          <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <AlertCircle size={16} className="text-blue-500" />
+            Open Tickets ({openTickets.length})
+          </h2>
+          <div className="space-y-2">
+            {openTickets.map(t => <TicketRow key={t.id} ticket={t} />)}
+          </div>
+        </div>
+      )}
+
+      {/* In Progress / Accepted */}
+      {inProgressTickets.length > 0 && (
+        <div>
+          <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <Clock size={16} className="text-yellow-500" />
+            In Progress ({inProgressTickets.length})
+          </h2>
+          <div className="space-y-2">
+            {inProgressTickets.map(t => <TicketRow key={t.id} ticket={t} />)}
+          </div>
+        </div>
+      )}
+
+      {/* Completed */}
+      {completedTickets.length > 0 && (
+        <div>
+          <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <CheckCircle size={16} className="text-green-500" />
+            Completed ({completedTickets.length})
+          </h2>
+          <div className="space-y-2 opacity-80">
+            {completedTickets.map(t => <TicketRow key={t.id} ticket={t} />)}
+          </div>
+        </div>
+      )}
+
+      {/* Declined */}
+      {declinedTickets.length > 0 && (
+        <div>
+          <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <span className="w-4 h-4 rounded-full bg-red-500 inline-flex items-center justify-center shrink-0">
+              <span className="text-white text-xs font-bold">!</span>
+            </span>
+            Declined ({declinedTickets.length})
+          </h2>
+          <div className="space-y-2">
+            {declinedTickets.map(t => <TicketRow key={t.id} ticket={t} />)}
+          </div>
+        </div>
+      )}
+
+      {/* Cancelled */}
+      {cancelledTickets.length > 0 && (
+        <div>
+          <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <Archive size={16} className="text-gray-400" />
+            Cancelled ({cancelledTickets.length})
+          </h2>
+          <div className="space-y-2 opacity-60">
+            {cancelledTickets.map(t => <TicketRow key={t.id} ticket={t} />)}
+          </div>
+        </div>
+      )}
+
+      {ticketList.length === 0 && (
+        <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center">
+          <p className="text-sm text-gray-400">No tickets from this store yet.</p>
+        </div>
+      )}
+
+      {/* ── QUOTES (second) ─────────────────────────────────── */}
+
       {pendingQuotes.length > 0 && (
         <div>
           <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
@@ -168,7 +290,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
             Quotes Awaiting Your Approval ({pendingQuotes.length})
           </h2>
           <div className="space-y-3">
-            {pendingQuotes.map((q: any) => (
+            {(pendingQuotes as any[]).map((q: any) => (
               <QuoteApprovalCard
                 key={q.id}
                 quote={q as Quote}
@@ -180,69 +302,6 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
         </div>
       )}
 
-      {/* Active tickets */}
-      <div>
-        <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-          <Clock size={16} className="text-brand-600" />
-          Active Tickets ({openTickets.length})
-        </h2>
-        {openTickets.length === 0 ? (
-          <div className="bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 rounded-xl p-6 text-center">
-            <CheckCircle size={20} className="mx-auto text-green-500 mb-2" />
-            <p className="text-sm text-green-700 dark:text-green-400">No active tickets.</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {openTickets.map(ticket => (
-              <Link key={ticket.id} href={`/regional/tickets/${ticket.id}`}>
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{formatDate(ticket.created_at)}</p>
-                    </div>
-                    <div className="flex flex-col gap-1 items-end shrink-0">
-                      <Badge className={PRIORITY_COLORS[ticket.priority]}>
-                        {PRIORITY_LABELS[ticket.priority]}
-                      </Badge>
-                      <Badge className={STATUS_COLORS[ticket.status]}>
-                        {STATUS_LABELS[ticket.status]}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Completed tickets */}
-      {closedTickets.length > 0 && (
-        <div>
-          <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-            <CheckCircle size={16} className="text-green-500" />
-            Completed & Cancelled ({closedTickets.length})
-          </h2>
-          <div className="space-y-2">
-            {closedTickets.map(ticket => (
-              <div key={ticket.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 opacity-75">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm text-gray-700 dark:text-gray-300 truncate">{ticket.title}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{formatDate(ticket.updated_at)}</p>
-                  </div>
-                  <Badge className={STATUS_COLORS[ticket.status]}>
-                    {STATUS_LABELS[ticket.status]}
-                  </Badge>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Quote archive */}
       {archivedQuotes.length > 0 && (
         <div>
           <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
@@ -250,18 +309,21 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
             Quote Archive ({archivedQuotes.length})
           </h2>
           <div className="space-y-2">
-            {archivedQuotes.map((q: any) => (
+            {(archivedQuotes as any[]).map((q: any) => (
               <div key={q.id} className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{q.ticketTitle}</p>
                   <p className="text-xs text-gray-400 mt-0.5">{formatCurrency(q.amount)} · {formatDate(q.created_at)}</p>
+                  {q.decline_reason && (
+                    <p className="text-xs text-red-500 mt-0.5">Reason: {q.decline_reason}</p>
+                  )}
                 </div>
                 <span className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full ${
                   q.status === 'accepted'
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                    : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                    ? 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400'
+                    : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
                 }`}>
-                       {q.status === 'accepted' ? 'Approved' : 'Declined'}
+                  {q.status === 'accepted' ? 'Approved' : 'Declined'}
                 </span>
               </div>
             ))}
