@@ -7,7 +7,9 @@ import { Button } from '@/components/ui/Button'
 import { STATUS_LABELS } from '@/lib/utils'
 import type { TicketStatus } from '@/lib/types'
 
-const STATUSES: TicketStatus[] = ['open', 'quoted', 'accepted', 'in_progress', 'completed', 'cancelled']
+// Admins manually move tickets to In Progress once work starts, and Completed when done.
+// All other status transitions happen automatically (e.g. quote sent → quoted, quote accepted → accepted).
+const STATUSES: TicketStatus[] = ['in_progress', 'completed']
 
 export function UpdateStatusForm({ ticketId, currentStatus }: { ticketId: string; currentStatus: TicketStatus }) {
   const router = useRouter()
@@ -17,8 +19,11 @@ export function UpdateStatusForm({ ticketId, currentStatus }: { ticketId: string
   async function save() {
     if (status === currentStatus) return
     setLoading(true)
-    const supabase = createClient()
-    await supabase.from('tickets').update({ status }).eq('id', ticketId)
+    await fetch(`/api/tickets/${ticketId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    })
     router.refresh()
     setLoading(false)
   }

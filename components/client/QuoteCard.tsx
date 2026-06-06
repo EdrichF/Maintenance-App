@@ -15,23 +15,31 @@ interface QuoteCardProps {
 
 export function QuoteCard({ quote, ticketId }: QuoteCardProps) {
   const router = useRouter()
-  const [loading, setLoading] = useState<'accept' | 'decline' | null>(null)
+  const [loading,    setLoading]    = useState<'accept' | 'decline' | null>(null)
+  const [error,      setError]      = useState('')
+  const [confirming, setConfirming] = useState(false)
 
   const statusColors = {
-    pending:  'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-    accepted: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-    declined: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+    pending:  'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-400',
+    accepted: 'bg-green-100  text-green-800  dark:bg-green-950  dark:text-green-400',
+    declined: 'bg-gray-100   text-gray-700   dark:bg-gray-800   dark:text-gray-400',
   }
 
   async function respond(status: 'accepted' | 'declined') {
     setLoading(status === 'accepted' ? 'accept' : 'decline')
-    await fetch(`/api/quotes/${quote.id}/respond`, {
+    setError('')
+    const res = await fetch(`/api/quotes/${quote.id}/respond`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
     })
-    router.refresh()
+    if (!res.ok) {
+      const d = await res.json()
+      setError(d.error ?? 'Something went wrong.')
+    }
     setLoading(null)
+    setConfirming(false)
+    router.refresh()
   }
 
   return (
@@ -65,26 +73,33 @@ export function QuoteCard({ quote, ticketId }: QuoteCardProps) {
         </a>
       )}
 
+      {error && (
+        <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
+      )}
+
       {/* Action buttons — only show if still pending */}
-      {quote.status === 'pending' && (
+      {quote.status === 'pending' && !confirming && (
         <div className="flex gap-2 pt-1">
-          <Button
-            onClick={() => respond('accepted')}
-            loading={loading === 'accept'}
-            className="flex-1"
-            size="sm"
-          >
+          <Button onClick={() => respond('accepted')} loading={loading === 'accept'} className="flex-1" size="sm">
             Accept Quote
           </Button>
-          <Button
-            onClick={() => respond('declined')}
-            loading={loading === 'decline'}
-            variant="danger"
-            className="flex-1"
-            size="sm"
-          >
+          <Button onClick={() => setConfirming(true)} variant="danger" className="flex-1" size="sm">
             Decline
           </Button>
+        </div>
+      )}
+
+      {quote.status === 'pending' && confirming && (
+        <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-3 space-y-2">
+          <p className="text-sm font-medium text-red-700 dark:text-red-400">Are you sure you want to decline?</p>
+          <div className="flex gap-2">
+            <Button onClick={() => respond('declined')} loading={loading === 'decline'} variant="danger" size="sm" className="flex-1">
+              Yes, decline
+            </Button>
+            <Button onClick={() => setConfirming(false)} variant="secondary" size="sm" className="flex-1" disabled={loading !== null}>
+              Cancel
+            </Button>
+          </div>
         </div>
       )}
     </div>

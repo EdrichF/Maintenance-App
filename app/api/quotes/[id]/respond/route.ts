@@ -15,12 +15,24 @@ export async function PATCH(
     .eq('id', user.id)
     .single()
 
-  if (!['regional_manager', 'admin'].includes(profile?.role ?? '')) {
+  const role = profile?.role ?? ''
+  const isStoreManager = role === 'store_manager' || role === 'client'
+  const isRM            = role === 'regional_manager'
+  const isAdmin         = role === 'admin'
+
+  if (!isStoreManager && !isRM && !isAdmin) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const { status } = await request.json()
-  if (!['accepted', 'declined', 'pending'].includes(status)) {
+  const body = await request.json()
+  const { status, decline_reason } = body
+
+  // Store managers can only accept or decline (not revert to pending)
+  const allowedStatuses = isStoreManager
+    ? ['accepted', 'declined']
+    : ['accepted', 'declined', 'pending']
+
+  if (!allowedStatuses.includes(status)) {
     return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
   }
 
@@ -36,36 +48,58 @@ export async function PATCH(
 
   const ticket = quote.tickets as any
 
-  await adminClient.from('quotes').update({ status }).eq('id', params.id)
+  // Store managers can only respond to quotes on their own tickets
+  if (isStoreManager && ticket?.client_id !== user.id) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
 
-  // Map quote status to ticket status
+  // Build update payload — include decline_reason when provided
+  const quoteUpdate: Record<string, unknown> = { status }
+  if (status === 'declined' && decline_reason) {
+    quoteUpdate.decline_reason = decline_reason
+  } else if (status !== 'declined') {
+    quoteUpdate.decline_reason = null   // clear any prior reason on revert
+  }
+
+  await adminClient.from('quotes').update(quoteUpdate).eq('id', params.id)
+
+  // Ticket status follows quote status
   const ticketStatus = status === 'accepted' ? 'accepted'
     : status === 'pending'  ? 'quoted'
     : 'open'
   await adminClient.from('tickets').update({ status: ticketStatus }).eq('id', quote.ticket_id)
 
-  if (ticket?.client_id) {
+  // ── Notifications ──────────────────────────────────────────────────────────
+
+  const reasonNote = decline_reason ? ` Reason: "${decline_reason}".` : ''
+
+  // Notify the store manager (client) about their quote status
+  if (ticket?.client_id && !isStoreManager) {
     await adminClient.from('notifications').insert({
       user_id: ticket.client_id,
-      type: status === 'accepted' ? 'quote_accepted' : 'quote_declined',
-      title: status === 'accepted' ? 'Quote Approved' : 'Quote Declined',
+      type:    status === 'accepted' ? 'quote_accepted' : 'quote_declined',
+      title:   status === 'accepted' ? 'Quote Approved' : 'Quote Declined',
       message: status === 'accepted'
         ? `Your quote of R${quote.amount} for "${ticket.title}" has been approved.`
-        : `The quote for "${ticket.title}" was declined. A new quote will follow.`,
+        : `The quote for "${ticket.title}" was declined.${reasonNote} A new quote will follow.`,
       link: `/client/tickets/${quote.ticket_id}`,
     })
   }
 
+  // Notify admins
   const { data: admins } = await adminClient
     .from('profiles').select('id').eq('role', 'admin')
 
   if (admins?.length) {
+    const actorLabel = isRM ? 'Regional manager' : isStoreManager ? 'Store manager' : 'Admin'
     await adminClient.from('notifications').insert(
       admins.map((a: any) => ({
         user_id: a.id,
-        type: status === 'accepted' ? 'quote_accepted' : 'quote_declined',
-        title: status === 'accepted' ? 'Quote Accepted' : 'Quote Declined',
-        message: `Regional manager ${status} the quote of R${quote.amount} for "${ticket?.title}"`,
+        type:    status === 'accepted' ? 'quote_accepted' : 'quote_declined',
+        title:   status === 'accepted' ? 'Quote Accepted' : 'Quote Declined',
+        message: status === 'accepted'
+          ? `${actorLabel} accepted the quote of R${quote.amount} for "${ticket?.title}".`
+          : `${actorLabel} declined the quote of R${quote.amount} for "${ticket?.title}".${reasonNote}`,
         link: `/admin/tickets/${quote.ticket_id}`,
       }))
     )
