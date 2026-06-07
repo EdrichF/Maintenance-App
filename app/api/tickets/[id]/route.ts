@@ -1,5 +1,6 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 
 // PATCH /api/tickets/[id] — admin updates status OR store manager edits their own open ticket
 export async function PATCH(
@@ -23,6 +24,9 @@ export async function PATCH(
     const { data, error } = await adminClient
       .from('tickets').update({ status }).eq('id', params.id).select().single()
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    revalidatePath('/admin/tickets')
+    revalidatePath(`/admin/tickets/${params.id}`)
+    revalidatePath('/admin')
     return NextResponse.json({ ticket: data })
   }
 

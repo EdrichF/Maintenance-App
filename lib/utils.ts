@@ -29,7 +29,7 @@ export const STATUS_LABELS: Record<TicketStatus, string> = {
   cancelled:   'Cancelled',
   declined:    'Declined',
   pending_sign_off: 'Pending Sign-off',
-  snag:        'Snag',
+  snag:        'Snag — In Progress',
 }
 
 export const STATUS_COLORS: Record<TicketStatus, string> = {

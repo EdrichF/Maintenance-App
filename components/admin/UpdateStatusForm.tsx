@@ -54,8 +54,8 @@ export function UpdateStatusForm({ ticketId, currentStatus }: { ticketId: string
     }
     setSucceeded(selected)
     setLoading(false)
-    // Short delay so the user sees the success message before the page re-renders
-    setTimeout(() => router.refresh(), 1200)
+    // Use router.refresh() to properly invalidate Next.js router cache and re-fetch server data
+    router.refresh()
   }
 
   if (options.length === 0) return null

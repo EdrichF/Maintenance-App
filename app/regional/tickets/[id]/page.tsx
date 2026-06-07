@@ -158,6 +158,21 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
         </div>
       )}
 
+      {/* COC/POC history — shown when ticket is in snag (read-only, preserves trackability) */}
+      {ticket.status === 'snag' && (completionsData ?? []).length > 0 && (
+        <div>
+          <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            COC / POC History
+          </h2>
+          <div className="space-y-3">
+            {(completionsData ?? []).map((comp: any) => (
+              <CompletionReviewCard key={comp.id} completion={comp} />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Quote history */}
       {quotes.length > 0 && (
         <div>
