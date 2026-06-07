@@ -15,7 +15,11 @@ const STATUS_OPTIONS: Record<string, { value: TicketStatus; label: string; color
     { value: 'cancelled', label: 'Cancel Ticket', color: 'gray' },
   ],
   snag: [
-    { value: 'in_progress', label: 'Revert to In Progress', color: 'amber' },
+    { value: 'snag_in_progress', label: 'Start Snag Work', color: 'amber' },
+    { value: 'cancelled',        label: 'Cancel Ticket',   color: 'gray'  },
+  ],
+  snag_in_progress: [
+    { value: 'cancelled', label: 'Cancel Ticket', color: 'gray' },
   ],
 }
 
@@ -25,8 +29,9 @@ const COLOR_CLASSES: Record<string, string> = {
 }
 
 const SUCCESS_HINT: Partial<Record<TicketStatus, string>> = {
-  in_progress: 'Ticket is now In Progress. Scroll down to submit COC & POC when work is complete.',
-  cancelled:   'Ticket has been cancelled.',
+  in_progress:      'Ticket is now In Progress. Scroll down to submit COC & POC when work is complete.',
+  snag_in_progress: 'Snag acknowledged — work in progress. Scroll down to re-submit COC & POC when done.',
+  cancelled:        'Ticket has been cancelled.',
 }
 
 export function UpdateStatusForm({ ticketId, currentStatus }: { ticketId: string; currentStatus: TicketStatus }) {
@@ -82,8 +87,13 @@ export function UpdateStatusForm({ ticketId, currentStatus }: { ticketId: string
     <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Update Status</p>
       {currentStatus === 'snag' && (
+        <p className="text-xs text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 rounded-lg px-3 py-2">
+          This ticket was rejected during sign-off. Click <strong>Start Snag Work</strong> to acknowledge and begin fixing the issue, then re-submit COC &amp; POC.
+        </p>
+      )}
+      {currentStatus === 'snag_in_progress' && (
         <p className="text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-lg px-3 py-2">
-          This ticket was rejected during sign-off. Revert it to In Progress, fix the issue, then re-submit COC &amp; POC below.
+          Snag work is in progress. Scroll down to re-submit COC &amp; POC once the issue is resolved.
         </p>
       )}
       <div className="flex flex-wrap gap-2">

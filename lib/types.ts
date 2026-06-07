@@ -1,5 +1,5 @@
 export type Priority = 'low' | 'medium' | 'high' | 'urgent'
-export type TicketStatus = 'open' | 'quoted' | 'accepted' | 'in_progress' | 'completed' | 'cancelled' | 'declined' | 'pending_sign_off' | 'snag'
+export type TicketStatus = 'open' | 'quoted' | 'accepted' | 'in_progress' | 'completed' | 'cancelled' | 'declined' | 'pending_sign_off' | 'snag' | 'snag_in_progress'
 export type QuoteStatus = 'pending' | 'accepted' | 'declined'
 export type UserRole = 'client' | 'store_manager' | 'regional_manager' | 'admin'
 

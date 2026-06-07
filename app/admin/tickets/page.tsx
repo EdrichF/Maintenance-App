@@ -26,8 +26,8 @@ export default async function AdminTicketsPage({
 
   const { data: tickets } = await query
 
-  const activeStatuses = ['open', 'quoted', 'accepted', 'in_progress', 'pending_sign_off', 'snag', 'declined']
-  const filterStatuses = ['open', 'quoted', 'accepted', 'in_progress', 'pending_sign_off', 'snag', 'completed', 'declined']
+  const activeStatuses = ['open', 'quoted', 'accepted', 'in_progress', 'pending_sign_off', 'snag', 'snag_in_progress', 'declined']
+  const filterStatuses = ['open', 'quoted', 'accepted', 'in_progress', 'pending_sign_off', 'snag', 'snag_in_progress', 'completed', 'declined']
 
   const noFilter = !searchParams.status && !searchParams.priority
   const active   = noFilter ? (tickets ?? []).filter((t: any) => activeStatuses.includes(t.status))        : (tickets ?? [])
@@ -41,6 +41,7 @@ export default async function AdminTicketsPage({
     in_progress: (tickets ?? []).filter((t: any) => t.status === 'in_progress').length,
     pending_sign_off: (tickets ?? []).filter((t: any) => t.status === 'pending_sign_off').length,
     snag:             (tickets ?? []).filter((t: any) => t.status === 'snag').length,
+    snag_in_progress: (tickets ?? []).filter((t: any) => t.status === 'snag_in_progress').length,
     completed:        (tickets ?? []).filter((t: any) => t.status === 'completed').length,
     declined:         (tickets ?? []).filter((t: any) => t.status === 'declined').length,
     cancelled:        (tickets ?? []).filter((t: any) => t.status === 'cancelled').length,

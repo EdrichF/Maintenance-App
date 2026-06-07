@@ -11,7 +11,12 @@ import {
 } from '@/lib/utils'
 import type { Ticket } from '@/lib/types'
 
-function TicketRow({ ticket }: { ticket: Ticket }) {
+function TicketRow({ ticket }: { ticket: Ticket & { quotes?: any[] } }) {
+  const quotes = (ticket as any).quotes ?? []
+  const latestQuote = quotes
+    .filter((q: any) => q.status !== 'declined')
+    .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
+
   return (
     <Link href={`/client/tickets/${ticket.id}`}>
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-4 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
@@ -19,7 +24,12 @@ function TicketRow({ ticket }: { ticket: Ticket }) {
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-gray-900 dark:text-white truncate">{ticket.title}</p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{ticket.description}</p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{formatDate(ticket.created_at)}</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              Created: {formatDate(ticket.created_at)}
+              {latestQuote && (
+                <span className="ml-2 text-purple-500 dark:text-purple-400">Quoted: {formatDate(latestQuote.created_at)}</span>
+              )}
+            </p>
           </div>
           <div className="flex flex-col gap-1 items-end shrink-0">
             <Badge className={PRIORITY_COLORS[ticket.priority]}>
@@ -41,7 +51,7 @@ export default async function ClientTicketsPage() {
 
   const { data: tickets } = await supabase
     .from('tickets')
-    .select('*')
+    .select('*, quotes(id, status, created_at)')
     .eq('client_id', user!.id)
     .order('created_at', { ascending: false })
 

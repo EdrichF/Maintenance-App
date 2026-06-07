@@ -48,7 +48,7 @@ export default async function RegionalDashboard() {
   const completedTickets      = allTickets.filter((t: any) => t.status === 'completed').length
   const openActiveTickets     = allTickets.filter((t: any) => ['open','quoted','accepted','in_progress'].includes(t.status)).length
   const pendingSignOffTickets = allTickets.filter((t: any) => t.status === 'pending_sign_off').length
-  const snagTickets           = allTickets.filter((t: any) => t.status === 'snag').length
+  const snagTickets           = allTickets.filter((t: any) => ['snag', 'snag_in_progress'].includes(t.status)).length
   const declinedTickets       = allTickets.filter((t: any) => t.status === 'declined').length
 
   const completionPct     = totalTickets > 0 ? Math.round((completedTickets      / totalTickets) * 100) : 0
@@ -339,7 +339,10 @@ export default async function RegionalDashboard() {
                           {STATUS_LABELS[ticket.status as keyof typeof STATUS_LABELS]}
                         </Badge>
                       </div>
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{formatDateTime(ticket.created_at)}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                        Created: {formatDate(ticket.created_at)}
+                        {(() => { const qs = (ticket as any).quotes ?? []; const latest = qs.filter((q: any) => q.status !== 'declined').sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]; if (!latest) return null; return <span className="ml-2 text-purple-500 dark:text-purple-400">Quoted: {formatDate(latest.created_at)}</span> })()}
+                      </p>
                     </div>
                   </Link>
                 ))}

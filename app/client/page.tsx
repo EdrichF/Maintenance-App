@@ -20,7 +20,7 @@ export default async function ClientDashboard() {
 
   const { data: tickets } = await supabase
     .from('tickets')
-    .select('*')
+    .select('*, quotes(id, status, created_at)')
     .eq('client_id', user!.id)
     .order('created_at', { ascending: false })
     .limit(5)
@@ -91,7 +91,16 @@ export default async function ClientDashboard() {
                 <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{formatDate(ticket.created_at)}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                      Created: {formatDate(ticket.created_at)}
+                      {(() => {
+                        const qs = (ticket as any).quotes ?? []
+                        const latest = qs.filter((q: any) => q.status !== 'declined')
+                          .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
+                        if (!latest) return null
+                        return <span className="ml-2 text-purple-500 dark:text-purple-400">Quoted: {formatDate(latest.created_at)}</span>
+                      })()}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <Badge className={PRIORITY_COLORS[ticket.priority]}>

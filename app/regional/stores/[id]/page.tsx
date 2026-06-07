@@ -95,7 +95,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
   const declinedTickets   = ticketList.filter(t => t.status === 'declined')
   const inProgressTickets = ticketList.filter(t => t.status === 'in_progress' || t.status === 'accepted')
   const pendingSignOff    = ticketList.filter(t => t.status === 'pending_sign_off')
-  const snagTickets       = ticketList.filter(t => t.status === 'snag')
+  const snagTickets       = ticketList.filter(t => t.status === 'snag' || t.status === 'snag_in_progress')
   const completedTickets  = ticketList.filter(t => t.status === 'completed')
   const cancelledTickets  = ticketList.filter(t => t.status === 'cancelled')
 

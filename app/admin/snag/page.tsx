@@ -14,7 +14,7 @@ export default async function AdminSnagPage() {
   const { data: tickets } = await db
     .from('tickets')
     .select('*, profiles(full_name, company_name, sub_store), completions(id, status, reject_reason, created_at)')
-    .eq('status', 'snag')
+    .in('status', ['snag', 'snag_in_progress'])
     .order('updated_at', { ascending: false })
 
   const snagTickets = (tickets ?? []) as any[]

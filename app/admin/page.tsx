@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/Badge'
 import {
@@ -7,15 +7,30 @@ import {
   formatDate,
 } from '@/lib/utils'
 import type { Ticket } from '@/lib/types'
-import { AlertCircle, Clock, CheckCircle, List } from 'lucide-react'
+import { AlertCircle, Clock, CheckCircle, List, Star } from 'lucide-react'
 
 export default async function AdminDashboard() {
   const supabase = createClient()
+  const adminDb  = createAdminClient()
 
-  const { data: tickets } = await supabase
-    .from('tickets')
-    .select('*, profiles(full_name, company_name, sub_store), quotes(decline_reason, status)')
-    .order('created_at', { ascending: false })
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const [ticketsResult, ratingsResult] = await Promise.all([
+    supabase
+      .from('tickets')
+      .select('*, profiles(full_name, company_name, sub_store), quotes(id, decline_reason, status, created_at)')
+      .order('created_at', { ascending: false }),
+    user
+      ? adminDb.from('ratings').select('score').eq('contractor_id', user.id)
+      : Promise.resolve({ data: [] }),
+  ])
+
+  const tickets     = ticketsResult.data
+  const ratings     = (ratingsResult as any).data ?? []
+  const ratingCount = ratings.length
+  const avgRating   = ratingCount > 0
+    ? ratings.reduce((sum: number, r: any) => sum + r.score, 0) / ratingCount
+    : null
 
   const total    = tickets?.length ?? 0
   const open     = tickets?.filter(t => t.status === 'open' || t.status === 'declined').length ?? 0
@@ -28,7 +43,21 @@ export default async function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
+        {avgRating !== null ? (
+          <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 rounded-xl px-4 py-2">
+            <Star size={16} className="fill-amber-400 text-amber-400 shrink-0" />
+            <span className="text-sm font-bold text-amber-700 dark:text-amber-300">{avgRating.toFixed(1)} / 5</span>
+            <span className="text-xs text-amber-600 dark:text-amber-400">({ratingCount} review{ratingCount !== 1 ? 's' : ''})</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2">
+            <Star size={16} className="text-gray-300 dark:text-gray-600 shrink-0" />
+            <span className="text-xs text-gray-400">No ratings yet</span>
+          </div>
+        )}
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -83,6 +112,9 @@ export default async function AdminDashboard() {
           {(tickets?.slice(0, 8) as (Ticket & { profiles: any; quotes: any[] })[])?.map(ticket => {
             const tkt = ticket as any
             const declinedQuote = tkt.quotes?.find((q: any) => q.status === 'declined' && q.decline_reason)
+            const latestQuote = (tkt.quotes ?? [])
+              .filter((q: any) => q.status !== 'declined')
+              .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
             return (
               <Link key={ticket.id} href={`/admin/tickets/${ticket.id}`}>
                 <div className={`border rounded-xl px-4 py-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors ${
@@ -96,7 +128,12 @@ export default async function AdminDashboard() {
                       <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
                         {(ticket as any).profiles?.company_name} — {(ticket as any).profiles?.sub_store} · {(ticket as any).profiles?.full_name}
                       </p>
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{formatDate(ticket.created_at)}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                        Created: {formatDate(ticket.created_at)}
+                        {latestQuote && (
+                          <span className="ml-2 text-purple-500 dark:text-purple-400">· Quoted: {formatDate(latestQuote.created_at)}</span>
+                        )}
+                      </p>
                       {tkt.status === 'declined' && declinedQuote?.decline_reason && (
                         <p className="text-xs text-red-600 dark:text-red-400 mt-1 font-medium">
                           Declined — {declinedQuote.decline_reason}

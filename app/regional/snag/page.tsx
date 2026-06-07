@@ -28,7 +28,7 @@ export default async function RegionalSnagPage() {
         .from('tickets')
         .select('*, completions(id, status, reject_reason, created_at)')
         .in('client_id', storeIds)
-        .eq('status', 'snag')
+        .in('status', ['snag', 'snag_in_progress'])
         .order('updated_at', { ascending: false })
     : { data: [] }
 

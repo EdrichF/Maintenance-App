@@ -43,7 +43,7 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
   const client = (ticket as any).profiles
   const hasAcceptedQuote = (quotes ?? []).some((q: any) => q.status === 'accepted')
   const ticketStatus = (ticket as Ticket).status
-  const canUpdateStatus = (hasAcceptedQuote || ['accepted', 'in_progress', 'snag'].includes(ticketStatus))
+  const canUpdateStatus = (hasAcceptedQuote || ['accepted', 'in_progress', 'snag', 'snag_in_progress'].includes(ticketStatus))
     && !['pending_sign_off', 'completed', 'cancelled'].includes(ticketStatus)
 
   return (
@@ -167,8 +167,8 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
         </div>
       )}
 
-      {/* Submit for sign-off — shown when in_progress or snag (re-upload after rejection) */}
-      {['in_progress', 'snag'].includes(ticketStatus) && (
+      {/* Submit for sign-off — shown when in_progress or snag_in_progress */}
+      {['in_progress', 'snag_in_progress'].includes(ticketStatus) && (
         <SubmitCompletionForm ticketId={params.id} />
       )}
 

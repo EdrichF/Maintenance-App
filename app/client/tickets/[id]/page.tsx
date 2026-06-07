@@ -20,7 +20,7 @@ const STATUS_STEPS = [
 ]
 
 // Statuses where the linear progress tracker does not apply
-const OFFTRACK_STATUSES = ['completed', 'cancelled', 'declined', 'pending_sign_off', 'snag']
+const OFFTRACK_STATUSES = ['completed', 'cancelled', 'declined', 'pending_sign_off', 'snag', 'snag_in_progress']
 
 export default async function ClientTicketDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
@@ -157,7 +157,17 @@ export default async function ClientTicketDetailPage({ params }: { params: { id:
           <AlertTriangle size={18} className="text-rose-500 shrink-0" />
           <div>
             <p className="text-sm font-medium text-rose-800 dark:text-rose-300">Snag — rework required</p>
-            <p className="text-xs text-rose-600 dark:text-rose-400 mt-0.5">The regional manager flagged an issue with the completed work. The team will address it.</p>
+            <p className="text-xs text-rose-600 dark:text-rose-400 mt-0.5">The regional manager flagged an issue with the completed work. The team will address it shortly.</p>
+          </div>
+        </div>
+      )}
+
+      {t.status === 'snag_in_progress' && (
+        <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl p-4 flex items-center gap-3">
+          <AlertTriangle size={18} className="text-amber-500 shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Snag — In Progress</p>
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">The team is actively working on resolving the snag. A new sign-off will follow.</p>
           </div>
         </div>
       )}

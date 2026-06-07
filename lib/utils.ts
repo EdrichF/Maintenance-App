@@ -29,7 +29,8 @@ export const STATUS_LABELS: Record<TicketStatus, string> = {
   cancelled:   'Cancelled',
   declined:    'Declined',
   pending_sign_off: 'Pending Sign-off',
-  snag:        'Snag — In Progress',
+  snag:             'Snag',
+  snag_in_progress: 'Snag — In Progress',
 }
 
 export const STATUS_COLORS: Record<TicketStatus, string> = {
@@ -41,7 +42,8 @@ export const STATUS_COLORS: Record<TicketStatus, string> = {
   cancelled:   'bg-gray-100   text-gray-600   dark:bg-gray-800   dark:text-gray-400',
   declined:    'bg-red-100    text-red-700    dark:bg-red-950    dark:text-red-400',
   pending_sign_off: 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400',
-  snag:        'bg-amber-100  text-amber-700  dark:bg-amber-950  dark:text-amber-400',
+  snag:             'bg-rose-100   text-rose-700   dark:bg-rose-950   dark:text-rose-400',
+  snag_in_progress: 'bg-amber-100  text-amber-700  dark:bg-amber-950  dark:text-amber-400',
 }
 
 export const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {
@@ -69,5 +71,3 @@ export function formatDateTime(dateString: string) {
     hour: '2-digit', minute: '2-digit',
   })
 }
-
-

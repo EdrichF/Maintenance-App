@@ -1,5 +1,6 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 
 export async function POST(request: Request) {
   const supabase = createClient()
@@ -55,6 +56,10 @@ export async function POST(request: Request) {
       link: `/client/tickets/${ticket_id}`,
     })
   }
+
+  revalidatePath('/admin/tickets/' + ticket_id)
+  revalidatePath('/admin/tickets')
+  revalidatePath('/admin')
 
   return NextResponse.json({ completion }, { status: 201 })
 }

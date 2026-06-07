@@ -2,7 +2,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { BackButton } from '@/components/ui/BackButton'
-import { Building2, Mail, Phone, MapPin, Image as ImageIcon } from 'lucide-react'
+import { Building2, Mail, Phone, MapPin, Image as ImageIcon, Star } from 'lucide-react'
 import { CompletionReviewCard } from '@/components/regional/CompletionReviewCard'
 import { QuoteApprovalCard } from '@/components/regional/QuoteApprovalCard'
 import { Badge } from '@/components/ui/Badge'
@@ -53,6 +53,25 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
     (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   )
   const hasPendingQuote = quotes.some((q: any) => q.status === 'pending')
+
+  // Fetch average ratings for each admin who submitted a quote
+  const adminIds = Array.from(new Set(quotes.map((q: any) => q.admin_id).filter(Boolean))) as string[]
+  const { data: ratingsData } = adminIds.length > 0
+    ? await adminClient.from('ratings').select('contractor_id, score').in('contractor_id', adminIds)
+    : { data: [] }
+
+  const ratingMap: Record<string, { avg: number; count: number }> = {}
+  for (const adminId of adminIds) {
+    const scores = (ratingsData ?? [])
+      .filter((r: any) => r.contractor_id === adminId)
+      .map((r: any) => r.score as number)
+    if (scores.length > 0) {
+      ratingMap[adminId] = {
+        avg: scores.reduce((s, v) => s + v, 0) / scores.length,
+        count: scores.length,
+      }
+    }
+  }
 
   return (
     <div className="max-w-2xl space-y-5">
@@ -159,7 +178,7 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
       )}
 
       {/* COC/POC history — shown when ticket is in snag (read-only, preserves trackability) */}
-      {ticket.status === 'snag' && (completionsData ?? []).length > 0 && (
+      {['snag', 'snag_in_progress'].includes(ticket.status) && (completionsData ?? []).length > 0 && (
         <div>
           <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -179,12 +198,20 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Quote History</p>
           <div className="space-y-3">
             {quotes.map((q: any) => {
+              const contractorRating = ratingMap[q.admin_id]
               const inner = (
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(q.amount)}</p>
                       <p className="text-xs text-gray-400 mt-0.5">{formatDateTime(q.created_at)}</p>
+                      {contractorRating && (
+                        <span className="inline-flex items-center gap-1 mt-1 text-xs text-amber-600 dark:text-amber-400 font-medium">
+                          <Star size={11} className="fill-amber-400 text-amber-400" />
+                          {contractorRating.avg.toFixed(1)} / 5
+                          <span className="text-gray-400 font-normal">({contractorRating.count} review{contractorRating.count !== 1 ? 's' : ''})</span>
+                        </span>
+                      )}
                     </div>
                     <div className="flex flex-col items-end gap-1.5 shrink-0">
                       <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
