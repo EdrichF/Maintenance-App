@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/Badge'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
-  formatDate,
+  formatDate, formatDateTime,
 } from '@/lib/utils'
 import type { Ticket } from '@/lib/types'
 import { AlertCircle, Clock, CheckCircle, List, Star } from 'lucide-react'
@@ -45,18 +45,20 @@ export default async function AdminDashboard() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
-        {avgRating !== null ? (
-          <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 rounded-xl px-4 py-2">
-            <Star size={16} className="fill-amber-400 text-amber-400 shrink-0" />
-            <span className="text-sm font-bold text-amber-700 dark:text-amber-300">{avgRating.toFixed(1)} / 5</span>
-            <span className="text-xs text-amber-600 dark:text-amber-400">({ratingCount} review{ratingCount !== 1 ? 's' : ''})</span>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2">
-            <Star size={16} className="text-gray-300 dark:text-gray-600 shrink-0" />
-            <span className="text-xs text-gray-400">No ratings yet</span>
-          </div>
-        )}
+        <Link href="/admin/reviews">
+          {avgRating !== null ? (
+            <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 rounded-xl px-4 py-2 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors">
+              <Star size={16} className="fill-amber-400 text-amber-400 shrink-0" />
+              <span className="text-sm font-bold text-amber-700 dark:text-amber-300">{avgRating.toFixed(1)} / 5</span>
+              <span className="text-xs text-amber-600 dark:text-amber-400">({ratingCount} review{ratingCount !== 1 ? 's' : ''})</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+              <Star size={16} className="text-gray-300 dark:text-gray-600 shrink-0" />
+              <span className="text-xs text-gray-400">No ratings yet</span>
+            </div>
+          )}
+        </Link>
       </div>
 
       {/* Stats */}
@@ -129,7 +131,7 @@ export default async function AdminDashboard() {
                         {(ticket as any).profiles?.company_name} — {(ticket as any).profiles?.sub_store} · {(ticket as any).profiles?.full_name}
                       </p>
                       <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                        Created: {formatDate(ticket.created_at)}
+                        Created: {formatDateTime(ticket.created_at)}
                         {latestQuote && (
                           <span className="ml-2 text-purple-500 dark:text-purple-400">· Quoted: {formatDate(latestQuote.created_at)}</span>
                         )}

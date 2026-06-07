@@ -2,9 +2,10 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/Badge'
-import { CompletionReviewCard } from '@/components/regional/CompletionReviewCard'
-import { ClipboardCheck, Building2, ChevronDown, ChevronUp } from 'lucide-react'
-import { PRIORITY_COLORS, PRIORITY_LABELS, formatDate } from '@/lib/utils'
+import { ClipboardCheck, Building2, ChevronDown, ChevronUp, ArrowRight } from 'lucide-react'
+import { PRIORITY_COLORS, PRIORITY_LABELS, STATUS_COLORS, STATUS_LABELS, formatDateTime } from '@/lib/utils'
+
+export const dynamic = 'force-dynamic'
 
 export default async function RegionalSignoffPage() {
   const supabase    = createClient()
@@ -27,7 +28,7 @@ export default async function RegionalSignoffPage() {
   const { data: tickets } = storeIds.length > 0
     ? await adminClient
         .from('tickets')
-        .select('*, profiles(company_name, sub_store), completions(*)')
+        .select('*, profiles(company_name, sub_store)')
         .in('client_id', storeIds)
         .eq('status', 'pending_sign_off')
         .order('updated_at', { ascending: false })
@@ -38,9 +39,7 @@ export default async function RegionalSignoffPage() {
   const byStore: Record<string, { store: any; tickets: any[] }> = {}
   for (const ticket of pendingTickets) {
     const storeId = ticket.client_id
-    if (!byStore[storeId]) {
-      byStore[storeId] = { store: storeMap[storeId] ?? ticket.profiles, tickets: [] }
-    }
+    if (!byStore[storeId]) byStore[storeId] = { store: storeMap[storeId] ?? ticket.profiles, tickets: [] }
     byStore[storeId].tickets.push(ticket)
   }
   const storeGroups = Object.values(byStore)
@@ -52,7 +51,7 @@ export default async function RegionalSignoffPage() {
           <ClipboardCheck size={20} className="text-orange-500" /> Sign-off Queue
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-          COC/POC submissions awaiting your approval — grouped by branch.
+          Open a ticket to review its COC/POC and sign off. Grouped by branch.
         </p>
       </div>
 
@@ -79,30 +78,27 @@ export default async function RegionalSignoffPage() {
               </summary>
 
               <div className="border-t border-gray-100 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700/60">
-                {storeTickets.map((ticket: any) => {
-                  const latestCompletion = (ticket.completions ?? [])
-                    .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
-                  return (
-                    <div key={ticket.id} className="px-4 py-4 space-y-3">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <Link href={`/regional/tickets/${ticket.id}`} className="font-semibold text-sm text-gray-900 dark:text-white hover:underline">
-                            {ticket.title}
-                          </Link>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                            Submitted: {formatDate(ticket.updated_at)}
-                          </p>
-                        </div>
+                {storeTickets.map((ticket: any) => (
+                  <Link key={ticket.id} href={`/regional/tickets/${ticket.id}`}>
+                    <div className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors flex items-center justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                          Submitted: {formatDateTime(ticket.updated_at)}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
                         <Badge className={PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}>
                           {PRIORITY_LABELS[ticket.priority as keyof typeof PRIORITY_LABELS]}
                         </Badge>
+                        <Badge className={STATUS_COLORS[ticket.status as keyof typeof STATUS_COLORS]}>
+                          {STATUS_LABELS[ticket.status as keyof typeof STATUS_LABELS]}
+                        </Badge>
+                        <ArrowRight size={14} className="text-gray-400" />
                       </div>
-                      {latestCompletion && (
-                        <CompletionReviewCard completion={latestCompletion} />
-                      )}
                     </div>
-                  )
-                })}
+                  </Link>
+                ))}
               </div>
             </details>
           ))}

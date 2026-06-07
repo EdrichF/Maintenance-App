@@ -193,7 +193,7 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
                     comp.status === 'rejected' ? 'bg-rose-100 text-rose-700' :
                     'bg-orange-100 text-orange-700'
                   }`}>
-                    {comp.status === 'approved' ? 'Approved' : comp.status === 'rejected' ? 'Rejected' : 'Pending Review'}
+                    {comp.status === 'approved' ? 'Approved' : comp.status === 'rejected' ? 'Rejected' : 'Pending Sign-off'}
                   </span>
                 </div>
                 {comp.reject_reason && (

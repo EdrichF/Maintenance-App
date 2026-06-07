@@ -54,24 +54,32 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
   )
   const hasPendingQuote = quotes.some((q: any) => q.status === 'pending')
 
-  // Fetch average ratings for each admin who submitted a quote
+  // Fetch contractor profiles and full ratings for quote section
   const adminIds = Array.from(new Set(quotes.map((q: any) => q.admin_id).filter(Boolean))) as string[]
-  const { data: ratingsData } = adminIds.length > 0
-    ? await adminClient.from('ratings').select('contractor_id, score').in('contractor_id', adminIds)
-    : { data: [] }
+  const [contractorProfilesResult, ratingsResult] = adminIds.length > 0
+    ? await Promise.all([
+        adminClient.from('profiles').select('id, full_name, email, phone').in('id', adminIds),
+        adminClient.from('ratings').select('contractor_id, score, comment, created_at').in('contractor_id', adminIds),
+      ])
+    : [{ data: [] }, { data: [] }]
 
-  const ratingMap: Record<string, { avg: number; count: number }> = {}
+  const contractorProfiles: Record<string, any> = {}
+  for (const p of (contractorProfilesResult.data ?? [])) {
+    contractorProfiles[(p as any).id] = p
+  }
+
+  const ratingMap: Record<string, { avg: number; count: number; reviews: any[] }> = {}
   for (const adminId of adminIds) {
-    const scores = (ratingsData ?? [])
-      .filter((r: any) => r.contractor_id === adminId)
-      .map((r: any) => r.score as number)
-    if (scores.length > 0) {
+    const reviews = ((ratingsResult as any).data ?? []).filter((r: any) => r.contractor_id === adminId)
+    if (reviews.length > 0) {
       ratingMap[adminId] = {
-        avg: scores.reduce((s, v) => s + v, 0) / scores.length,
-        count: scores.length,
+        avg: reviews.reduce((s: number, r: any) => s + r.score, 0) / reviews.length,
+        count: reviews.length,
+        reviews,
       }
     }
   }
+
 
   return (
     <div className="max-w-2xl space-y-5">
@@ -197,21 +205,49 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
         <div>
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Quote History</p>
           <div className="space-y-3">
-            {quotes.map((q: any) => {
-              const contractorRating = ratingMap[q.admin_id]
+            {quotes.filter((q: any) => q.status !== 'pending').map((q: any) => {
+              const contractor = contractorProfiles[q.admin_id]
+              const rating     = ratingMap[q.admin_id]
               const inner = (
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(q.amount)}</p>
                       <p className="text-xs text-gray-400 mt-0.5">{formatDateTime(q.created_at)}</p>
-                      {contractorRating && (
-                        <span className="inline-flex items-center gap-1 mt-1 text-xs text-amber-600 dark:text-amber-400 font-medium">
-                          <Star size={11} className="fill-amber-400 text-amber-400" />
-                          {contractorRating.avg.toFixed(1)} / 5
-                          <span className="text-gray-400 font-normal">({contractorRating.count} review{contractorRating.count !== 1 ? 's' : ''})</span>
-                        </span>
+                      {contractor && (
+                        <details className="mt-1.5">
+                          <summary className="text-xs text-brand-600 dark:text-brand-400 cursor-pointer hover:underline list-none flex items-center gap-1">
+                            {contractor.full_name ?? 'Contractor'}
+                            {rating && (
+                              <span className="ml-1 flex items-center gap-0.5 text-amber-600 dark:text-amber-400">
+                                <Star size={10} className="fill-amber-400 text-amber-400" />
+                                {rating.avg.toFixed(1)}
+                              </span>
+                            )}
+                            <span className="text-gray-400 ml-0.5">▾</span>
+                          </summary>
+                          <div className="mt-2 bg-gray-50 dark:bg-gray-700/40 rounded-lg p-3 space-y-1.5 text-xs text-gray-600 dark:text-gray-300">
+                            {contractor.email && <p>✉ {contractor.email}</p>}
+                            {contractor.phone && <p>📞 {contractor.phone}</p>}
+                            {rating ? (
+                              <div className="pt-1.5 border-t border-gray-200 dark:border-gray-600 space-y-1.5">
+                                <p className="font-semibold text-gray-700 dark:text-gray-200">
+                                  Avg: {rating.avg.toFixed(1)} / 5 ({rating.count} review{rating.count !== 1 ? 's' : ''})
+                                </p>
+                                {rating.reviews.map((rv: any, i: number) => (
+                                  <div key={i} className="pl-2 border-l-2 border-amber-300 dark:border-amber-700">
+                                    <span className="text-amber-600 dark:text-amber-400 font-medium">{rv.score}/5</span>
+                                    {rv.comment && <span className="ml-1 text-gray-500 dark:text-gray-400">— {rv.comment}</span>}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-gray-400 italic pt-1">No reviews yet.</p>
+                            )}
+                          </div>
+                        </details>
                       )}
+
                     </div>
                     <div className="flex flex-col items-end gap-1.5 shrink-0">
                       <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Plus, Ticket, Clock, CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { STATUS_COLORS, STATUS_LABELS, PRIORITY_COLORS, PRIORITY_LABELS, formatDate } from '@/lib/utils'
+import { STATUS_COLORS, STATUS_LABELS, PRIORITY_COLORS, PRIORITY_LABELS, formatDate, formatDateTime } from '@/lib/utils'
 import type { Ticket as TicketType } from '@/lib/types'
 
 export default async function ClientDashboard() {
@@ -92,7 +92,7 @@ export default async function ClientDashboard() {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                      Created: {formatDate(ticket.created_at)}
+                      Created: {formatDateTime(ticket.created_at)}
                       {(() => {
                         const qs = (ticket as any).quotes ?? []
                         const latest = qs.filter((q: any) => q.status !== 'declined')

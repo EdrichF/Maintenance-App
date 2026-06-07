@@ -7,7 +7,7 @@ import { CollapsibleArchive } from '@/components/ui/CollapsibleArchive'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
-  formatDate,
+  formatDate, formatDateTime,
 } from '@/lib/utils'
 import type { Ticket } from '@/lib/types'
 
@@ -25,7 +25,7 @@ function TicketRow({ ticket }: { ticket: Ticket & { quotes?: any[] } }) {
             <p className="font-semibold text-gray-900 dark:text-white truncate">{ticket.title}</p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{ticket.description}</p>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-              Created: {formatDate(ticket.created_at)}
+              Created: {formatDateTime(ticket.created_at)}
               {latestQuote && (
                 <span className="ml-2 text-purple-500 dark:text-purple-400">Quoted: {formatDate(latestQuote.created_at)}</span>
               )}

@@ -115,7 +115,7 @@ export function CompletionReviewCard({ completion }: Props) {
               ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
               : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'
         }`}>
-          {isPending ? 'Awaiting Review' : completion.status === 'approved' ? 'Approved' : 'Rejected'}
+          {isPending ? 'Pending Sign-off' : completion.status === 'approved' ? 'Approved' : 'Rejected'}
         </span>
       </div>
 

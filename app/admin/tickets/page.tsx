@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createAdminClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/Badge'
@@ -5,7 +7,7 @@ import { CollapsibleArchive } from '@/components/ui/CollapsibleArchive'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
-  formatDate,
+  formatDate, formatDateTime,
 } from '@/lib/utils'
 import type { Ticket } from '@/lib/types'
 
@@ -117,7 +119,7 @@ export default async function AdminTicketsPage({
                       {ticket.profiles?.company_name} — {ticket.profiles?.sub_store} · {ticket.profiles?.full_name}
                     </p>
                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                      Created: {formatDate(ticket.created_at)}
+                      Created: {formatDateTime(ticket.created_at)}
                       {(() => { const qs = (ticket as any).quotes ?? []; const latest = qs.filter((q:any)=>q.status!=='declined').sort((a:any,b:any)=>new Date(b.created_at).getTime()-new Date(a.created_at).getTime())[0]; return latest ? <span className="ml-2 text-purple-500 dark:text-purple-400">· Quoted: {formatDate(latest.created_at)}</span> : null })()}
                     </p>
                   </div>
