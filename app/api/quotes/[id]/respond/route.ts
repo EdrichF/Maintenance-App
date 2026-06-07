@@ -1,5 +1,6 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 
 export async function PATCH(
   request: Request,
@@ -97,5 +98,8 @@ export async function PATCH(
     )
   }
 
+  revalidatePath('/admin/tickets')
+  revalidatePath(`/admin/tickets/${quote.ticket_id}`)
+  revalidatePath('/admin')
   return NextResponse.json({ success: true })
 }

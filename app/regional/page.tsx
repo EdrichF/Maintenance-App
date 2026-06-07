@@ -8,7 +8,7 @@ import {
 import { Badge } from '@/components/ui/Badge'
 import {
   STATUS_COLORS, STATUS_LABELS, PRIORITY_COLORS, PRIORITY_LABELS,
-  formatDate, formatCurrency,
+  formatDate, formatDateTime, formatCurrency,
 } from '@/lib/utils'
 import type { Ticket, Quote } from '@/lib/types'
 
@@ -139,18 +139,24 @@ export default async function RegionalDashboard() {
           { label: 'Pending Quotes',  value: stats.pendingQuotes,      icon: Clock,       color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30', href: '/regional/tickets?status=quoted' },
           { label: 'Snag',            value: snagTickets,              icon: AlertCircle, color: 'text-rose-600 bg-rose-50 dark:bg-rose-900/30',       href: '/regional/snag' },
           { label: 'Done This Month', value: stats.completedThisMonth, icon: CheckCircle, color: 'text-green-600 bg-green-50 dark:bg-green-900/30',    href: '/regional/tickets?status=completed' },
-          { label: 'Quote Value',     value: formatCurrency(stats.totalQuoteValue),   icon: TrendingUp, color: 'text-purple-600 bg-purple-50 dark:bg-purple-900/30', href: '/regional/tickets' },
-          { label: 'Pending Value',   value: formatCurrency(stats.pendingQuoteValue), icon: Clock,      color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30', href: '/regional/tickets?status=quoted' },
+          { label: 'Accepted Value',  value: formatCurrency(stats.totalQuoteValue),   icon: TrendingUp, color: 'text-purple-600 bg-purple-50 dark:bg-purple-900/30', href: '', noLink: true },
+          { label: 'Pending Value',   value: formatCurrency(stats.pendingQuoteValue), icon: Clock,      color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30', href: '', noLink: true },
         ].map(stat => (
-          <Link key={stat.label} href={stat.href} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 flex flex-col gap-2 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
-            <div className={`p-2 rounded-lg w-fit ${stat.color}`}>
-              <stat.icon size={16} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xl font-bold text-gray-900 dark:text-white leading-tight truncate">{stat.value}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{stat.label}</p>
-            </div>
-          </Link>
+          (stat as any).noLink
+            ? <div key={stat.label} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 flex flex-col gap-2">
+                <div className={`p-2 rounded-lg w-fit ${stat.color}`}><stat.icon size={16} /></div>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-gray-900 dark:text-white leading-tight">{stat.value}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{stat.label}</p>
+                </div>
+              </div>
+            : <Link key={stat.label} href={(stat as any).href} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 flex flex-col gap-2 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
+                <div className={`p-2 rounded-lg w-fit ${stat.color}`}><stat.icon size={16} /></div>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-gray-900 dark:text-white leading-tight">{stat.value}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{stat.label}</p>
+                </div>
+              </Link>
         ))}
       </div>
 
@@ -166,6 +172,7 @@ export default async function RegionalDashboard() {
             <div className="h-full bg-blue-400 transition-all" style={{ width: `${openPct}%` }} />
             {pendingSignOffPct > 0 && <div className="h-full bg-orange-400 transition-all" style={{ width: `${pendingSignOffPct}%` }} />}
             {snagPct > 0 && <div className="h-full bg-rose-500 transition-all" style={{ width: `${snagPct}%` }} />}
+            {declinedPct > 0 && <div className="h-full bg-red-400 transition-all" style={{ width: `${declinedPct}%` }} />}
           </div>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs">
             <span className="flex items-center gap-1.5 font-medium text-green-700 dark:text-green-400">
@@ -260,7 +267,7 @@ export default async function RegionalDashboard() {
                       </div>
                     </div>
                     {store.lastActivity && (
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">Last activity: {formatDate(store.lastActivity)}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">Last activity: {formatDateTime(store.lastActivity)}</p>
                     )}
                   </div>
                 </Link>
@@ -332,7 +339,7 @@ export default async function RegionalDashboard() {
                           {STATUS_LABELS[ticket.status as keyof typeof STATUS_LABELS]}
                         </Badge>
                       </div>
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{formatDate(ticket.created_at)}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{formatDateTime(ticket.created_at)}</p>
                     </div>
                   </Link>
                 ))}

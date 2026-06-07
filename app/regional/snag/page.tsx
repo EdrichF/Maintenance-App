@@ -2,7 +2,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/Badge'
-import { AlertTriangle, Building2 } from 'lucide-react'
+import { AlertTriangle, Building2, ChevronDown, ChevronUp } from 'lucide-react'
 import { PRIORITY_COLORS, PRIORITY_LABELS, STATUS_COLORS, STATUS_LABELS, formatDateTime } from '@/lib/utils'
 
 export default async function RegionalSnagPage() {
@@ -46,10 +46,10 @@ export default async function RegionalSnagPage() {
     <div className="space-y-5 max-w-3xl">
       <div>
         <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-          <AlertTriangle size={20} className="text-rose-500" /> Snag Tickets
+          <AlertTriangle size={20} className="text-amber-500" /> Snag Tickets
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-          Tickets where COC/POC was rejected — rework required.
+          Tickets where COC/POC was rejected — rework required. Click a branch to view its tickets.
         </p>
       </div>
 
@@ -59,33 +59,38 @@ export default async function RegionalSnagPage() {
           <p className="text-sm text-gray-400">No snag tickets — all clear.</p>
         </div>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-3">
           {storeGroups.map(({ store, tickets: storeTickets }) => (
-            <div key={store?.id ?? 'unknown'} className="space-y-3">
-              <div className="flex items-center gap-2 pb-1 border-b border-gray-200 dark:border-gray-700">
-                <Building2 size={16} className="text-rose-500 shrink-0" />
-                <div>
-                  <p className="font-semibold text-gray-900 dark:text-white">{store?.company_name ?? 'Unknown Store'}</p>
+            <details key={store?.id ?? 'unknown'} className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+              {/* Branch header — always visible, click to expand */}
+              <summary className="flex items-center gap-3 px-4 py-3 cursor-pointer list-none hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors">
+                <Building2 size={16} className="text-amber-500 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm text-gray-900 dark:text-white">{store?.company_name ?? 'Unknown Store'}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">{store?.sub_store}</p>
                 </div>
-                <span className="ml-auto text-xs bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 px-2 py-0.5 rounded-full font-semibold">
-                  {storeTickets.length} snag
+                <span className="text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-2.5 py-0.5 rounded-full font-semibold shrink-0">
+                  {storeTickets.length} snag{storeTickets.length !== 1 ? 's' : ''}
                 </span>
-              </div>
-              <div className="space-y-2">
+                <ChevronDown size={16} className="text-gray-400 shrink-0 group-open:hidden" />
+                <ChevronUp   size={16} className="text-gray-400 shrink-0 hidden group-open:block" />
+              </summary>
+
+              {/* Tickets — shown when expanded */}
+              <div className="border-t border-gray-100 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700/60">
                 {storeTickets.map((ticket: any) => {
                   const latestRejection = (ticket.completions ?? [])
                     .filter((c: any) => c.status === 'rejected')
                     .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
                   return (
                     <Link key={ticket.id} href={`/regional/tickets/${ticket.id}`}>
-                      <div className="bg-rose-50 dark:bg-rose-900/10 border border-rose-200 dark:border-rose-800/40 rounded-xl px-4 py-3 hover:border-rose-400 dark:hover:border-rose-600 transition-colors">
+                      <div className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
+                            <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{formatDateTime(ticket.updated_at)}</p>
                             {latestRejection?.reject_reason && (
-                              <p className="text-xs text-rose-600 dark:text-rose-400 mt-1 font-medium">
+                              <p className="text-xs text-amber-700 dark:text-amber-400 mt-1 font-medium bg-amber-50 dark:bg-amber-900/20 rounded px-2 py-0.5 inline-block">
                                 Rejection: {latestRejection.reject_reason}
                               </p>
                             )}
@@ -104,7 +109,7 @@ export default async function RegionalSnagPage() {
                   )
                 })}
               </div>
-            </div>
+            </details>
           ))}
         </div>
       )}
