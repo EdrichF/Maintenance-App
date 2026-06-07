@@ -195,7 +195,7 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
             COC / POC Submission History
           </h2>
           <div className="space-y-3">
-            {(completionsData ?? []).map((comp: any) => (
+            {(completionsData ?? []).filter((comp: any) => comp.status !== 'pending').map((comp: any) => (
               <CompletionReviewCard key={comp.id} completion={comp} />
             ))}
           </div>
@@ -217,37 +217,28 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
                       <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(q.amount)}</p>
                       <p className="text-xs text-gray-400 mt-0.5">{formatDateTime(q.created_at)}</p>
                       {contractor && (
-                        <details className="mt-1.5">
-                          <summary className="text-xs text-brand-600 dark:text-brand-400 cursor-pointer hover:underline list-none flex items-center gap-1">
-                            {contractor.full_name ?? 'Contractor'}
-                            {rating && (
-                              <span className="ml-1 flex items-center gap-0.5 text-amber-600 dark:text-amber-400">
-                                <Star size={10} className="fill-amber-400 text-amber-400" />
-                                {rating.avg.toFixed(1)}
-                              </span>
-                            )}
-                            <span className="text-gray-400 ml-0.5">▾</span>
-                          </summary>
-                          <div className="mt-2 bg-gray-50 dark:bg-gray-700/40 rounded-lg p-3 space-y-1.5 text-xs text-gray-600 dark:text-gray-300">
-                            {contractor.email && <p>✉ {contractor.email}</p>}
-                            {contractor.phone && <p>📞 {contractor.phone}</p>}
-                            {rating ? (
-                              <div className="pt-1.5 border-t border-gray-200 dark:border-gray-600 space-y-1.5">
-                                <p className="font-semibold text-gray-700 dark:text-gray-200">
-                                  Avg: {rating.avg.toFixed(1)} / 5 ({rating.count} review{rating.count !== 1 ? 's' : ''})
-                                </p>
-                                {rating.reviews.map((rv: any, i: number) => (
-                                  <div key={i} className="pl-2 border-l-2 border-amber-300 dark:border-amber-700">
-                                    <span className="text-amber-600 dark:text-amber-400 font-medium">{rv.score}/5</span>
-                                    {rv.comment && <span className="ml-1 text-gray-500 dark:text-gray-400">— {rv.comment}</span>}
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="text-gray-400 italic pt-1">No reviews yet.</p>
-                            )}
-                          </div>
-                        </details>
+                        <div className="mt-1.5 flex items-center gap-2 flex-wrap">
+                          <details className="flex-1 min-w-0">
+                            <summary className="text-xs text-brand-600 dark:text-brand-400 cursor-pointer hover:underline list-none flex items-center gap-1">
+                              {contractor.full_name ?? 'Contractor'}
+                              <span className="text-gray-400 ml-0.5">▾</span>
+                            </summary>
+                            <div className="mt-2 bg-gray-50 dark:bg-gray-700/40 rounded-lg p-3 space-y-1 text-xs text-gray-600 dark:text-gray-300">
+                              {contractor.email && <p>✉ {contractor.email}</p>}
+                              {contractor.phone && <p>📞 {contractor.phone}</p>}
+                              {!contractor.email && !contractor.phone && <p className="text-gray-400 italic">No contact info.</p>}
+                            </div>
+                          </details>
+                          {rating && (
+                            <Link
+                              href={`/regional/reviews/${q.admin_id}`}
+                              className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 hover:underline shrink-0"
+                            >
+                              <Star size={11} className="fill-amber-400 text-amber-400" />
+                              {rating.avg.toFixed(1)} / 5 ({rating.count})
+                            </Link>
+                          )}
+                        </div>
                       )}
 
                     </div>
