@@ -120,7 +120,7 @@ export default async function AdminTicketsPage({
                     </p>
                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                       Created: {formatDateTime(ticket.created_at)}
-                      {(() => { const qs = (ticket as any).quotes ?? []; const latest = qs.filter((q:any)=>q.status!=='declined').sort((a:any,b:any)=>new Date(b.created_at).getTime()-new Date(a.created_at).getTime())[0]; return latest ? <span className="ml-2 text-purple-500 dark:text-purple-400">· Quoted: {formatDate(latest.created_at)}</span> : null })()}
+                      {(() => { const qs = (ticket as any).quotes ?? []; const latest = qs.filter((q:any)=>q.status!=='declined').sort((a:any,b:any)=>new Date(b.created_at).getTime()-new Date(a.created_at).getTime())[0]; return latest ? <span className="ml-2 text-purple-500 dark:text-purple-400">· Quoted: {formatDateTime(latest.created_at)}</span> : null })()}
                     </p>
                   </div>
                   <div className="flex flex-col gap-1 items-end shrink-0">

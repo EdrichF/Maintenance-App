@@ -70,5 +70,9 @@ export async function POST(request: Request) {
   }
 
   revalidatePath('/client')
+  revalidatePath('/admin/tickets/' + ticket_id)
+  revalidatePath('/admin/tickets')
+  revalidatePath('/admin')
+  revalidatePath('/regional/tickets/' + ticket_id)
   return NextResponse.json({ quote }, { status: 201 })
 }

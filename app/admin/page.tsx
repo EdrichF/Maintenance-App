@@ -133,7 +133,7 @@ export default async function AdminDashboard() {
                       <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                         Created: {formatDateTime(ticket.created_at)}
                         {latestQuote && (
-                          <span className="ml-2 text-purple-500 dark:text-purple-400">· Quoted: {formatDate(latestQuote.created_at)}</span>
+                          <span className="ml-2 text-purple-500 dark:text-purple-400">· Quoted: {formatDateTime(latestQuote.created_at)}</span>
                         )}
                       </p>
                       {tkt.status === 'declined' && declinedQuote?.decline_reason && (

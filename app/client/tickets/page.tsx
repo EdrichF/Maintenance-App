@@ -27,7 +27,7 @@ function TicketRow({ ticket }: { ticket: Ticket & { quotes?: any[] } }) {
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
               Created: {formatDateTime(ticket.created_at)}
               {latestQuote && (
-                <span className="ml-2 text-purple-500 dark:text-purple-400">Quoted: {formatDate(latestQuote.created_at)}</span>
+                <span className="ml-2 text-purple-500 dark:text-purple-400">Quoted: {formatDateTime(latestQuote.created_at)}</span>
               )}
             </p>
           </div>

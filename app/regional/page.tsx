@@ -76,7 +76,11 @@ export default async function RegionalDashboard() {
     .map((s: any) => {
       const urgent = (s.tickets ?? []).filter((t: any) => t.priority === 'urgent' && !['completed','cancelled','declined'].includes(t.status)).length
       const high   = (s.tickets ?? []).filter((t: any) => t.priority === 'high'   && !['completed','cancelled','declined'].includes(t.status)).length
-      return { ...s, urgentCount: urgent, highCount: high }
+      const allTix = s.tickets ?? []
+      const lastAct = allTix.length > 0
+        ? allTix.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0].created_at
+        : null
+      return { ...s, urgentCount: urgent, highCount: high, lastActivity: lastAct }
     })
     .filter((s: any) => s.urgentCount > 0 || s.highCount > 0)
     .sort((a: any, b: any) => b.urgentCount - a.urgentCount)
@@ -308,6 +312,11 @@ export default async function RegionalDashboard() {
                           </span>
                         )}
                       </div>
+                      {store.lastActivity && (
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                          Last ticket: {formatDateTime(store.lastActivity)}
+                        </p>
+                      )}
                     </div>
                   </Link>
                 ))}
@@ -340,8 +349,8 @@ export default async function RegionalDashboard() {
                         </Badge>
                       </div>
                       <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                        Created: {formatDate(ticket.created_at)}
-                        {(() => { const qs = (ticket as any).quotes ?? []; const latest = qs.filter((q: any) => q.status !== 'declined').sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]; if (!latest) return null; return <span className="ml-2 text-purple-500 dark:text-purple-400">Quoted: {formatDate(latest.created_at)}</span> })()}
+                        Created: {formatDateTime(ticket.created_at)}
+                        {(() => { const qs = (ticket as any).quotes ?? []; const latest = qs.filter((q: any) => q.status !== 'declined').sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]; if (!latest) return null; return <span className="ml-2 text-purple-500 dark:text-purple-400">Quoted: {formatDateTime(latest.created_at)}</span> })()}
                       </p>
                     </div>
                   </Link>

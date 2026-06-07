@@ -98,7 +98,7 @@ export default async function ClientDashboard() {
                         const latest = qs.filter((q: any) => q.status !== 'declined')
                           .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
                         if (!latest) return null
-                        return <span className="ml-2 text-purple-500 dark:text-purple-400">Quoted: {formatDate(latest.created_at)}</span>
+                        return <span className="ml-2 text-purple-500 dark:text-purple-400">Quoted: {formatDateTime(latest.created_at)}</span>
                       })()}
                     </p>
                   </div>

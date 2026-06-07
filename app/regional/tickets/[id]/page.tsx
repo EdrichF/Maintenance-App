@@ -102,7 +102,7 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
           {PRIORITY_LABELS[ticket.priority as keyof typeof PRIORITY_LABELS]}
         </Badge>
         <span className="text-xs text-gray-400 dark:text-gray-500 ml-1 self-center">
-          {formatDate(ticket.created_at)}
+          {formatDateTime(ticket.created_at)}
         </span>
       </div>
 
@@ -171,6 +171,8 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
           quote={q}
           ticketTitle={ticket.title}
           ticketId={ticket.id}
+          contractor={contractorProfiles[q.admin_id]}
+          rating={ratingMap[q.admin_id]}
         />
       ))}
 
@@ -185,12 +187,12 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
         </div>
       )}
 
-      {/* COC/POC history — shown when ticket is in snag (read-only, preserves trackability) */}
-      {['snag', 'snag_in_progress'].includes(ticket.status) && (completionsData ?? []).length > 0 && (
+      {/* COC/POC history — always shown when completions exist (full audit trail) */}
+      {(completionsData ?? []).length > 0 && (
         <div>
           <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            COC / POC History
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            COC / POC Submission History
           </h2>
           <div className="space-y-3">
             {(completionsData ?? []).map((comp: any) => (

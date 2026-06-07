@@ -3,14 +3,27 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
-import { FileText, CheckCircle, XCircle, RotateCcw, AlertTriangle } from 'lucide-react'
+import { FileText, CheckCircle, XCircle, RotateCcw, AlertTriangle, Star } from 'lucide-react'
 import { formatCurrency, formatDate, formatDateTime } from '@/lib/utils'
 import type { Quote } from '@/lib/types'
+
+interface ContractorInfo {
+  full_name: string | null
+  email: string | null
+  phone: string | null
+}
+interface RatingInfo {
+  avg: number
+  count: number
+  reviews: { score: number; comment: string | null }[]
+}
 
 interface Props {
   quote: Quote
   ticketTitle: string
   ticketId: string
+  contractor?: ContractorInfo
+  rating?: RatingInfo
 }
 
 const DECLINE_REASONS = [
@@ -20,7 +33,7 @@ const DECLINE_REASONS = [
   'Other (specify)',
 ] as const
 
-export function QuoteApprovalCard({ quote, ticketTitle, ticketId }: Props) {
+export function QuoteApprovalCard({ quote, ticketTitle, ticketId, contractor, rating }: Props) {
   const router = useRouter()
   const [loading,          setLoading]          = useState<'accept' | 'decline' | 'revert' | null>(null)
   const [confirmingAccept, setConfirmingAccept]  = useState(false)
@@ -99,6 +112,41 @@ export function QuoteApprovalCard({ quote, ticketTitle, ticketId }: Props) {
           className="inline-flex items-center gap-1.5 text-xs text-brand-600 hover:underline">
           <FileText size={13} /> View attachment
         </a>
+      )}
+
+      {/* Contractor info */}
+      {contractor && (
+        <details className="mt-0.5">
+          <summary className="text-xs text-brand-600 dark:text-brand-400 cursor-pointer hover:underline list-none flex items-center gap-1">
+            {contractor.full_name ?? 'Contractor'}
+            {rating && (
+              <span className="ml-1 flex items-center gap-0.5 text-amber-600 dark:text-amber-400">
+                <Star size={10} className="fill-amber-400 text-amber-400" />
+                {rating.avg.toFixed(1)}
+              </span>
+            )}
+            <span className="text-gray-400 ml-0.5">▾</span>
+          </summary>
+          <div className="mt-2 bg-gray-50 dark:bg-gray-700/40 rounded-lg p-3 space-y-1.5 text-xs text-gray-600 dark:text-gray-300">
+            {contractor.email && <p>✉ {contractor.email}</p>}
+            {contractor.phone && <p>📞 {contractor.phone}</p>}
+            {rating ? (
+              <div className="pt-1.5 border-t border-gray-200 dark:border-gray-600 space-y-1.5">
+                <p className="font-semibold text-gray-700 dark:text-gray-200">
+                  Avg: {rating.avg.toFixed(1)} / 5 ({rating.count} review{rating.count !== 1 ? 's' : ''})
+                </p>
+                {rating.reviews.map((rv, i) => (
+                  <div key={i} className="pl-2 border-l-2 border-amber-300 dark:border-amber-700">
+                    <span className="text-amber-600 dark:text-amber-400 font-medium">{rv.score}/5</span>
+                    {rv.comment && <span className="ml-1 text-gray-500 dark:text-gray-400">— {rv.comment}</span>}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-400 italic pt-1">No reviews yet.</p>
+            )}
+          </div>
+        </details>
       )}
 
       {/* Pending — approve / decline */}
