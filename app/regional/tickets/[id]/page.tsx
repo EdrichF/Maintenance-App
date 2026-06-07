@@ -127,7 +127,12 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
         )}
         {store.address && (
           <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
-            <MapPin size={14} className="text-gray-400" /> {store.address}
+            <MapPin size={14} className="text-gray-400 mt-0.5 shrink-0" />
+            <a href={`https://maps.google.com/?q=${encodeURIComponent(store.address)}`}
+              target="_blank" rel="noopener noreferrer"
+              className="hover:underline text-brand-600 dark:text-brand-400">
+              {store.address}
+            </a>
           </div>
         )}
       </div>

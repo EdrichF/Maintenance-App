@@ -19,10 +19,9 @@ export async function POST(request: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // Notify admins via notifications table
-  const adminEmails = (process.env.NEXT_PUBLIC_ADMIN_EMAILS || '').split(',').map(e => e.trim())
   const adminClient = createAdminClient()
 
+  // Notify all admins
   const { data: adminProfiles } = await adminClient
     .from('profiles')
     .select('id')
@@ -40,7 +39,24 @@ export async function POST(request: Request) {
     )
   }
 
+  // Notify the regional manager of this store (if assigned)
+  const { data: storeProfile } = await adminClient
+    .from('profiles')
+    .select('regional_manager_id, company_name, sub_store')
+    .eq('id', user.id)
+    .single()
+
+  if (storeProfile?.regional_manager_id) {
+    await adminClient.from('notifications').insert({
+      user_id: storeProfile.regional_manager_id,
+      type: 'new_ticket',
+      title: 'New Ticket from Your Region',
+      message: `${storeProfile.company_name ?? 'A store'} (${storeProfile.sub_store ?? ''}) submitted a new ${priority} priority ticket: "${title}"`,
+      link: `/regional/tickets/${ticket.id}`,
+    })
+  }
+
   revalidatePath('/client')
-  revalidatePath('/client')
+  revalidatePath('/admin')
   return NextResponse.json({ ticket }, { status: 201 })
 }

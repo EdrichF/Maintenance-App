@@ -45,13 +45,15 @@ export default async function AdminStatsPage() {
   const p = profiles ?? []
 
   const byStatus = {
-    open:        t.filter(x => x.status === 'open').length,
-    quoted:      t.filter(x => x.status === 'quoted').length,
-    accepted:    t.filter(x => x.status === 'accepted').length,
-    in_progress: t.filter(x => x.status === 'in_progress').length,
-    completed:   t.filter(x => x.status === 'completed').length,
-    cancelled:   t.filter(x => x.status === 'cancelled').length,
-    declined:    t.filter(x => x.status === 'declined').length,
+    open:             t.filter(x => x.status === 'open').length,
+    quoted:           t.filter(x => x.status === 'quoted').length,
+    accepted:         t.filter(x => x.status === 'accepted').length,
+    in_progress:      t.filter(x => x.status === 'in_progress').length,
+    pending_sign_off: t.filter(x => x.status === 'pending_sign_off').length,
+    snag:             t.filter(x => x.status === 'snag').length,
+    completed:        t.filter(x => x.status === 'completed').length,
+    cancelled:        t.filter(x => x.status === 'cancelled').length,
+    declined:         t.filter(x => x.status === 'declined').length,
   }
   const byPriority = {
     urgent: t.filter(x => x.priority === 'urgent').length,
@@ -67,9 +69,10 @@ export default async function AdminStatsPage() {
   const acceptRate = (qAccepted + qDeclined) > 0 ? Math.round((qAccepted / (qAccepted + qDeclined)) * 100) : 0
 
   const totalTickets  = t.length
-  const openTickets   = byStatus.open + byStatus.quoted + byStatus.accepted + byStatus.in_progress + byStatus.declined
+  const openTickets   = byStatus.open + byStatus.quoted + byStatus.accepted + byStatus.in_progress
+    + byStatus.pending_sign_off + byStatus.snag + byStatus.declined
   const completionPct = totalTickets > 0 ? Math.round((byStatus.completed / totalTickets) * 100) : 0
-  const openPct       = totalTickets > 0 ? Math.round((openTickets         / totalTickets) * 100) : 0
+  const openPct       = totalTickets > 0 ? Math.round((openTickets / totalTickets) * 100) : 0
 
   const stores     = p.filter(x => x.role === 'store_manager' || x.role === 'client')
   const rms        = p.filter(x => x.role === 'regional_manager')
@@ -81,7 +84,10 @@ export default async function AdminStatsPage() {
     const yr = d.getFullYear(), mo = d.getMonth()
     months.push({
       label: d.toLocaleDateString('en-ZA', { month: 'short' }),
-      count: t.filter(x => { const cd = new Date(x.created_at); return cd.getFullYear() === yr && cd.getMonth() === mo }).length,
+      count: t.filter(x => {
+        const cd = new Date(x.created_at)
+        return cd.getFullYear() === yr && cd.getMonth() === mo
+      }).length,
     })
   }
   const monthMax = Math.max(...months.map(m => m.count), 1)
@@ -90,7 +96,9 @@ export default async function AdminStatsPage() {
   for (const tk of t) {
     const store = stores.find(s => s.id === tk.client_id)
     if (!store) continue
-    if (!storeCounts[store.id]) storeCounts[store.id] = { name: `${store.company_name ?? '?'} — ${store.sub_store ?? '?'}`, count: 0 }
+    if (!storeCounts[store.id]) {
+      storeCounts[store.id] = { name: `${store.company_name ?? '?'} — ${store.sub_store ?? '?'}`, count: 0 }
+    }
     storeCounts[store.id].count++
   }
   const topStores = Object.values(storeCounts).sort((a, b) => b.count - a.count).slice(0, 6)
@@ -108,11 +116,11 @@ export default async function AdminStatsPage() {
       {/* Key numbers */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Total Tickets',  value: t.length,           icon: Ticket,      color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' },
-          { label: 'Open Tickets',   value: openTickets,        icon: Clock,       color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30' },
-          { label: 'Completed',      value: byStatus.completed, icon: CheckCircle, color: 'text-green-600 bg-green-50 dark:bg-green-900/30' },
-          { label: 'Urgent Open',    value: t.filter(x => x.priority === 'urgent' && !['completed','cancelled','declined'].includes(x.status)).length,
-                                            icon: AlertCircle,  color: 'text-red-600 bg-red-50 dark:bg-red-900/30' },
+          { label: 'Total Tickets', value: t.length,           icon: Ticket,      color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' },
+          { label: 'Open Tickets',  value: openTickets,        icon: Clock,       color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30' },
+          { label: 'Completed',     value: byStatus.completed, icon: CheckCircle, color: 'text-green-600 bg-green-50 dark:bg-green-900/30' },
+          { label: 'Urgent Open',   value: t.filter(x => x.priority === 'urgent' && !['completed','cancelled','declined'].includes(x.status)).length,
+                                           icon: AlertCircle,  color: 'text-red-600 bg-red-50 dark:bg-red-900/30' },
         ].map(s => (
           <div key={s.label} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 flex items-center gap-3">
             <div className={`p-2 rounded-lg shrink-0 ${s.color}`}><s.icon size={18} /></div>
@@ -124,7 +132,7 @@ export default async function AdminStatsPage() {
         ))}
       </div>
 
-      {/* Completed vs Open Tickets bar */}
+      {/* Completed vs Open bar */}
       {totalTickets > 0 && (
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 space-y-3">
           <div className="flex items-center justify-between text-sm">
@@ -156,12 +164,15 @@ export default async function AdminStatsPage() {
           </h2>
           <div className="space-y-3">
             {[
-              { label: 'Open Tickets', value: byStatus.open,        color: 'bg-blue-500' },
-              { label: 'Quoted',       value: byStatus.quoted,      color: 'bg-purple-500' },
-              { label: 'Accepted',     value: byStatus.accepted,    color: 'bg-teal-500' },
-              { label: 'In Progress',  value: byStatus.in_progress, color: 'bg-yellow-500' },
-              { label: 'Completed',    value: byStatus.completed,   color: 'bg-green-500' },
-              { label: 'Declined',     value: byStatus.declined,    color: 'bg-red-500' },
+              { label: 'Open',             value: byStatus.open,             color: 'bg-blue-500'   },
+              { label: 'Quoted',           value: byStatus.quoted,           color: 'bg-purple-500' },
+              { label: 'Accepted',         value: byStatus.accepted,         color: 'bg-teal-500'   },
+              { label: 'In Progress',      value: byStatus.in_progress,      color: 'bg-yellow-500' },
+              { label: 'Pending Sign-off', value: byStatus.pending_sign_off, color: 'bg-orange-400' },
+              { label: 'Snag',             value: byStatus.snag,             color: 'bg-rose-500'   },
+              { label: 'Completed',        value: byStatus.completed,        color: 'bg-green-500'  },
+              { label: 'Declined',         value: byStatus.declined,         color: 'bg-red-500'    },
+              { label: 'Cancelled',        value: byStatus.cancelled,        color: 'bg-gray-400'   },
             ].map(row => (
               <div key={row.label}>
                 <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
@@ -180,10 +191,10 @@ export default async function AdminStatsPage() {
           </h2>
           <div className="space-y-3">
             {[
-              { label: 'Urgent', value: byPriority.urgent, color: 'bg-red-500' },
+              { label: 'Urgent', value: byPriority.urgent, color: 'bg-red-500'    },
               { label: 'High',   value: byPriority.high,   color: 'bg-orange-500' },
               { label: 'Medium', value: byPriority.medium, color: 'bg-yellow-500' },
-              { label: 'Low',    value: byPriority.low,    color: 'bg-green-500' },
+              { label: 'Low',    value: byPriority.low,    color: 'bg-green-500'  },
             ].map(row => (
               <div key={row.label}>
                 <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1"><span>{row.label}</span></div>
@@ -193,10 +204,10 @@ export default async function AdminStatsPage() {
           </div>
           <div className="grid grid-cols-2 gap-2 mt-5 pt-4 border-t border-gray-100 dark:border-gray-700">
             {[
-              { label: 'Urgent', value: byPriority.urgent, color: 'text-red-600' },
+              { label: 'Urgent', value: byPriority.urgent, color: 'text-red-600'    },
               { label: 'High',   value: byPriority.high,   color: 'text-orange-500' },
               { label: 'Medium', value: byPriority.medium, color: 'text-yellow-600' },
-              { label: 'Low',    value: byPriority.low,    color: 'text-green-600' },
+              { label: 'Low',    value: byPriority.low,    color: 'text-green-600'  },
             ].map(s => (
               <div key={s.label} className="text-center">
                 <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
@@ -242,8 +253,10 @@ export default async function AdminStatsPage() {
                 <div key={m.label} className="flex-1 flex flex-col items-center gap-1">
                   <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">{m.count || ''}</span>
                   <div className="w-full flex items-end" style={{ height: '90px' }}>
-                    <div className="w-full rounded-t-md bg-brand-500 dark:bg-brand-600 transition-all"
-                      style={{ height: `${Math.max(heightPct, m.count > 0 ? 4 : 0)}%` }} />
+                    <div
+                      className="w-full rounded-t-md bg-brand-500 dark:bg-brand-600 transition-all"
+                      style={{ height: `${Math.max(heightPct, m.count > 0 ? 4 : 0)}%` }}
+                    />
                   </div>
                   <span className="text-xs text-gray-400">{m.label}</span>
                 </div>
@@ -277,8 +290,10 @@ export default async function AdminStatsPage() {
               <span>{stores.length > 0 ? Math.round(((stores.length - unassigned) / stores.length) * 100) : 0}% assigned</span>
             </div>
             <div className="h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-              <div className="h-full bg-green-500 rounded-full"
-                style={{ width: `${stores.length > 0 ? Math.round(((stores.length - unassigned) / stores.length) * 100) : 0}%` }} />
+              <div
+                className="h-full bg-green-500 rounded-full"
+                style={{ width: `${stores.length > 0 ? Math.round(((stores.length - unassigned) / stores.length) * 100) : 0}%` }}
+              />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3 pt-2">

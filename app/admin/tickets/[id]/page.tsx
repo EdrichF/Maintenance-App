@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { BackButton } from '@/components/ui/BackButton'
@@ -16,7 +16,7 @@ import {
 import type { Ticket, Quote } from '@/lib/types'
 
 export default async function AdminTicketDetailPage({ params }: { params: { id: string } }) {
-  const supabase = createClient()
+  const supabase = createAdminClient()
 
   const { data: ticket } = await supabase
     .from('tickets')
@@ -40,8 +40,9 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
 
   const client = (ticket as any).profiles
   const hasAcceptedQuote = (quotes ?? []).some((q: any) => q.status === 'accepted')
-  const canUpdateStatus = (hasAcceptedQuote || ['accepted', 'in_progress'].includes((ticket as Ticket).status))
-    && !['pending_sign_off', 'snag', 'completed'].includes((ticket as Ticket).status)
+  const ticketStatus = (ticket as Ticket).status
+  const canUpdateStatus = (hasAcceptedQuote || ['accepted', 'in_progress', 'snag'].includes(ticketStatus))
+    && !['pending_sign_off', 'completed', 'cancelled'].includes(ticketStatus)
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
@@ -58,7 +59,7 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
         <Badge className={PRIORITY_COLORS[(ticket as Ticket).priority]}>
           {PRIORITY_LABELS[(ticket as Ticket).priority]}
         </Badge>
-        <span className="text-xs text-gray-400 ml-auto self-center">{formatDate(ticket.created_at)}</span>
+        <span className="text-xs text-gray-400 ml-auto self-center">{formatDateTime(ticket.created_at)}</span>
       </div>
 
       {/* Client info */}
@@ -82,9 +83,13 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
             </div>
           )}
           {client.address && (
-            <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
-              <MapPin size={15} className="text-gray-400" />
-              <span>{client.address}</span>
+            <div className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-200">
+              <MapPin size={15} className="text-gray-400 mt-0.5 shrink-0" />
+              <a href={`https://maps.google.com/?q=${encodeURIComponent(client.address)}`}
+                target="_blank" rel="noopener noreferrer"
+                className="hover:underline text-brand-600 dark:text-brand-400">
+                {client.address}
+              </a>
             </div>
           )}
         </div>
@@ -109,14 +114,14 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
         )}
       </div>
 
-      {/* Update status — only shown once a quote has been accepted */}
+      {/* Update status */}
       {canUpdateStatus ? (
-        <UpdateStatusForm ticketId={params.id} currentStatus={(ticket as Ticket).status} />
-      ) : (
+        <UpdateStatusForm ticketId={params.id} currentStatus={ticketStatus} />
+      ) : !['pending_sign_off', 'completed', 'cancelled'].includes(ticketStatus) ? (
         <div className="bg-gray-50 dark:bg-gray-800/50 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-xs text-gray-400 text-center">
           Status can be updated once a quote has been accepted.
         </div>
-      )}
+      ) : null}
 
       {/* Quotes sent */}
       {(quotes?.length ?? 0) > 0 && (
@@ -160,8 +165,8 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
         </div>
       )}
 
-      {/* Submit for sign-off — shown when in_progress */}
-      {(ticket as Ticket).status === 'in_progress' && (
+      {/* Submit for sign-off — shown when in_progress or snag (re-upload after rejection) */}
+      {['in_progress', 'snag'].includes(ticketStatus) && (
         <SubmitCompletionForm ticketId={params.id} />
       )}
 
@@ -171,19 +176,30 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
           <p className="font-semibold text-gray-900 dark:text-white mb-2">COC/POC History</p>
           <div className="space-y-3">
             {completions!.map((comp: any) => (
-              <div key={comp.id} className={`border rounded-xl p-4 space-y-2 ${comp.status === 'approved' ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/40' : comp.status === 'rejected' ? 'bg-rose-50 dark:bg-rose-900/10 border-rose-200 dark:border-rose-800/40' : 'bg-orange-50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-800/40'}`}>
+              <div key={comp.id} className={`border rounded-xl p-4 space-y-2 ${
+                comp.status === 'approved' ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/40' :
+                comp.status === 'rejected' ? 'bg-rose-50 dark:bg-rose-900/10 border-rose-200 dark:border-rose-800/40' :
+                'bg-orange-50 dark:bg-orange-900/10 border-orange-200 dark:border-orange-800/40'
+              }`}>
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-medium text-gray-900 dark:text-white">Submission</p>
-                    <p className="text-xs text-gray-400 mt-0.5">Submitted: {formatDate(comp.created_at)}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Submitted: {formatDateTime(comp.created_at)}</p>
                   </div>
-                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${comp.status === 'approved' ? 'bg-green-100 text-green-700' : comp.status === 'rejected' ? 'bg-rose-100 text-rose-700' : 'bg-orange-100 text-orange-700'}`}>
+                  <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+                    comp.status === 'approved' ? 'bg-green-100 text-green-700' :
+                    comp.status === 'rejected' ? 'bg-rose-100 text-rose-700' :
+                    'bg-orange-100 text-orange-700'
+                  }`}>
                     {comp.status === 'approved' ? 'Approved' : comp.status === 'rejected' ? 'Rejected' : 'Pending Review'}
                   </span>
                 </div>
-                {comp.reject_reason && <p className="text-xs text-rose-600 dark:text-rose-400">Reason: {comp.reject_reason}</p>}
+                {comp.reject_reason && (
+                  <p className="text-xs text-rose-600 dark:text-rose-400">Reason: {comp.reject_reason}</p>
+                )}
                 {comp.coc_url && (
-                  <a href={comp.coc_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-brand-600 hover:underline">
+                  <a href={comp.coc_url} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-brand-600 hover:underline">
                     View COC
                   </a>
                 )}

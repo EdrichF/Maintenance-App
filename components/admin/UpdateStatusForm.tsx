@@ -3,52 +3,78 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
-import { STATUS_LABELS } from '@/lib/utils'
 import type { TicketStatus } from '@/lib/types'
 
-// Admins manually move tickets to In Progress once work starts, and Completed when done.
-// All other status transitions happen automatically (e.g. quote sent → quoted, quote accepted → accepted).
-const STATUSES: TicketStatus[] = ['in_progress']
+// Available status transitions per current status
+const STATUS_OPTIONS: Record<string, { value: TicketStatus; label: string; color: string }[]> = {
+  accepted: [
+    { value: 'in_progress', label: 'Mark In Progress', color: 'amber' },
+    { value: 'cancelled',   label: 'Cancel Ticket',    color: 'gray'  },
+  ],
+  in_progress: [
+    { value: 'cancelled', label: 'Cancel Ticket', color: 'gray' },
+  ],
+  snag: [
+    { value: 'in_progress', label: 'Revert to In Progress', color: 'amber' },
+  ],
+}
+
+const COLOR_CLASSES: Record<string, string> = {
+  amber: 'border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-700',
+  gray:  'border-gray-300 text-gray-500 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600',
+}
 
 export function UpdateStatusForm({ ticketId, currentStatus }: { ticketId: string; currentStatus: TicketStatus }) {
-  const router = useRouter()
-  const [status, setStatus] = useState<TicketStatus>(currentStatus)
-  const [loading, setLoading] = useState(false)
+  const router  = useRouter()
+  const options = STATUS_OPTIONS[currentStatus] ?? []
+  const [selected, setSelected] = useState<TicketStatus | null>(null)
+  const [loading,  setLoading]  = useState(false)
+  const [error,    setError]    = useState('')
 
   async function save() {
-    if (status === currentStatus) return
+    if (!selected || selected === currentStatus) return
     setLoading(true)
-    await fetch(`/api/tickets/${ticketId}`, {
+    setError('')
+    const res = await fetch(`/api/tickets/${ticketId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ status: selected }),
     })
+    if (!res.ok) {
+      const d = await res.json()
+      setError(d.error || 'Failed to update status')
+      setLoading(false)
+      return
+    }
     router.refresh()
     setLoading(false)
   }
 
+  if (options.length === 0) return null
+
   return (
     <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Update Status</p>
-      <div className="grid grid-cols-2 gap-2">
-        {STATUSES.map(s => (
+      <div className="flex flex-wrap gap-2">
+        {options.map(opt => (
           <button
-            key={s}
+            key={opt.value}
             type="button"
-            onClick={() => setStatus(s)}
-            className={`py-1.5 px-2 rounded-lg text-xs font-medium border transition-all ${
-              status === s
-                ? 'bg-brand-600 text-white border-brand-600'
-                : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-400'
-            }`}
+            onClick={() => setSelected(prev => prev === opt.value ? null : opt.value)}
+            className={[
+              'py-1.5 px-3 rounded-lg text-xs font-medium border transition-all',
+              COLOR_CLASSES[opt.color],
+              selected === opt.value ? 'ring-2 ring-offset-1 ring-brand-500' : 'opacity-80 hover:opacity-100',
+            ].join(' ')}
           >
-            {STATUS_LABELS[s]}
+            {opt.label}
           </button>
         ))}
       </div>
-      {status !== currentStatus && (
+      {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
+      {selected && selected !== currentStatus && (
         <Button onClick={save} loading={loading} size="sm" className="w-full">
-          Save Status
+          Confirm — {options.find(o => o.value === selected)?.label}
         </Button>
       )}
     </div>

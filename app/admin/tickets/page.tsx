@@ -26,8 +26,8 @@ export default async function AdminTicketsPage({
 
   const { data: tickets } = await query
 
-  const activeStatuses = ['open', 'quoted', 'accepted', 'in_progress', 'declined']
-  const filterStatuses = ['open', 'quoted', 'accepted', 'in_progress', 'completed', 'cancelled', 'declined']
+  const activeStatuses = ['open', 'quoted', 'accepted', 'in_progress', 'pending_sign_off', 'snag', 'declined']
+  const filterStatuses = ['open', 'quoted', 'accepted', 'in_progress', 'pending_sign_off', 'snag', 'completed', 'declined']
 
   const noFilter = !searchParams.status && !searchParams.priority
   const active   = noFilter ? (tickets ?? []).filter((t: any) => activeStatuses.includes(t.status))        : (tickets ?? [])
@@ -39,9 +39,11 @@ export default async function AdminTicketsPage({
     quoted:      (tickets ?? []).filter((t: any) => t.status === 'quoted').length,
     accepted:    (tickets ?? []).filter((t: any) => t.status === 'accepted').length,
     in_progress: (tickets ?? []).filter((t: any) => t.status === 'in_progress').length,
-    completed:   (tickets ?? []).filter((t: any) => t.status === 'completed').length,
-    declined:    (tickets ?? []).filter((t: any) => t.status === 'declined').length,
-    cancelled:   (tickets ?? []).filter((t: any) => t.status === 'cancelled').length,
+    pending_sign_off: (tickets ?? []).filter((t: any) => t.status === 'pending_sign_off').length,
+    snag:             (tickets ?? []).filter((t: any) => t.status === 'snag').length,
+    completed:        (tickets ?? []).filter((t: any) => t.status === 'completed').length,
+    declined:         (tickets ?? []).filter((t: any) => t.status === 'declined').length,
+    cancelled:        (tickets ?? []).filter((t: any) => t.status === 'cancelled').length,
   }
   const totalCount = (tickets ?? []).length
 
@@ -78,6 +80,8 @@ export default async function AdminTicketsPage({
             {statusCounts.quoted > 0 && <div className="h-full bg-purple-500 transition-all" style={{ width: `${Math.round((statusCounts.quoted/totalCount)*100)}%` }} />}
             {statusCounts.accepted > 0 && <div className="h-full bg-teal-500 transition-all" style={{ width: `${Math.round((statusCounts.accepted/totalCount)*100)}%` }} />}
             {statusCounts.in_progress > 0 && <div className="h-full bg-amber-500 transition-all" style={{ width: `${Math.round((statusCounts.in_progress/totalCount)*100)}%` }} />}
+            {statusCounts.pending_sign_off > 0 && <div className="h-full bg-orange-400 transition-all" style={{ width: `${Math.round((statusCounts.pending_sign_off/totalCount)*100)}%` }} />}
+            {statusCounts.snag > 0 && <div className="h-full bg-rose-500 transition-all" style={{ width: `${Math.round((statusCounts.snag/totalCount)*100)}%` }} />}
             {statusCounts.completed > 0 && <div className="h-full bg-green-500 transition-all" style={{ width: `${Math.round((statusCounts.completed/totalCount)*100)}%` }} />}
             {statusCounts.declined > 0 && <div className="h-full bg-red-500 transition-all" style={{ width: `${Math.round((statusCounts.declined/totalCount)*100)}%` }} />}
             {statusCounts.cancelled > 0 && <div className="h-full bg-gray-400 transition-all" style={{ width: `${Math.round((statusCounts.cancelled/totalCount)*100)}%` }} />}
@@ -87,6 +91,8 @@ export default async function AdminTicketsPage({
             {statusCounts.quoted > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-purple-500 inline-block" />Quoted ({statusCounts.quoted})</span>}
             {statusCounts.accepted > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-teal-500 inline-block" />Accepted ({statusCounts.accepted})</span>}
             {statusCounts.in_progress > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />In Progress ({statusCounts.in_progress})</span>}
+            {statusCounts.pending_sign_off > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400 inline-block" />Pending Sign-off ({statusCounts.pending_sign_off})</span>}
+            {statusCounts.snag > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500 inline-block" />Snag ({statusCounts.snag})</span>}
             {statusCounts.completed > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />Completed ({statusCounts.completed})</span>}
             {statusCounts.declined > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500 inline-block" />Declined ({statusCounts.declined})</span>}
             {statusCounts.cancelled > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-gray-400 inline-block" />Cancelled ({statusCounts.cancelled})</span>}

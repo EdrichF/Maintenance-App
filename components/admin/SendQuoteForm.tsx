@@ -22,10 +22,9 @@ function addDays(days: number): string {
 }
 
 const PRESETS = [
-  { label: '7 days',   days: 7  },
-  { label: '14 days',  days: 14 },
-  { label: '1 month',  days: 30 },
-  { label: '3 months', days: 90 },
+  { label: '7 days',  days: 7  },
+  { label: '14 days', days: 14 },
+  { label: '1 month', days: 30 },
 ] as const
 
 export function SendQuoteForm({ ticketId }: { ticketId: string }) {

@@ -13,7 +13,7 @@ export async function PATCH(
   if (profile?.role !== 'regional_manager') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const body = await request.json()
-  const { status, reject_reason } = body
+  const { status, reject_reason, score, comment } = body
 
   if (!['approved', 'rejected'].includes(status)) {
     return NextResponse.json({ error: 'Status must be approved or rejected' }, { status: 400 })
@@ -21,12 +21,15 @@ export async function PATCH(
   if (status === 'rejected' && !reject_reason?.trim()) {
     return NextResponse.json({ error: 'Reject reason is required' }, { status: 400 })
   }
+  if (status === 'approved' && (!score || score < 1 || score > 5)) {
+    return NextResponse.json({ error: 'A rating (1-5) is required when approving' }, { status: 400 })
+  }
 
   const adminClient = createAdminClient()
 
   const { data: completion } = await adminClient
     .from('completions')
-    .select('ticket_id, tickets(title, client_id)')
+    .select('ticket_id, admin_id, tickets(title, client_id)')
     .eq('id', params.id)
     .single()
 
@@ -42,6 +45,18 @@ export async function PATCH(
   const ticketStatus = status === 'approved' ? 'completed' : 'snag'
   await adminClient.from('tickets').update({ status: ticketStatus }).eq('id', completion.ticket_id)
 
+  // Save the rating when approving
+  if (status === 'approved' && score) {
+    await adminClient.from('ratings').insert({
+      ticket_id:     completion.ticket_id,
+      completion_id: params.id,
+      rated_by:      user.id,
+      contractor_id: completion.admin_id,
+      score,
+      comment:       comment || null,
+    })
+  }
+
   const ticket = (completion as any).tickets
 
   // Notify admins
@@ -53,11 +68,22 @@ export async function PATCH(
         type: status === 'approved' ? 'sign_off_approved' : 'sign_off_rejected',
         title: status === 'approved' ? 'Sign-off Approved' : 'Sign-off Rejected — Snag',
         message: status === 'approved'
-          ? `Regional manager approved the COC/POC for "${ticket.title}". Ticket is now completed.`
+          ? `Regional manager approved the COC/POC for "${ticket.title}". Rated ${score}/5.`
           : `Regional manager rejected the COC/POC for "${ticket.title}". Reason: "${reject_reason}". Ticket moved to Snag.`,
         link: `/admin/tickets/${completion.ticket_id}`,
       }))
     )
+  }
+
+  // Notify store manager when approved
+  if (status === 'approved' && ticket?.client_id) {
+    await adminClient.from('notifications').insert({
+      user_id: ticket.client_id,
+      type: 'sign_off_approved',
+      title: 'Job Completed & Signed Off',
+      message: `Your ticket "${ticket.title}" has been approved and marked as completed.`,
+      link: `/client/tickets/${completion.ticket_id}`,
+    })
   }
 
   return NextResponse.json({ success: true })

@@ -3,15 +3,17 @@
 import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { Bell, Search, X } from 'lucide-react'
-import { formatDate } from '@/lib/utils'
+import { formatDateTime } from '@/lib/utils'
 import { MarkAllReadButton } from '@/components/ui/MarkAllReadButton'
 import type { Notification } from '@/lib/types'
 
 const TYPE_LABELS: Record<string, string> = {
-  new_ticket:    'New Ticket',
-  new_quote:     'New Quote',
-  quote_accepted:'Quote Accepted',
-  quote_declined:'Quote Declined',
+  new_ticket:       'New Ticket',
+  new_quote:        'New Quote',
+  quote_accepted:   'Quote Accepted',
+  sign_off_approved:'Sign-off Approved',
+  sign_off_rejected:'Sign-off Rejected',
+  quote_declined:   'Quote Declined',
 }
 
 type Filter = 'all' | 'unread' | 'read'
@@ -136,13 +138,13 @@ export default function AdminNotificationsPage() {
                 <Link href={n.link} className="block">
                   <p className="font-medium text-sm text-gray-900 dark:text-white">{n.title}</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{n.message}</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{formatDate(n.created_at)}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{formatDateTime(n.created_at)}</p>
                 </Link>
               ) : (
                 <>
                   <p className="font-medium text-sm text-gray-900 dark:text-white">{n.title}</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{n.message}</p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{formatDate(n.created_at)}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{formatDateTime(n.created_at)}</p>
                 </>
               )}
             </div>

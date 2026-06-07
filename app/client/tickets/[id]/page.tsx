@@ -1,8 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
-import Link from 'next/link'
 import { BackButton } from '@/components/ui/BackButton'
-import { Clock, CheckCircle, FileText } from 'lucide-react'
+import { Clock, CheckCircle, FileText, XCircle, AlertTriangle, ClipboardCheck } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { EditTicketForm } from '@/components/client/EditTicketForm'
 import {
@@ -20,6 +19,9 @@ const STATUS_STEPS = [
   { key: 'completed',   label: 'Completed',   icon: CheckCircle },
 ]
 
+// Statuses where the linear progress tracker does not apply
+const OFFTRACK_STATUSES = ['completed', 'cancelled', 'declined', 'pending_sign_off', 'snag']
+
 export default async function ClientTicketDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -34,8 +36,8 @@ export default async function ClientTicketDetailPage({ params }: { params: { id:
   if (!ticket) notFound()
 
   const t = ticket as Ticket
-  const isClosed  = ['completed', 'cancelled'].includes(t.status)
-  const isEditable = t.status === 'open'
+  const isEditable  = t.status === 'open'
+  const showTracker = !OFFTRACK_STATUSES.includes(t.status)
   const currentStep = STATUS_STEPS.findIndex(s => s.key === t.status)
 
   return (
@@ -45,8 +47,8 @@ export default async function ClientTicketDetailPage({ params }: { params: { id:
         <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">{t.title}</h1>
       </div>
 
-      {/* Progress tracker */}
-      {!isClosed && (
+      {/* Progress tracker — only for the linear happy-path statuses */}
+      {showTracker && (
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-5">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">Progress</p>
           <div className="flex items-center">
@@ -109,7 +111,7 @@ export default async function ClientTicketDetailPage({ params }: { params: { id:
         )}
       </div>
 
-      {/* Quote status notice — no quote details shown to store manager */}
+      {/* Status-specific banners */}
       {t.status === 'quoted' && (
         <div className="bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-800 rounded-xl p-4 flex items-center gap-3">
           <Clock size={18} className="text-purple-500 shrink-0" />
@@ -126,6 +128,66 @@ export default async function ClientTicketDetailPage({ params }: { params: { id:
           <div>
             <p className="text-sm font-medium text-green-800 dark:text-green-300">Quote approved</p>
             <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">The quote has been approved and work will begin shortly.</p>
+          </div>
+        </div>
+      )}
+
+      {t.status === 'in_progress' && (
+        <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl p-4 flex items-center gap-3">
+          <Clock size={18} className="text-amber-500 shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Work in progress</p>
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">The maintenance team is currently working on your ticket.</p>
+          </div>
+        </div>
+      )}
+
+      {t.status === 'pending_sign_off' && (
+        <div className="bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-800 rounded-xl p-4 flex items-center gap-3">
+          <ClipboardCheck size={18} className="text-orange-500 shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-orange-800 dark:text-orange-300">Awaiting sign-off</p>
+            <p className="text-xs text-orange-600 dark:text-orange-400 mt-0.5">Work is complete and submitted for regional manager sign-off.</p>
+          </div>
+        </div>
+      )}
+
+      {t.status === 'snag' && (
+        <div className="bg-rose-50 dark:bg-rose-900/10 border border-rose-200 dark:border-rose-800 rounded-xl p-4 flex items-center gap-3">
+          <AlertTriangle size={18} className="text-rose-500 shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-rose-800 dark:text-rose-300">Snag — rework required</p>
+            <p className="text-xs text-rose-600 dark:text-rose-400 mt-0.5">The regional manager flagged an issue with the completed work. The team will address it.</p>
+          </div>
+        </div>
+      )}
+
+      {t.status === 'completed' && (
+        <div className="bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 rounded-xl p-4 flex items-center gap-3">
+          <CheckCircle size={18} className="text-green-500 shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-green-800 dark:text-green-300">All done!</p>
+            <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">This ticket has been completed and signed off by the regional manager.</p>
+          </div>
+        </div>
+      )}
+
+      {t.status === 'declined' && (
+        <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-xl p-4 flex items-center gap-3">
+          <XCircle size={18} className="text-red-500 shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-red-800 dark:text-red-300">Quote declined</p>
+            <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">The quote was declined by the regional manager. A revised quote will be submitted shortly.</p>
+          </div>
+        </div>
+      )}
+
+      {t.status === 'cancelled' && (
+        <div className="bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-600 rounded-xl p-4 flex items-center gap-3">
+          <XCircle size={18} className="text-gray-400 shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Ticket cancelled</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">This ticket has been cancelled. Contact your administrator if you have questions.</p>
           </div>
         </div>
       )}

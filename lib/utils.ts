@@ -35,7 +35,7 @@ export const STATUS_LABELS: Record<TicketStatus, string> = {
 export const STATUS_COLORS: Record<TicketStatus, string> = {
   open:        'bg-blue-100   text-blue-700   dark:bg-blue-950   dark:text-blue-400',
   quoted:      'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-400',
-  accepted:    'bg-teal-100   text-teal-700   dark:bg-teal-950   dark:text-teal-400',
+  accepted:    'bg-green-500  text-white       dark:bg-green-600  dark:text-white',
   in_progress: 'bg-amber-100  text-amber-700  dark:bg-amber-950  dark:text-amber-400',
   completed:   'bg-green-100  text-green-700  dark:bg-green-950  dark:text-green-400',
   cancelled:   'bg-gray-100   text-gray-600   dark:bg-gray-800   dark:text-gray-400',
