@@ -36,7 +36,7 @@ export default async function RegionalTicketsPage({
   const { data: tickets } = storeIds.length > 0
     ? await adminClient
         .from('tickets')
-        .select('*, quotes(id, status, amount)')
+        .select('*, quotes(id, status, amount, created_at)')
         .in('client_id', storeIds)
         .order('created_at', { ascending: false })
     : { data: [] }
@@ -85,7 +85,7 @@ export default async function RegionalTicketsPage({
     { label: 'Quoted',         status: 'quoted',         count: counts.quoted,           active: 'bg-purple-600 text-white border-purple-600',inactive: 'bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900/40 hover:border-purple-400' },
     { label: 'In Progress',    status: 'in_progress',    count: counts.in_progress,      active: 'bg-amber-500 text-white border-amber-500',  inactive: 'bg-white dark:bg-gray-800 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/40 hover:border-amber-400' },
     { label: 'Pending Sign-off',status:'pending_sign_off',count: counts.pending_sign_off,active:'bg-orange-500 text-white border-orange-500',inactive:'bg-white dark:bg-gray-800 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/40 hover:border-orange-400' },
-    { label: 'Snag',           status: 'snag',           count: counts.snag,             active: 'bg-rose-600 text-white border-rose-600',    inactive: 'bg-white dark:bg-gray-800 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/40 hover:border-rose-400' },
+    { label: 'Snag',           status: 'snag',           count: counts.snag,             active: 'bg-amber-500 text-white border-amber-500',  inactive: 'bg-white dark:bg-gray-800 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900/40 hover:border-amber-400' },
     { label: 'Completed',      status: 'completed',      count: counts.completed,        active: 'bg-green-600 text-white border-green-600',  inactive: 'bg-white dark:bg-gray-800 text-green-600 dark:text-green-400 border-green-200 dark:border-green-900/40 hover:border-green-400' },
     { label: 'Declined',       status: 'declined',       count: counts.declined,         active: 'bg-red-600 text-white border-red-600',      inactive: 'bg-white dark:bg-gray-800 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900/40 hover:border-red-400' },
   ]
@@ -135,7 +135,7 @@ export default async function RegionalTicketsPage({
             {statusCounts.accepted > 0 && <div className="h-full bg-teal-500 transition-all" style={{ width: `${Math.round((statusCounts.accepted/totalCount)*100)}%` }} />}
             {statusCounts.in_progress > 0 && <div className="h-full bg-amber-500 transition-all" style={{ width: `${Math.round((statusCounts.in_progress/totalCount)*100)}%` }} />}
             {statusCounts.pending_sign_off > 0 && <div className="h-full bg-orange-400 transition-all" style={{ width: `${Math.round((statusCounts.pending_sign_off/totalCount)*100)}%` }} />}
-            {statusCounts.snag > 0 && <div className="h-full bg-rose-500 transition-all" style={{ width: `${Math.round((statusCounts.snag/totalCount)*100)}%` }} />}
+            {statusCounts.snag > 0 && <div className="h-full bg-amber-500 transition-all" style={{ width: `${Math.round((statusCounts.snag/totalCount)*100)}%` }} />}
             {statusCounts.completed > 0 && <div className="h-full bg-green-700 transition-all" style={{ width: `${Math.round((statusCounts.completed/totalCount)*100)}%` }} />}
             {statusCounts.declined > 0 && <div className="h-full bg-red-500 transition-all" style={{ width: `${Math.round((statusCounts.declined/totalCount)*100)}%` }} />}
             {statusCounts.cancelled > 0 && <div className="h-full bg-gray-400 transition-all" style={{ width: `${Math.round((statusCounts.cancelled/totalCount)*100)}%` }} />}
@@ -146,7 +146,7 @@ export default async function RegionalTicketsPage({
             {statusCounts.accepted > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-teal-500 inline-block" />Accepted ({statusCounts.accepted})</span>}
             {statusCounts.in_progress > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />In Progress ({statusCounts.in_progress})</span>}
             {statusCounts.pending_sign_off > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400 inline-block" />Pending Sign-off ({statusCounts.pending_sign_off})</span>}
-            {statusCounts.snag > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500 inline-block" />Snag ({statusCounts.snag})</span>}
+            {statusCounts.snag > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />Snag ({statusCounts.snag})</span>}
             {statusCounts.completed > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-700 inline-block" />Completed ({statusCounts.completed})</span>}
             {statusCounts.declined > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500 inline-block" />Declined ({statusCounts.declined})</span>}
             {statusCounts.cancelled > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-gray-400 inline-block" />Cancelled ({statusCounts.cancelled})</span>}
@@ -214,7 +214,10 @@ export default async function RegionalTicketsPage({
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
                       {ticket.store?.company_name} — {ticket.store?.sub_store}
                     </p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{formatDateTime(ticket.created_at)}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                      Created: {formatDateTime(ticket.created_at)}
+                      {(() => { const qs = (ticket as any).quotes ?? []; const latest = qs.filter((q:any)=>q.status!=='declined').sort((a:any,b:any)=>new Date(b.created_at).getTime()-new Date(a.created_at).getTime())[0]; return latest ? <span className="ml-2 text-purple-500 dark:text-purple-400">· Quoted: {formatDateTime(latest.created_at)}</span> : null })()}
+                    </p>
                   </div>
                   <div className="flex flex-col gap-1 items-end shrink-0">
                     <Badge className={PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}>

@@ -169,7 +169,7 @@ export default async function AdminStatsPage() {
               { label: 'Accepted',         value: byStatus.accepted,         color: 'bg-teal-500'   },
               { label: 'In Progress',      value: byStatus.in_progress,      color: 'bg-yellow-500' },
               { label: 'Pending Sign-off', value: byStatus.pending_sign_off, color: 'bg-orange-400' },
-              { label: 'Snag',             value: byStatus.snag,             color: 'bg-rose-500'   },
+              { label: 'Snag',             value: byStatus.snag,             color: 'bg-amber-500'   },
               { label: 'Completed',        value: byStatus.completed,        color: 'bg-green-500'  },
               { label: 'Declined',         value: byStatus.declined,         color: 'bg-red-500'    },
               { label: 'Cancelled',        value: byStatus.cancelled,        color: 'bg-gray-400'   },

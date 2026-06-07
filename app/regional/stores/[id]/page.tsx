@@ -299,7 +299,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
           title="Snag"
           count={snagTickets.length}
           icon={<AlertTriangle size={16} className="text-rose-500" />}
-          colorClass="text-rose-600 dark:text-rose-400"
+          colorClass="text-amber-700 dark:text-amber-400"
         >
           {snagTickets.map(t => <TicketRow key={t.id} ticket={t} />)}
         </CollapsibleSection>

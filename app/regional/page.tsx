@@ -137,7 +137,7 @@ export default async function RegionalDashboard() {
           { label: 'Open Tickets',    value: stats.openTickets,        icon: FileText,    color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/30',       href: '/regional/tickets' },
           { label: 'Urgent',          value: stats.urgentTickets,      icon: AlertCircle, color: 'text-red-600 bg-red-50 dark:bg-red-900/30',          href: '/regional/tickets?status=open' },
           { label: 'Pending Quotes',  value: stats.pendingQuotes,      icon: Clock,       color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30', href: '/regional/tickets?status=quoted' },
-          { label: 'Snag',            value: snagTickets,              icon: AlertCircle, color: 'text-rose-600 bg-rose-50 dark:bg-rose-900/30',       href: '/regional/snag' },
+          { label: 'Snag',            value: snagTickets,              icon: AlertCircle, color: 'text-amber-700 bg-amber-50 dark:bg-amber-900/30',      href: '/regional/snag' },
           { label: 'Done This Month', value: stats.completedThisMonth, icon: CheckCircle, color: 'text-green-600 bg-green-50 dark:bg-green-900/30',    href: '/regional/tickets?status=completed' },
           { label: 'Accepted Value',  value: formatCurrency(stats.totalQuoteValue),   icon: TrendingUp, color: 'text-purple-600 bg-purple-50 dark:bg-purple-900/30', href: '', noLink: true },
           { label: 'Pending Value',   value: formatCurrency(stats.pendingQuoteValue), icon: Clock,      color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30', href: '', noLink: true },
@@ -171,7 +171,7 @@ export default async function RegionalDashboard() {
             <div className="h-full bg-green-500 transition-all rounded-l-full" style={{ width: `${completionPct}%` }} />
             <div className="h-full bg-blue-400 transition-all" style={{ width: `${openPct}%` }} />
             {pendingSignOffPct > 0 && <div className="h-full bg-orange-400 transition-all" style={{ width: `${pendingSignOffPct}%` }} />}
-            {snagPct > 0 && <div className="h-full bg-rose-500 transition-all" style={{ width: `${snagPct}%` }} />}
+            {snagPct > 0 && <div className="h-full bg-amber-500 transition-all" style={{ width: `${snagPct}%` }} />}
             {declinedPct > 0 && <div className="h-full bg-red-400 transition-all" style={{ width: `${declinedPct}%` }} />}
           </div>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs">
@@ -187,8 +187,8 @@ export default async function RegionalDashboard() {
               </span>
             )}
             {snagTickets > 0 && (
-              <span className="flex items-center gap-1.5 font-medium text-rose-600 dark:text-rose-400">
-                <span className="w-2 h-2 rounded-full bg-rose-500 inline-block" />{snagPct}% Snag ({snagTickets})
+              <span className="flex items-center gap-1.5 font-medium text-amber-700 dark:text-amber-400">
+                <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />{snagPct}% Snag ({snagTickets})
               </span>
             )}
             {declinedTickets > 0 && (

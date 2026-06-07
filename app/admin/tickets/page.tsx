@@ -18,7 +18,7 @@ export default async function AdminTicketsPage({
 
   let query = db
     .from('tickets')
-    .select('*, profiles(full_name, company_name, sub_store)')
+    .select('*, profiles(full_name, company_name, sub_store), quotes(id, created_at, status)')
     .order('created_at', { ascending: false })
 
   if (searchParams.status)   query = query.eq('status', searchParams.status)
@@ -81,7 +81,7 @@ export default async function AdminTicketsPage({
             {statusCounts.accepted > 0 && <div className="h-full bg-teal-500 transition-all" style={{ width: `${Math.round((statusCounts.accepted/totalCount)*100)}%` }} />}
             {statusCounts.in_progress > 0 && <div className="h-full bg-amber-500 transition-all" style={{ width: `${Math.round((statusCounts.in_progress/totalCount)*100)}%` }} />}
             {statusCounts.pending_sign_off > 0 && <div className="h-full bg-orange-400 transition-all" style={{ width: `${Math.round((statusCounts.pending_sign_off/totalCount)*100)}%` }} />}
-            {statusCounts.snag > 0 && <div className="h-full bg-rose-500 transition-all" style={{ width: `${Math.round((statusCounts.snag/totalCount)*100)}%` }} />}
+            {statusCounts.snag > 0 && <div className="h-full bg-amber-500 transition-all" style={{ width: `${Math.round((statusCounts.snag/totalCount)*100)}%` }} />}
             {statusCounts.completed > 0 && <div className="h-full bg-green-500 transition-all" style={{ width: `${Math.round((statusCounts.completed/totalCount)*100)}%` }} />}
             {statusCounts.declined > 0 && <div className="h-full bg-red-500 transition-all" style={{ width: `${Math.round((statusCounts.declined/totalCount)*100)}%` }} />}
             {statusCounts.cancelled > 0 && <div className="h-full bg-gray-400 transition-all" style={{ width: `${Math.round((statusCounts.cancelled/totalCount)*100)}%` }} />}
@@ -92,7 +92,7 @@ export default async function AdminTicketsPage({
             {statusCounts.accepted > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-teal-500 inline-block" />Accepted ({statusCounts.accepted})</span>}
             {statusCounts.in_progress > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />In Progress ({statusCounts.in_progress})</span>}
             {statusCounts.pending_sign_off > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400 inline-block" />Pending Sign-off ({statusCounts.pending_sign_off})</span>}
-            {statusCounts.snag > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500 inline-block" />Snag ({statusCounts.snag})</span>}
+            {statusCounts.snag > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />Snag ({statusCounts.snag})</span>}
             {statusCounts.completed > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />Completed ({statusCounts.completed})</span>}
             {statusCounts.declined > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500 inline-block" />Declined ({statusCounts.declined})</span>}
             {statusCounts.cancelled > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-gray-400 inline-block" />Cancelled ({statusCounts.cancelled})</span>}
@@ -115,7 +115,10 @@ export default async function AdminTicketsPage({
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                       {ticket.profiles?.company_name} — {ticket.profiles?.sub_store} · {ticket.profiles?.full_name}
                     </p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{formatDate(ticket.created_at)}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                      Created: {formatDate(ticket.created_at)}
+                      {(() => { const qs = (ticket as any).quotes ?? []; const latest = qs.filter((q:any)=>q.status!=='declined').sort((a:any,b:any)=>new Date(b.created_at).getTime()-new Date(a.created_at).getTime())[0]; return latest ? <span className="ml-2 text-purple-500 dark:text-purple-400">· Quoted: {formatDate(latest.created_at)}</span> : null })()}
+                    </p>
                   </div>
                   <div className="flex flex-col gap-1 items-end shrink-0">
                     <Badge className={PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}>

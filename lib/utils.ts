@@ -36,12 +36,12 @@ export const STATUS_COLORS: Record<TicketStatus, string> = {
   open:        'bg-blue-100   text-blue-700   dark:bg-blue-950   dark:text-blue-400',
   quoted:      'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-400',
   accepted:    'bg-green-500  text-white       dark:bg-green-600  dark:text-white',
-  in_progress: 'bg-amber-100  text-amber-700  dark:bg-amber-950  dark:text-amber-400',
+  in_progress: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400',
   completed:   'bg-green-100  text-green-700  dark:bg-green-950  dark:text-green-400',
   cancelled:   'bg-gray-100   text-gray-600   dark:bg-gray-800   dark:text-gray-400',
   declined:    'bg-red-100    text-red-700    dark:bg-red-950    dark:text-red-400',
   pending_sign_off: 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400',
-  snag:        'bg-rose-100   text-rose-700   dark:bg-rose-950   dark:text-rose-400',
+  snag:        'bg-amber-100  text-amber-700  dark:bg-amber-950  dark:text-amber-400',
 }
 
 export const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {

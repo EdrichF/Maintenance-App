@@ -3,9 +3,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
+import { CheckCircle, ArrowDown } from 'lucide-react'
 import type { TicketStatus } from '@/lib/types'
 
-// Available status transitions per current status
 const STATUS_OPTIONS: Record<string, { value: TicketStatus; label: string; color: string }[]> = {
   accepted: [
     { value: 'in_progress', label: 'Mark In Progress', color: 'amber' },
@@ -24,12 +24,18 @@ const COLOR_CLASSES: Record<string, string> = {
   gray:  'border-gray-300 text-gray-500 bg-gray-50 hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600',
 }
 
+const SUCCESS_HINT: Partial<Record<TicketStatus, string>> = {
+  in_progress: 'Ticket is now In Progress. Scroll down to submit COC & POC when work is complete.',
+  cancelled:   'Ticket has been cancelled.',
+}
+
 export function UpdateStatusForm({ ticketId, currentStatus }: { ticketId: string; currentStatus: TicketStatus }) {
   const router  = useRouter()
   const options = STATUS_OPTIONS[currentStatus] ?? []
-  const [selected, setSelected] = useState<TicketStatus | null>(null)
-  const [loading,  setLoading]  = useState(false)
-  const [error,    setError]    = useState('')
+  const [selected,  setSelected]  = useState<TicketStatus | null>(null)
+  const [loading,   setLoading]   = useState(false)
+  const [error,     setError]     = useState('')
+  const [succeeded, setSucceeded] = useState<TicketStatus | null>(null)
 
   async function save() {
     if (!selected || selected === currentStatus) return
@@ -46,15 +52,40 @@ export function UpdateStatusForm({ ticketId, currentStatus }: { ticketId: string
       setLoading(false)
       return
     }
-    router.refresh()
+    setSucceeded(selected)
     setLoading(false)
+    // Short delay so the user sees the success message before the page re-renders
+    setTimeout(() => router.refresh(), 1200)
   }
 
   if (options.length === 0) return null
 
+  // Success state — shown briefly before router.refresh() fires
+  if (succeeded) {
+    return (
+      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl px-4 py-3 flex items-start gap-3">
+        <CheckCircle size={18} className="text-green-500 shrink-0 mt-0.5" />
+        <div>
+          <p className="text-sm font-medium text-green-800 dark:text-green-300">Status updated successfully</p>
+          {SUCCESS_HINT[succeeded] && (
+            <p className="text-xs text-green-700 dark:text-green-400 mt-0.5 flex items-center gap-1">
+              {succeeded === 'in_progress' && <ArrowDown size={11} className="shrink-0" />}
+              {SUCCESS_HINT[succeeded]}
+            </p>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Update Status</p>
+      {currentStatus === 'snag' && (
+        <p className="text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-lg px-3 py-2">
+          This ticket was rejected during sign-off. Revert it to In Progress, fix the issue, then re-submit COC &amp; POC below.
+        </p>
+      )}
       <div className="flex flex-wrap gap-2">
         {options.map(opt => (
           <button
