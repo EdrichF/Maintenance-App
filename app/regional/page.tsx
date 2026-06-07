@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import {
   Store, AlertCircle, Clock, FileText,
-  TrendingUp, CheckCircle, ArrowRight, Zap,
+  TrendingUp, CheckCircle, ArrowRight, Zap, ClipboardCheck,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import {
@@ -135,13 +135,14 @@ export default async function RegionalDashboard() {
       </div>
 
       {/* Summary stats — all clickable */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-9 gap-3">
         {[
           { label: 'Stores',          value: stats.totalStores,        icon: Store,       color: 'text-brand-600 bg-brand-50 dark:bg-brand-900/30',    href: '/regional/stores' },
           { label: 'Open Tickets',    value: stats.openTickets,        icon: FileText,    color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/30',       href: '/regional/tickets' },
           { label: 'Urgent',          value: stats.urgentTickets,      icon: AlertCircle, color: 'text-red-600 bg-red-50 dark:bg-red-900/30',          href: '/regional/tickets?status=open' },
           { label: 'Pending Quotes',  value: stats.pendingQuotes,      icon: Clock,       color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30', href: '/regional/tickets?status=quoted' },
           { label: 'Snag',            value: snagTickets,              icon: AlertCircle, color: 'text-amber-700 bg-amber-50 dark:bg-amber-900/30',      href: '/regional/snag' },
+          { label: 'Pending Sign-off', value: pendingSignOffTickets,    icon: ClipboardCheck, color: 'text-orange-600 bg-orange-50 dark:bg-orange-900/30',  href: '/regional/signoff' },
           { label: 'Done This Month', value: stats.completedThisMonth, icon: CheckCircle, color: 'text-green-600 bg-green-50 dark:bg-green-900/30',    href: '/regional/tickets?status=completed' },
           { label: 'Accepted Value',  value: formatCurrency(stats.totalQuoteValue),   icon: TrendingUp, color: 'text-purple-600 bg-purple-50 dark:bg-purple-900/30', href: '', noLink: true },
           { label: 'Pending Value',   value: formatCurrency(stats.pendingQuoteValue), icon: Clock,      color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30', href: '', noLink: true },
