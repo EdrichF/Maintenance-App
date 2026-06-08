@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Bell, LogOut, Wrench, Settings } from 'lucide-react'
+import { Bell, LogOut, Settings } from 'lucide-react'
+import { MotivLogo } from '@/components/ui/MotivLogo'
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
@@ -80,9 +81,8 @@ export function Navbar({ role }: NavbarProps) {
       <div className="max-w-6xl mx-auto px-4 flex items-center justify-between h-14">
 
         {/* Logo */}
-        <Link href={base} className="flex items-center gap-2 font-bold text-brand-600 text-lg shrink-0">
-          <Wrench size={20} />
-          <span className="hidden sm:inline">ConnexServ</span>
+        <Link href={base} className="shrink-0 text-brand-600 dark:text-brand-100">
+          <MotivLogo markSize={22} showWordmark={true} layout="horizontal" />
         </Link>
 
         {/* Nav links */}

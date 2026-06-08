@@ -3,13 +3,13 @@ import { ThemeProvider } from '@/components/providers/ThemeProvider'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'ConnexServ',
+  title: 'Motiv',
   description: 'Maintenance ticketing & quoting platform',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'ConnexServ',
+    title: 'Motiv',
   },
 }
 
@@ -17,7 +17,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-  themeColor: '#2563eb',
+  themeColor: '#0d1f2d',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
