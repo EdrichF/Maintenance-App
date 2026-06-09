@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
-import { User, Building2, CheckCircle } from 'lucide-react'
+import { useTheme } from '@/components/providers/ThemeProvider'
+import { createClient } from '@/lib/supabase/client'
+import { User, Building2, CheckCircle, LogOut, Sun, Moon } from 'lucide-react'
 
 interface ProfileForm {
   full_name: string
@@ -23,12 +26,20 @@ const ROLE_LABELS: Record<string, string> = {
 }
 
 export default function SettingsPage() {
+  const router = useRouter()
+  const { theme, toggle } = useTheme()
   const [loading,  setLoading]  = useState(false)
   const [fetching, setFetching] = useState(true)
   const [saved,    setSaved]    = useState(false)
   const [error,    setError]    = useState('')
   const [email,    setEmail]    = useState('')
   const [role,     setRole]     = useState('')
+
+  async function handleLogout() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/auth/login')
+  }
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ProfileForm>()
 
@@ -187,6 +198,36 @@ export default function SettingsPage() {
             Save Changes
           </Button>
         </form>
+      </div>
+
+      {/* Appearance */}
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+        <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-4">Appearance</h2>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-gray-700 dark:text-gray-200">Theme</p>
+            <p className="text-xs text-gray-400 mt-0.5">{theme === 'dark' ? 'Dark mode' : 'Light mode'}</p>
+          </div>
+          <button
+            onClick={toggle}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+          </button>
+        </div>
+      </div>
+
+      {/* Sign out */}
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+        <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-4">Account</h2>
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-red-200 dark:border-red-800/50 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+        >
+          <LogOut size={16} />
+          Sign Out
+        </button>
       </div>
     </div>
   )
