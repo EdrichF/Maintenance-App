@@ -107,14 +107,14 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
       </div>
 
       {/* Description */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+      <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Description</p>
         <p className="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-wrap">{ticket.description}</p>
       </div>
 
       {/* Photos */}
       {ticket.photo_urls?.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-1.5">
             <ImageIcon size={12} /> Photos ({ticket.photo_urls.length})
           </p>
@@ -133,7 +133,7 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
       )}
 
       {/* Store contact */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-2">
+      <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-2">
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Store Contact</p>
         {store.full_name && (
           <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
@@ -265,11 +265,11 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
               )
               return q.file_url ? (
                 <a key={q.id} href={q.file_url} target="_blank" rel="noopener noreferrer"
-                  className="block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
+                  className="block bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
                   {inner}
                 </a>
               ) : (
-                <div key={q.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+                <div key={q.id} className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
                   {inner}
                 </div>
               )

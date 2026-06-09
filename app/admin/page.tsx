@@ -94,7 +94,7 @@ export default async function AdminDashboard() {
           { label: 'Completed',        value: completedCount,            icon: CheckCircle2,  accent: 'border-l-green-500',  iconCls: 'text-green-600 dark:text-green-400', href: '/admin/tickets?status=completed' },
         ].map(stat => (
           <Link key={stat.label} href={stat.href}>
-            <div className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 ${stat.accent} p-4 flex items-center gap-3 hover:opacity-80 transition-opacity h-full`}>
+            <div className={`bg-slate-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 ${stat.accent} p-4 flex items-center gap-3 hover:opacity-80 transition-opacity h-full`}>
               <stat.icon size={22} className={`shrink-0 ${stat.iconCls}`} />
               <div>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
@@ -109,7 +109,7 @@ export default async function AdminDashboard() {
           { label: 'Accepted Value', value: formatCurrency(acceptedValue), icon: Banknote, accent: 'border-l-green-500',  iconCls: 'text-green-600 dark:text-green-400'  },
           { label: 'Pending Value',  value: formatCurrency(pendingValue),  icon: Clock4,   accent: 'border-l-yellow-500', iconCls: 'text-yellow-600 dark:text-yellow-400' },
         ].map(stat => (
-          <div key={stat.label} className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 ${stat.accent} p-4 flex flex-col justify-between gap-2 h-full`}>
+          <div key={stat.label} className={`bg-slate-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 ${stat.accent} p-4 flex flex-col justify-between gap-2 h-full`}>
             <div className="flex items-center gap-2">
               <stat.icon size={15} className={`shrink-0 ${stat.iconCls}`} />
               <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">{stat.label}</p>
@@ -121,7 +121,7 @@ export default async function AdminDashboard() {
 
       {/* Full status progress bar */}
       {total > 0 && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between text-sm">
             <span className="font-medium text-gray-700 dark:text-gray-200">Ticket Status Overview</span>
             <span className="text-gray-500 dark:text-gray-400">{completedCount} of {total} completed</span>
@@ -169,7 +169,7 @@ export default async function AdminDashboard() {
                 <div className={`border rounded-xl px-4 py-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors ${
                   ticket.status === 'declined'
                     ? 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/40'
-                    : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+                    : 'bg-slate-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                 }`}>
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">

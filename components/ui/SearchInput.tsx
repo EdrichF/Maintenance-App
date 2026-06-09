@@ -44,7 +44,7 @@ export function SearchInput({ placeholder = 'Search…', paramName = 'q' }: Prop
         value={localValue}
         onChange={e => setLocalValue(e.target.value)}
         placeholder={placeholder}
-        className="w-full pl-9 pr-9 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
+        className="w-full pl-9 pr-9 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-slate-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
       />
       {localValue && (
         <button

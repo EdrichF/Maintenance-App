@@ -33,7 +33,7 @@ export function BranchCodeBadge({ branchCode }: Props) {
   }
 
   return (
-    <div className="flex items-center gap-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3">
+    <div className="flex items-center gap-3 bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3">
       <div className="p-1.5 rounded-lg bg-brand-50 dark:bg-brand-900/30">
         <Hash size={14} className="text-brand-600 dark:text-brand-400" />
       </div>

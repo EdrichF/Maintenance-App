@@ -66,7 +66,7 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
 
       {/* Client info */}
       {client && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-2">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-2">
           <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Client</p>
           <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
             <Building2 size={15} className="text-gray-400" />
@@ -98,7 +98,7 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
       )}
 
       {/* Ticket description */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
+      <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
         <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Description</p>
         <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed">{ticket.description}</p>
 
@@ -131,7 +131,7 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
           <p className="font-semibold text-gray-900 dark:text-white mb-2">Quotes Sent</p>
           <div className="space-y-2">
             {(quotes as Quote[]).map(q => (
-              <div key={q.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-1.5">
+              <div key={q.id} className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-1.5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-lg font-bold dark:text-white">{formatCurrency(q.amount)}</p>

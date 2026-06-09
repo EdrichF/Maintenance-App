@@ -96,7 +96,7 @@ export function SubmitCompletionForm({ ticketId }: Props) {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-green-200 dark:border-green-800 rounded-xl p-5 space-y-5">
+    <div className="bg-slate-50 dark:bg-gray-800 border border-green-200 dark:border-green-800 rounded-xl p-5 space-y-5">
       <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
         <CheckCircle size={16} className="text-green-600" /> Submit COC &amp; POC for Sign-off
       </h3>

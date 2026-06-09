@@ -37,6 +37,12 @@ export function createAdminClient() {
         autoRefreshToken: false,
         persistSession: false,
       },
+      // Opt every internal fetch call out of Next.js's fetch cache so server
+      // components always read the latest data from the database.
+      global: {
+        fetch: (url: RequestInfo | URL, options: RequestInit = {}) =>
+          fetch(url, { ...options, cache: 'no-store' }),
+      },
     }
   )
 }

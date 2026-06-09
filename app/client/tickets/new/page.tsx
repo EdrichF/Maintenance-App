@@ -115,7 +115,7 @@ export default function NewTicketPage() {
         <h1 className="text-xl font-bold text-gray-900 dark:text-white">New Maintenance Ticket</h1>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
+      <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {/* Category dropdown */}
           <div>

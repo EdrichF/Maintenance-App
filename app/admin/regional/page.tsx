@@ -57,7 +57,7 @@ export default async function AdminRegionalPage({
       </Suspense>
 
       {filtered.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 text-center">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 text-center">
           {q ? (
             <>
               <SearchX size={32} className="mx-auto text-gray-300 mb-3" />
@@ -77,7 +77,7 @@ export default async function AdminRegionalPage({
             const count = branchCounts[rm.id] ?? 0
             return (
               <Link key={rm.id} href={`/admin/regional/${rm.id}`}>
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-l-4 border-l-brand-500 rounded-xl px-5 py-4 hover:border-brand-300 dark:hover:border-brand-600 transition-colors flex items-center gap-4">
+                <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-l-4 border-l-brand-500 rounded-xl px-5 py-4 hover:border-brand-300 dark:hover:border-brand-600 transition-colors flex items-center gap-4">
                   {/* Avatar */}
                   <div className="w-10 h-10 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center shrink-0">
                     <span className="text-brand-700 dark:text-brand-400 font-bold text-sm">

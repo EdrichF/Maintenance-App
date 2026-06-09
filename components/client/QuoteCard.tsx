@@ -43,7 +43,7 @@ export function QuoteCard({ quote, ticketId }: QuoteCardProps) {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
+    <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(quote.amount)}</p>

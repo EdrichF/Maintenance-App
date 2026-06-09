@@ -67,14 +67,14 @@ export default async function ContractorReviewsPage({ params }: { params: { id: 
       </div>
 
       {reviews.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 text-center">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 text-center">
           <Star size={28} className="mx-auto text-gray-300 mb-2" />
           <p className="text-sm text-gray-400">No reviews yet for this contractor.</p>
         </div>
       ) : (
         <div className="space-y-3">
           {reviews.map((r: any) => (
-            <div key={r.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-2">
+            <div key={r.id} className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-2">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-gray-900 dark:text-white truncate">

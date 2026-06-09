@@ -19,7 +19,7 @@ import type { Ticket, Quote } from '@/lib/types'
 function TicketRow({ ticket }: { ticket: Ticket }) {
   return (
     <Link href={`/regional/tickets/${ticket.id}`}>
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
+      <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
@@ -140,7 +140,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
         {/* Store contact */}
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-2">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-2">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Store Contact</p>
           {store.full_name && (
             <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
@@ -175,7 +175,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
         </div>
 
         {/* Ticket summary */}
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Ticket Summary</p>
           <div className="grid grid-cols-3 gap-3">
             {[
@@ -195,7 +195,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
         </div>
 
         {/* Quote summary */}
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Quote Overview</p>
           <div className="space-y-3">
             <div>
@@ -237,7 +237,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
         </div>
 
         {/* Pending Quotes card */}
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Quotes Awaiting Approval</p>
           <div className="space-y-3">
             <div>
@@ -306,7 +306,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
       )}
 
       {ticketList.length === 0 && (
-        <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center">
           <p className="text-sm text-gray-400">No tickets from this store yet.</p>
         </div>
       )}

@@ -121,7 +121,7 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-brand-200 dark:border-gray-700 rounded-xl p-5 space-y-4">
+    <div className="bg-slate-50 dark:bg-gray-800 border border-brand-200 dark:border-gray-700 rounded-xl p-5 space-y-4">
       <h3 className="font-semibold text-gray-900 dark:text-white">Send Quote</h3>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

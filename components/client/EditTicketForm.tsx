@@ -89,7 +89,7 @@ export function EditTicketForm({ ticket }: { ticket: Ticket }) {
 
         {confirmDelete && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-xl space-y-4">
+            <div className="bg-slate-50 dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-xl space-y-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-full">
                   <AlertTriangle size={20} className="text-red-600" />
@@ -124,7 +124,7 @@ export function EditTicketForm({ ticket }: { ticket: Ticket }) {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-brand-200 dark:border-brand-800 rounded-2xl p-5 space-y-4">
+    <div className="bg-slate-50 dark:bg-gray-800 border border-brand-200 dark:border-brand-800 rounded-2xl p-5 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
           <Pencil size={15} className="text-brand-600" /> Edit Ticket

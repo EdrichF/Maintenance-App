@@ -42,7 +42,7 @@ export function BottomNav({ role }: { role: NavRole }) {
   const base     = BASE[role]
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-20 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 safe-area-pb">
+    <nav className="fixed bottom-0 left-0 right-0 z-20 bg-brand-600 border-t border-brand-700 safe-area-pb">
       <div className="flex items-stretch justify-around h-16">
         {links.map(({ href, label, icon: Icon }) => {
           const active =
@@ -54,8 +54,8 @@ export function BottomNav({ role }: { role: NavRole }) {
               href={href}
               className={`flex flex-col items-center justify-center flex-1 gap-1 text-[10px] font-medium transition-colors ${
                 active
-                  ? 'text-brand-600 dark:text-brand-400'
-                  : 'text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                  ? 'text-white'
+                  : 'text-gray-400 hover:text-gray-200'
               }`}
             >
               <Icon size={22} strokeWidth={active ? 2.5 : 1.8} />

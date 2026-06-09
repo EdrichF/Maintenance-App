@@ -123,7 +123,7 @@ export default async function AdminStatsPage() {
           { label: 'Urgent Open',   value: t.filter(x => x.priority === 'urgent' && !['completed','cancelled','declined'].includes(x.status)).length,
                                            icon: ShieldAlert,  accent: 'border-l-red-500',    iconCls: 'text-red-600 dark:text-red-400'     },
         ].map(s => (
-          <div key={s.label} className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-l-4 ${s.accent} rounded-xl p-4 flex items-center gap-3`}>
+          <div key={s.label} className={`bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-l-4 ${s.accent} rounded-xl p-4 flex items-center gap-3`}>
             <s.icon size={22} className={`shrink-0 ${s.iconCls}`} />
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{s.value}</p>
@@ -135,7 +135,7 @@ export default async function AdminStatsPage() {
 
       {/* Completed vs Open bar */}
       {totalTickets > 0 && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 space-y-3">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 space-y-3">
           <div className="flex items-center justify-between text-sm">
             <span className="font-semibold text-gray-900 dark:text-white">Completed vs Open Tickets</span>
             <span className="text-gray-500 dark:text-gray-400">{byStatus.completed} of {totalTickets} completed</span>
@@ -159,7 +159,7 @@ export default async function AdminStatsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Ticket status breakdown */}
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-4 flex items-center gap-2">
             <ClipboardList size={14} className="text-brand-600" /> Tickets by Status
           </h2>
@@ -186,7 +186,7 @@ export default async function AdminStatsPage() {
         </div>
 
         {/* Priority breakdown */}
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-4 flex items-center gap-2">
             <ShieldAlert size={14} className="text-red-500" /> Tickets by Priority
           </h2>
@@ -219,7 +219,7 @@ export default async function AdminStatsPage() {
         </div>
 
         {/* Quote stats */}
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-4 flex items-center gap-2">
             <ReceiptText size={14} className="text-purple-500" /> Quotes
           </h2>
@@ -249,7 +249,7 @@ export default async function AdminStatsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Monthly ticket volume */}
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-5 flex items-center gap-2">
             <TrendingUp size={14} className="text-brand-600" /> Monthly Ticket Volume
           </h2>
@@ -273,7 +273,7 @@ export default async function AdminStatsPage() {
         </div>
 
         {/* People & coverage */}
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 space-y-4">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 space-y-4">
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm flex items-center gap-2">
             <Users size={14} className="text-brand-600" /> People &amp; Coverage
           </h2>
@@ -306,7 +306,7 @@ export default async function AdminStatsPage() {
 
       {/* Top stores */}
       {topStores.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-4 flex items-center gap-2">
             <Building2 size={14} className="text-brand-600" /> Top Stores by Ticket Volume
           </h2>

@@ -33,7 +33,7 @@ export function CollapsibleArchive({ count, children }: Props) {
       </button>
 
       {open && (
-        <div className="divide-y divide-gray-100 dark:divide-gray-700/60 bg-white dark:bg-gray-800/50">
+        <div className="divide-y divide-gray-100 dark:divide-gray-700/60 bg-slate-50 dark:bg-gray-800/50">
           {children}
         </div>
       )}

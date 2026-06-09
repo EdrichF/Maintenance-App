@@ -67,7 +67,7 @@ export default function ClientNotificationsPage() {
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Search notifications…"
-          className="w-full pl-9 pr-9 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="w-full pl-9 pr-9 py-2 border border-gray-300 dark:border-gray-600 rounded-xl text-sm bg-slate-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
         {search && (
           <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
@@ -82,7 +82,7 @@ export default function ClientNotificationsPage() {
           <button key={f} onClick={() => setFilter(f)}
             className={`px-3 py-1 rounded-full text-sm border transition-colors ${filter === f
               ? 'bg-brand-600 text-white border-brand-600'
-              : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400'}`}>
+              : 'bg-slate-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400'}`}>
             {f.charAt(0).toUpperCase() + f.slice(1)}
           </button>
         ))}
@@ -95,7 +95,7 @@ export default function ClientNotificationsPage() {
             <button key={t} onClick={() => setTypeFilter(t)}
               className={`px-3 py-1 rounded-full text-xs border transition-colors ${typeFilter === t
                 ? 'bg-gray-700 text-white border-gray-700 dark:bg-gray-200 dark:text-gray-900 dark:border-gray-200'
-                : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-gray-400'}`}>
+                : 'bg-slate-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-gray-400'}`}>
               {t === 'all' ? 'All types' : (TYPE_LABELS[t] ?? t)}
             </button>
           ))}
@@ -107,7 +107,7 @@ export default function ClientNotificationsPage() {
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-brand-600" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-10 text-center">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-10 text-center">
           <BellOff className="mx-auto text-gray-300 mb-2" size={32} />
           <p className="text-sm text-gray-400">
             {notifications.length === 0 ? 'No notifications yet.' : 'No notifications match your filters.'}
@@ -118,7 +118,7 @@ export default function ClientNotificationsPage() {
           {filtered.map(n => (
             <div key={n.id} className={`border rounded-xl px-4 py-3 ${!n.read
               ? 'border-brand-200 bg-brand-50/30 dark:border-brand-700 dark:bg-brand-900/10'
-              : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'}`}>
+              : 'bg-slate-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'}`}>
               {n.link ? (
                 <Link href={n.link} className="block">
                   <p className="font-medium text-sm text-gray-900 dark:text-white">{n.title}</p>

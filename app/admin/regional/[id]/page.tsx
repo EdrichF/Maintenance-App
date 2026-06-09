@@ -44,7 +44,7 @@ export default async function RMDetailPage({ params }: { params: { id: string } 
       </div>
 
       {/* Contact details card */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-l-4 border-l-brand-500 rounded-xl p-5 space-y-3">
+      <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-l-4 border-l-brand-500 rounded-xl p-5 space-y-3">
         <h2 className="font-semibold text-sm text-gray-900 dark:text-white mb-4">Contact Details</h2>
         {[
           { icon: Mail,   label: 'Email',   value: rm.email,   href: rm.email  ? `mailto:${rm.email}` : null },
@@ -78,14 +78,14 @@ export default async function RMDetailPage({ params }: { params: { id: string } 
         </h2>
 
         {branchList.length === 0 ? (
-          <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-10 text-center">
+          <div className="bg-slate-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-10 text-center">
             <Building2 size={28} className="mx-auto text-gray-300 mb-2" />
             <p className="text-sm text-gray-400">No branches linked yet.</p>
           </div>
         ) : (
           <div className="space-y-2">
             {branchList.map((branch: any) => (
-              <details key={branch.id} className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+              <details key={branch.id} className="group bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
                 <summary className="flex items-center gap-3 px-4 py-3.5 cursor-pointer list-none hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors">
                   <Building2 size={16} className="text-brand-500 shrink-0" />
                   <div className="flex-1 min-w-0">

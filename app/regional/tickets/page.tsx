@@ -80,14 +80,14 @@ export default async function RegionalTicketsPage({
   }
 
   const filterPills = [
-    { label: 'All',         status: '',            count: counts.all,         active: 'bg-brand-600 text-white border-brand-600',         inactive: 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400' },
-    { label: 'Open',           status: 'open',           count: counts.open,             active: 'bg-blue-600 text-white border-blue-600',    inactive: 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/40 hover:border-blue-400' },
-    { label: 'Quoted',         status: 'quoted',         count: counts.quoted,           active: 'bg-purple-600 text-white border-purple-600',inactive: 'bg-white dark:bg-gray-800 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900/40 hover:border-purple-400' },
-    { label: 'In Progress',    status: 'in_progress',    count: counts.in_progress,      active: 'bg-amber-500 text-white border-amber-500',  inactive: 'bg-white dark:bg-gray-800 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/40 hover:border-amber-400' },
-    { label: 'Pending Sign-off',status:'pending_sign_off',count: counts.pending_sign_off,active:'bg-orange-500 text-white border-orange-500',inactive:'bg-white dark:bg-gray-800 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/40 hover:border-orange-400' },
-    { label: 'Snag',           status: 'snag',           count: counts.snag,             active: 'bg-amber-500 text-white border-amber-500',  inactive: 'bg-white dark:bg-gray-800 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900/40 hover:border-amber-400' },
-    { label: 'Completed',      status: 'completed',      count: counts.completed,        active: 'bg-green-600 text-white border-green-600',  inactive: 'bg-white dark:bg-gray-800 text-green-600 dark:text-green-400 border-green-200 dark:border-green-900/40 hover:border-green-400' },
-    { label: 'Declined',       status: 'declined',       count: counts.declined,         active: 'bg-red-600 text-white border-red-600',      inactive: 'bg-white dark:bg-gray-800 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900/40 hover:border-red-400' },
+    { label: 'All',         status: '',            count: counts.all,         active: 'bg-brand-600 text-white border-brand-600',         inactive: 'bg-slate-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400' },
+    { label: 'Open',           status: 'open',           count: counts.open,             active: 'bg-blue-600 text-white border-blue-600',    inactive: 'bg-slate-50 dark:bg-gray-800 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/40 hover:border-blue-400' },
+    { label: 'Quoted',         status: 'quoted',         count: counts.quoted,           active: 'bg-purple-600 text-white border-purple-600',inactive: 'bg-slate-50 dark:bg-gray-800 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900/40 hover:border-purple-400' },
+    { label: 'In Progress',    status: 'in_progress',    count: counts.in_progress,      active: 'bg-amber-500 text-white border-amber-500',  inactive: 'bg-slate-50 dark:bg-gray-800 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/40 hover:border-amber-400' },
+    { label: 'Pending Sign-off',status:'pending_sign_off',count: counts.pending_sign_off,active:'bg-orange-500 text-white border-orange-500',inactive:'bg-slate-50 dark:bg-gray-800 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/40 hover:border-orange-400' },
+    { label: 'Snag',           status: 'snag',           count: counts.snag,             active: 'bg-amber-500 text-white border-amber-500',  inactive: 'bg-slate-50 dark:bg-gray-800 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900/40 hover:border-amber-400' },
+    { label: 'Completed',      status: 'completed',      count: counts.completed,        active: 'bg-green-600 text-white border-green-600',  inactive: 'bg-slate-50 dark:bg-gray-800 text-green-600 dark:text-green-400 border-green-200 dark:border-green-900/40 hover:border-green-400' },
+    { label: 'Declined',       status: 'declined',       count: counts.declined,         active: 'bg-red-600 text-white border-red-600',      inactive: 'bg-slate-50 dark:bg-gray-800 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900/40 hover:border-red-400' },
   ]
 
   function filterHref(status: string) {
@@ -124,7 +124,7 @@ export default async function RegionalTicketsPage({
 
       {/* Ticket status breakdown bar */}
       {totalCount > 0 && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between text-sm">
             <span className="font-medium text-gray-700 dark:text-gray-200">Ticket Status Breakdown</span>
             <span className="text-gray-500 dark:text-gray-400">{totalCount} ticket{totalCount !== 1 ? 's' : ''}</span>
@@ -190,14 +190,14 @@ export default async function RegionalTicketsPage({
       </div>
 
       {storeIds.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 text-center">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 text-center">
           <p className="text-gray-400 text-sm">No stores in your region yet.</p>
           <Link href="/regional/stores" className="text-xs text-brand-600 hover:underline mt-1 inline-block">
             Add stores →
           </Link>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 text-center">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 text-center">
           <p className="text-gray-400 text-sm">No tickets match your filter.</p>
           <Link href="/regional/tickets" className="text-xs text-brand-600 hover:underline mt-1 inline-block">
             Clear filters
@@ -207,7 +207,7 @@ export default async function RegionalTicketsPage({
         <div className="space-y-2">
           {active.map((ticket: any) => (
             <Link key={ticket.id} href={`/regional/tickets/${ticket.id}`}>
-              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
+              <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>

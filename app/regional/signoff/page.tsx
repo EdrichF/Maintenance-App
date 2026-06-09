@@ -56,14 +56,14 @@ export default async function RegionalSignoffPage() {
       </div>
 
       {storeGroups.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 text-center">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 text-center">
           <ClipboardCheck size={28} className="mx-auto text-gray-300 mb-2" />
           <p className="text-sm text-gray-400">No sign-offs pending — all clear!</p>
         </div>
       ) : (
         <div className="space-y-3">
           {storeGroups.map(({ store, tickets: storeTickets }) => (
-            <details key={store?.id ?? 'unknown'} className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden" open>
+            <details key={store?.id ?? 'unknown'} className="group bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden" open>
               <summary className="flex items-center gap-3 px-4 py-3 cursor-pointer list-none hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors">
                 <Building2 size={16} className="text-orange-500 shrink-0" />
                 <div className="flex-1 min-w-0">

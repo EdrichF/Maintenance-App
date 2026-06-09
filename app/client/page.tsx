@@ -62,7 +62,7 @@ export default async function ClientDashboard() {
           { label: 'Completed',   value: done,   icon: CheckCircle2,  accent: 'border-l-green-500', iconCls: 'text-green-600 dark:text-green-400', href: '/client/tickets?status=completed'   },
         ].map(stat => (
           <Link key={stat.label} href={stat.href} className="hover:opacity-80 transition-opacity">
-            <div className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 ${stat.accent} p-3 flex flex-col items-center justify-center text-center gap-1.5 h-full`}>
+            <div className={`bg-slate-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 ${stat.accent} p-3 flex flex-col items-center justify-center text-center gap-1.5 h-full`}>
               <stat.icon size={18} className={stat.iconCls} />
               <p className="text-xl font-bold text-gray-900 dark:text-white leading-none">{stat.value}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">{stat.label}</p>
@@ -79,7 +79,7 @@ export default async function ClientDashboard() {
         </div>
 
         {!tickets?.length ? (
-          <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-10 text-center">
+          <div className="bg-slate-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-10 text-center">
             <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">No tickets yet.</p>
             <Link href="/client/tickets/new">
               <Button variant="secondary" size="sm">Submit your first ticket</Button>
@@ -89,7 +89,7 @@ export default async function ClientDashboard() {
           <div className="space-y-2">
             {(tickets as TicketType[]).map(ticket => (
               <Link key={ticket.id} href={`/client/tickets/${ticket.id}`}>
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors flex items-center justify-between gap-3">
+                <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">

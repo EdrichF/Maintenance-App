@@ -62,7 +62,7 @@ export default async function RegionalStoresPage() {
       </div>
 
       {storeList.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 text-center">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 text-center">
           <Building2 size={32} className="mx-auto text-gray-300 mb-3" />
           <p className="text-gray-500 dark:text-gray-400 text-sm">No stores assigned to you yet.</p>
           <p className="text-xs text-gray-400 mt-1">Contact your administrator to link store accounts.</p>
@@ -71,7 +71,7 @@ export default async function RegionalStoresPage() {
         <div className="space-y-4">
           {storeList.map((store: any) => (
             <Link key={store.id} href={`/regional/stores/${store.id}`}>
-              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
+              <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
 
                 {/* Header */}
                 <div className="flex items-start justify-between gap-2 mb-4">

@@ -42,14 +42,13 @@ export function Navbar({ role }: { role: NavRole }) {
 
   const base = BASE[role]
 
+  // Always dark navy — same in light and dark mode
   const iconBtn =
     'p-2 rounded-lg transition-colors ' +
-    'text-gray-500 dark:text-gray-400 ' +
-    'hover:text-gray-900 dark:hover:text-white ' +
-    'hover:bg-gray-100 dark:hover:bg-gray-800'
+    'text-gray-300 hover:text-white hover:bg-white/10'
 
   return (
-    <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
+    <nav className="bg-brand-600 border-b border-brand-700 sticky top-0 z-10">
       <div className="max-w-6xl mx-auto px-4 flex items-center justify-between h-14">
         <Link href={base} className="shrink-0">
           <MotivLogo height={40} />

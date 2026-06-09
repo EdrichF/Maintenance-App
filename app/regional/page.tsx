@@ -151,7 +151,7 @@ export default async function RegionalDashboard() {
           const isCurrency = (stat as any).currency === true
           const inner = isCurrency ? (
             /* Currency card — stacked layout so long values never overflow */
-            <div className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 ${stat.accent} p-4 flex flex-col justify-between gap-2 h-full`}>
+            <div className={`bg-slate-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 ${stat.accent} p-4 flex flex-col justify-between gap-2 h-full`}>
               <div className="flex items-center gap-2">
                 <stat.icon size={15} className={`shrink-0 ${stat.iconCls}`} />
                 <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">{stat.label}</p>
@@ -160,7 +160,7 @@ export default async function RegionalDashboard() {
             </div>
           ) : (
             /* Numeric card — horizontal layout */
-            <div className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 ${stat.accent} p-4 flex items-center gap-4 h-full`}>
+            <div className={`bg-slate-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 ${stat.accent} p-4 flex items-center gap-4 h-full`}>
               <stat.icon size={22} className={`shrink-0 ${stat.iconCls}`} />
               <div className="min-w-0">
                 <p className="text-xl font-bold text-gray-900 dark:text-white leading-none">{stat.value}</p>
@@ -176,7 +176,7 @@ export default async function RegionalDashboard() {
 
       {/* Ticket status bar */}
       {totalTickets > 0 && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between text-sm">
             <span className="font-medium text-gray-700 dark:text-gray-200">Ticket Status Overview</span>
             <span className="text-gray-500 dark:text-gray-400">{completedTickets} of {totalTickets} completed</span>
@@ -233,7 +233,7 @@ export default async function RegionalDashboard() {
               <div className="space-y-2">
                 {storesNeedingAttention.map((store: any) => (
                   <Link key={store.id} href={`/regional/stores/${store.id}`}>
-                    <div className="bg-white dark:bg-gray-800 border border-red-100 dark:border-red-900/40 rounded-xl px-3 py-2.5 hover:border-red-300 transition-colors">
+                    <div className="bg-slate-50 dark:bg-gray-800 border border-red-100 dark:border-red-900/40 rounded-xl px-3 py-2.5 hover:border-red-300 transition-colors">
                       <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{store.company_name}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">{store.sub_store}</p>
                       <div className="flex gap-2 mt-1.5">
@@ -271,7 +271,7 @@ export default async function RegionalDashboard() {
               <div className="space-y-2">
                 {recentTickets.map((ticket: any) => (
                   <Link key={ticket.id} href={`/regional/tickets/${ticket.id}`}>
-                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
+                    <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
                       <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{ticket.title}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
                         {ticket.store?.company_name} — {ticket.store?.sub_store}

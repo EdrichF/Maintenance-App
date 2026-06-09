@@ -50,7 +50,7 @@ export function AssignRMForm({ storeId, currentRmId, currentRmName, regionalMana
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
+    <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
       <div className="flex items-center gap-2">
         <Users size={15} className="text-brand-600" />
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Regional Manager</p>

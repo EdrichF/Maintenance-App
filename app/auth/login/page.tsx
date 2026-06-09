@@ -60,7 +60,7 @@ export default function LoginPage() {
           <MotivLogo height={72} />
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sm:p-8">
+        <div className="bg-slate-50 dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 sm:p-8">
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">Welcome back</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Log in to your account.</p>
 

@@ -50,7 +50,7 @@ export function AddStoreForm() {
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-brand-200 dark:border-brand-800 rounded-xl p-4 space-y-3">
+    <div className="bg-slate-50 dark:bg-gray-800 border border-brand-200 dark:border-brand-800 rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Store size={15} className="text-brand-600" />

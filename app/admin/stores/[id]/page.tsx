@@ -51,7 +51,7 @@ export default async function AdminStoreDetailPage({ params }: { params: { id: s
       </div>
 
       {/* Store info */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-2">
+      <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-2">
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Store Info</p>
         {store.full_name && (
           <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
@@ -99,14 +99,14 @@ export default async function AdminStoreDetailPage({ params }: { params: { id: s
           Tickets ({tickets?.length ?? 0})
         </h2>
         {!tickets?.length ? (
-          <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center">
+          <div className="bg-slate-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center">
             <p className="text-sm text-gray-400">No tickets from this store yet.</p>
           </div>
         ) : (
           <div className="space-y-2">
             {(tickets as Ticket[]).map(ticket => (
               <Link key={ticket.id} href={`/admin/tickets/${ticket.id}`}>
-                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
+                <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>

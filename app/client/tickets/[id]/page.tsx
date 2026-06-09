@@ -49,7 +49,7 @@ export default async function ClientTicketDetailPage({ params }: { params: { id:
 
       {/* Progress tracker — only for the linear happy-path statuses */}
       {showTracker && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-5">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-5">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">Progress</p>
           <div className="flex items-center">
             {STATUS_STEPS.map((step, i) => {
@@ -87,7 +87,7 @@ export default async function ClientTicketDetailPage({ params }: { params: { id:
       )}
 
       {/* Ticket details */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 space-y-4">
+      <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 space-y-4">
         <div className="flex items-center gap-2 flex-wrap">
           <Badge className={STATUS_COLORS[t.status]}>{STATUS_LABELS[t.status]}</Badge>
           <Badge className={PRIORITY_COLORS[t.priority]}>{PRIORITY_LABELS[t.priority]}</Badge>

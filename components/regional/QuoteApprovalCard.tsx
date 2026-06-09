@@ -83,7 +83,7 @@ export function QuoteApprovalCard({ quote, ticketTitle, ticketId, contractor, ra
   return (
     <div className={`rounded-xl border p-4 space-y-3 ${
       quote.status === 'pending'
-        ? 'bg-white dark:bg-gray-800 border-yellow-200 dark:border-yellow-800/40'
+        ? 'bg-slate-50 dark:bg-gray-800 border-yellow-200 dark:border-yellow-800/40'
         : 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700'
     }`}>
       {/* Header */}

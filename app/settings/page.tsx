@@ -100,7 +100,7 @@ const { register, handleSubmit, reset, formState: { errors } } = useForm<Profile
       </div>
 
       {/* Account info (read-only) */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+      <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
         <div className="flex items-center gap-2 mb-4">
           <UserCircle2 size={16} className="text-brand-600" />
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm">Account</h2>
@@ -120,7 +120,7 @@ const { register, handleSubmit, reset, formState: { errors } } = useForm<Profile
       </div>
 
       {/* Editable profile */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+      <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
         <div className="flex items-center gap-2 mb-4">
           <Building2 size={16} className="text-brand-600" />
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm">{sectionLabel}</h2>
@@ -196,7 +196,7 @@ const { register, handleSubmit, reset, formState: { errors } } = useForm<Profile
       </div>
 
       {/* Appearance */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+      <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
         <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-4">Appearance</h2>
         <div className="flex items-center justify-between">
           <div>

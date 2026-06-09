@@ -58,14 +58,14 @@ export default async function AdminTicketsPage({
         <Link href="/admin/tickets"
           className={`px-3 py-1 rounded-full text-sm border transition-colors ${noFilter
             ? 'bg-brand-600 text-white border-brand-600'
-            : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400'}`}>
+            : 'bg-slate-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400'}`}>
           All
         </Link>
         {filterStatuses.map(s => (
           <Link key={s} href={`/admin/tickets?status=${s}`}
             className={`px-3 py-1 rounded-full text-sm border transition-colors ${searchParams.status === s
               ? 'bg-brand-600 text-white border-brand-600'
-              : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400'}`}>
+              : 'bg-slate-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400'}`}>
             {STATUS_LABELS[s as keyof typeof STATUS_LABELS]}
           </Link>
         ))}
@@ -73,7 +73,7 @@ export default async function AdminTicketsPage({
 
       {/* Ticket status breakdown bar */}
       {totalCount > 0 && (
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between text-sm">
             <span className="font-medium text-gray-700 dark:text-gray-200">Ticket Status Breakdown</span>
             <span className="text-gray-500 dark:text-gray-400">{totalCount} ticket{totalCount !== 1 ? 's' : ''}</span>
@@ -106,14 +106,14 @@ export default async function AdminTicketsPage({
       )}
 
       {active.length === 0 && archived.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-10 text-center">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-10 text-center">
           <p className="text-sm text-gray-400">No tickets found.</p>
         </div>
       ) : (
         <div className="space-y-2">
           {(active as (Ticket & { profiles: any })[]).map(ticket => (
             <Link key={ticket.id} href={`/admin/tickets/${ticket.id}`}>
-              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
+              <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900 dark:text-white truncate">{ticket.title}</p>

@@ -84,7 +84,7 @@ export function UpdateStatusForm({ ticketId, currentStatus }: { ticketId: string
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
+    <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
       <p className="text-xs font-medium text-gray-400 uppercase tracking-wide">Update Status</p>
       {currentStatus === 'snag' && (
         <p className="text-xs text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 rounded-lg px-3 py-2">

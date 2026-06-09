@@ -37,7 +37,7 @@ export default async function AdminStoresPage() {
       </div>
 
       {storeList.length === 0 ? (
-        <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 text-center">
+        <div className="bg-slate-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 text-center">
           <Store size={32} className="mx-auto text-gray-300 mb-3" />
           <p className="text-gray-400 text-sm">No store accounts yet.</p>
         </div>
@@ -45,7 +45,7 @@ export default async function AdminStoresPage() {
         <div className="space-y-2">
           {storeList.map((store: any) => (
             <Link key={store.id} href={`/admin/stores/${store.id}`}>
-              <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
+              <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
