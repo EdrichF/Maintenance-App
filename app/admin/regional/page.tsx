@@ -1,6 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Users, Building2, ArrowRight, SearchX } from 'lucide-react'
+import { Users, ArrowRight, SearchX } from 'lucide-react'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { Suspense } from 'react'
 
@@ -89,9 +89,6 @@ export default async function AdminRegionalPage({
                     {rm.company_name && (
                       <p className="text-sm text-brand-600 dark:text-brand-400 truncate">{rm.company_name}</p>
                     )}
-                    {rm.email && (
-                      <p className="text-xs text-gray-400 truncate mt-0.5">{rm.email}</p>
-                    )}
                   </div>
 
                   {/* Branch count + arrow */}
@@ -100,7 +97,6 @@ export default async function AdminRegionalPage({
                       <p className="text-lg font-bold text-gray-900 dark:text-white">{count}</p>
                       <p className="text-xs text-gray-400">branch{count !== 1 ? 'es' : ''}</p>
                     </div>
-                    <Building2 size={16} className="text-gray-300 dark:text-gray-600" />
                     <ArrowRight size={16} className="text-gray-400" />
                   </div>
                 </div>

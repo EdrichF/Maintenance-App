@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { BackButton } from '@/components/ui/BackButton'
-import { Clock, CheckCircle, FileText, XCircle, AlertTriangle, ClipboardCheck } from 'lucide-react'
+import { Clock, CheckCircle, FileText, XCircle, AlertTriangle, ClipboardCheck, Loader2 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { EditTicketForm } from '@/components/client/EditTicketForm'
 import {
@@ -112,22 +112,12 @@ export default async function ClientTicketDetailPage({ params }: { params: { id:
       </div>
 
       {/* Status-specific banners */}
-      {t.status === 'quoted' && (
-        <div className="bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-800 rounded-xl p-4 flex items-center gap-3">
-          <Clock size={18} className="text-purple-500 shrink-0" />
+      {(t.status === 'quoted' || t.status === 'accepted') && (
+        <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex items-center gap-3">
+          <Loader2 size={18} className="text-blue-500 shrink-0 animate-spin" />
           <div>
-            <p className="text-sm font-medium text-purple-800 dark:text-purple-300">Quote under review</p>
-            <p className="text-xs text-purple-600 dark:text-purple-400 mt-0.5">Your regional manager is reviewing the quote. You will be notified once it is approved.</p>
-          </div>
-        </div>
-      )}
-
-      {t.status === 'accepted' && (
-        <div className="bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 rounded-xl p-4 flex items-center gap-3">
-          <CheckCircle size={18} className="text-green-500 shrink-0" />
-          <div>
-            <p className="text-sm font-medium text-green-800 dark:text-green-300">Quote approved</p>
-            <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">The quote has been approved and work will begin shortly.</p>
+            <p className="text-sm font-medium text-blue-800 dark:text-blue-300">Being processed</p>
+            <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">Your ticket is being processed. You will be notified once work begins.</p>
           </div>
         </div>
       )}

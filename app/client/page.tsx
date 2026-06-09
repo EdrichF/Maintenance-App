@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Plus, ClipboardList, Wrench, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { STATUS_COLORS, STATUS_LABELS, PRIORITY_COLORS, PRIORITY_LABELS, formatDate, formatDateTime } from '@/lib/utils'
+import { STATUS_COLORS, STATUS_LABELS, PRIORITY_COLORS, PRIORITY_LABELS, formatDateTime } from '@/lib/utils'
 import type { Ticket as TicketType } from '@/lib/types'
 
 export default async function ClientDashboard() {
@@ -20,12 +20,13 @@ export default async function ClientDashboard() {
 
   const { data: tickets } = await supabase
     .from('tickets')
-    .select('*, quotes(id, status, created_at)')
+    .select('*')
     .eq('client_id', user!.id)
+    .in('status', ['open', 'in_progress', 'completed'])
     .order('created_at', { ascending: false })
     .limit(5)
 
-  const open   = tickets?.filter(t => ['open', 'quoted'].includes(t.status)).length ?? 0
+  const open   = tickets?.filter(t => t.status === 'open').length ?? 0
   const active = tickets?.filter(t => t.status === 'in_progress').length ?? 0
   const done   = tickets?.filter(t => t.status === 'completed').length ?? 0
 
@@ -93,13 +94,6 @@ export default async function ClientDashboard() {
                     <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                       Created: {formatDateTime(ticket.created_at)}
-                      {(() => {
-                        const qs = (ticket as any).quotes ?? []
-                        const latest = qs.filter((q: any) => q.status !== 'declined')
-                          .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
-                        if (!latest) return null
-                        return <span className="ml-2 text-purple-500 dark:text-purple-400">Quoted: {formatDateTime(latest.created_at)}</span>
-                      })()}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
