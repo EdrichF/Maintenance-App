@@ -52,7 +52,7 @@ export function Navbar({ role }: { role: NavRole }) {
     <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-10">
       <div className="max-w-6xl mx-auto px-4 flex items-center justify-between h-14">
         <Link href={base} className="shrink-0">
-          <MotivLogo size={36} />
+          <MotivLogo height={40} />
         </Link>
 
         <div className="flex items-center gap-0.5 shrink-0">
