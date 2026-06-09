@@ -1,8 +1,8 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowRight, Phone, Mail, MapPin, Building2 } from 'lucide-react'
-import { formatCurrency, formatDateTime } from '@/lib/utils'
+import { ArrowRight, Building2 } from 'lucide-react'
+import { formatCurrency } from '@/lib/utils'
 import { AddStoreForm } from '@/components/regional/AddStoreForm'
 
 export default async function RegionalStoresPage() {
@@ -14,7 +14,7 @@ export default async function RegionalStoresPage() {
   const { data: stores } = await adminClient
     .from('profiles')
     .select(`
-      id, full_name, company_name, sub_store, email, phone, address,
+      id, full_name, company_name, sub_store,
       tickets(id, status, priority, created_at, updated_at, quotes(id, amount, status))
     `)
     .eq('regional_manager_id', user.id)
@@ -28,10 +28,12 @@ export default async function RegionalStoresPage() {
     const counts = {
       open:             tickets.filter((t: any) => t.status === 'open').length,
       quoted:           tickets.filter((t: any) => t.status === 'quoted').length,
+      accepted:         tickets.filter((t: any) => t.status === 'accepted').length,
       in_progress:      tickets.filter((t: any) => t.status === 'in_progress').length,
       completed:        tickets.filter((t: any) => t.status === 'completed').length,
       pending_sign_off: tickets.filter((t: any) => t.status === 'pending_sign_off').length,
       snag:             tickets.filter((t: any) => ['snag','snag_in_progress'].includes(t.status)).length,
+      declined:         tickets.filter((t: any) => t.status === 'declined').length,
       total:            tickets.length,
     }
 
@@ -39,13 +41,12 @@ export default async function RegionalStoresPage() {
     const acceptedQuotes = quotes.filter((q: any) => q.status === 'accepted').length
     const acceptanceRate = decidedQuotes > 0 ? Math.round((acceptedQuotes / decidedQuotes) * 100) : null
     const acceptedValue  = quotes.filter((q: any) => q.status === 'accepted').reduce((s: number, q: any) => s + (q.amount ?? 0), 0)
+    const pendingValue   = quotes.filter((q: any) => q.status === 'pending').reduce((s: number, q: any) => s + (q.amount ?? 0), 0)
     const pendingQuotes  = quotes.filter((q: any) => q.status === 'pending').length
 
-    const lastActivity = tickets.length > 0
-      ? tickets.sort((a: any, b: any) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())[0].updated_at
-      : null
+    const pct = (n: number) => counts.total > 0 ? Math.round((n / counts.total) * 100) : 0
 
-    return { ...s, counts, acceptanceRate, acceptedValue, pendingQuotes, lastActivity }
+    return { ...s, counts, acceptanceRate, acceptedValue, pendingValue, pendingQuotes, pct }
   })
 
   return (
@@ -94,47 +95,32 @@ export default async function RegionalStoresPage() {
                   </div>
                 </div>
 
-                {/* Contact */}
-                <div className="flex flex-wrap gap-x-4 gap-y-1 mb-4">
-                  {store.email && (
-                    <span className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-                      <Mail size={11} className="shrink-0" />{store.email}
-                    </span>
-                  )}
-                  {store.phone && (
-                    <span className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-                      <Phone size={11} className="shrink-0" />{store.phone}
-                    </span>
-                  )}
-                  {store.address && (
-                    <span className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-                      <MapPin size={11} className="shrink-0" />{store.address}
-                    </span>
-                  )}
-                </div>
-
                 {/* Ticket performance bar */}
                 {store.counts.total > 0 ? (
                   <div className="mb-4">
                     <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1.5">
                       <span>Ticket breakdown</span>
-                      <span>{store.counts.completed} of {store.counts.total} completed</span>
+                      <span>{store.counts.completed} of {store.counts.total} completed ({store.pct(store.counts.completed)}%)</span>
                     </div>
-                    <div className="h-2 rounded-full overflow-hidden flex bg-gray-100 dark:bg-gray-700">
-                      {store.counts.completed   > 0 && <div className="bg-green-500 transition-all"  style={{ width: `${(store.counts.completed   / store.counts.total) * 100}%` }} />}
-                      {store.counts.in_progress > 0 && <div className="bg-amber-500 transition-all"  style={{ width: `${(store.counts.in_progress / store.counts.total) * 100}%` }} />}
-                      {store.counts.open        > 0 && <div className="bg-blue-500 transition-all"   style={{ width: `${(store.counts.open        / store.counts.total) * 100}%` }} />}
-                      {store.counts.quoted      > 0 && <div className="bg-purple-400 transition-all" style={{ width: `${(store.counts.quoted      / store.counts.total) * 100}%` }} />}
-                      {store.counts.pending_sign_off > 0 && <div className="bg-orange-400 transition-all" style={{ width: `${(store.counts.pending_sign_off / store.counts.total) * 100}%` }} />}
-                      {store.counts.snag        > 0 && <div className="bg-rose-500 transition-all"   style={{ width: `${(store.counts.snag        / store.counts.total) * 100}%` }} />}
+                    <div className="h-2.5 rounded-full overflow-hidden flex bg-gray-100 dark:bg-gray-700">
+                      {store.counts.completed        > 0 && <div className="bg-green-500"  style={{ width: `${store.pct(store.counts.completed)}%` }} />}
+                      {store.counts.in_progress      > 0 && <div className="bg-amber-500"  style={{ width: `${store.pct(store.counts.in_progress)}%` }} />}
+                      {store.counts.accepted         > 0 && <div className="bg-teal-500"   style={{ width: `${store.pct(store.counts.accepted)}%` }} />}
+                      {store.counts.open             > 0 && <div className="bg-blue-500"   style={{ width: `${store.pct(store.counts.open)}%` }} />}
+                      {store.counts.quoted           > 0 && <div className="bg-purple-400" style={{ width: `${store.pct(store.counts.quoted)}%` }} />}
+                      {store.counts.pending_sign_off > 0 && <div className="bg-orange-400" style={{ width: `${store.pct(store.counts.pending_sign_off)}%` }} />}
+                      {store.counts.snag             > 0 && <div className="bg-rose-500"   style={{ width: `${store.pct(store.counts.snag)}%` }} />}
+                      {store.counts.declined         > 0 && <div className="bg-red-400"    style={{ width: `${store.pct(store.counts.declined)}%` }} />}
                     </div>
                     <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-xs text-gray-500 dark:text-gray-400">
-                      {store.counts.open        > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />{store.counts.open} open</span>}
-                      {store.counts.quoted      > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-purple-400 inline-block" />{store.counts.quoted} quoted</span>}
-                      {store.counts.in_progress > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />{store.counts.in_progress} in progress</span>}
-                      {store.counts.completed   > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />{store.counts.completed} done</span>}
-                      {store.counts.pending_sign_off > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-400 inline-block" />{store.counts.pending_sign_off} sign-off</span>}
-                      {store.counts.snag        > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500 inline-block" />{store.counts.snag} snag</span>}
+                      {store.counts.completed        > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500  inline-block" />{store.pct(store.counts.completed)}% done ({store.counts.completed})</span>}
+                      {store.counts.in_progress      > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500  inline-block" />{store.pct(store.counts.in_progress)}% in progress ({store.counts.in_progress})</span>}
+                      {store.counts.accepted         > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-teal-500   inline-block" />{store.pct(store.counts.accepted)}% accepted ({store.counts.accepted})</span>}
+                      {store.counts.open             > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500   inline-block" />{store.pct(store.counts.open)}% open ({store.counts.open})</span>}
+                      {store.counts.quoted           > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-purple-400 inline-block" />{store.pct(store.counts.quoted)}% quoted ({store.counts.quoted})</span>}
+                      {store.counts.pending_sign_off > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-400 inline-block" />{store.pct(store.counts.pending_sign_off)}% sign-off ({store.counts.pending_sign_off})</span>}
+                      {store.counts.snag             > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500   inline-block" />{store.pct(store.counts.snag)}% snag ({store.counts.snag})</span>}
+                      {store.counts.declined         > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-400    inline-block" />{store.pct(store.counts.declined)}% declined ({store.counts.declined})</span>}
                     </div>
                   </div>
                 ) : (
@@ -149,13 +135,11 @@ export default async function RegionalStoresPage() {
                   </div>
                   <div>
                     <p className="text-xs text-gray-400">Accepted Value</p>
-                    <p className="text-sm font-bold text-green-600 dark:text-green-400 mt-0.5">{formatCurrency(store.acceptedValue)}</p>
+                    <p className="text-xs font-bold text-green-600 dark:text-green-400 mt-0.5 leading-snug">{formatCurrency(store.acceptedValue)}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400">Last Activity</p>
-                    <p className="text-xs font-medium text-gray-600 dark:text-gray-300 mt-0.5">
-                      {store.lastActivity ? formatDateTime(store.lastActivity) : '—'}
-                    </p>
+                    <p className="text-xs text-gray-400">Pending Value</p>
+                    <p className="text-xs font-bold text-purple-600 dark:text-purple-400 mt-0.5 leading-snug">{formatCurrency(store.pendingValue)}</p>
                   </div>
                 </div>
 

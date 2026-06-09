@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
-import { Bell, Search, X } from 'lucide-react'
+import { BellOff, Search, X } from 'lucide-react'
 import { formatDateTime } from '@/lib/utils'
 import { MarkAllReadButton } from '@/components/ui/MarkAllReadButton'
 import type { Notification } from '@/lib/types'
@@ -108,7 +108,7 @@ export default function ClientNotificationsPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-10 text-center">
-          <Bell className="mx-auto text-gray-300 mb-2" size={32} />
+          <BellOff className="mx-auto text-gray-300 mb-2" size={32} />
           <p className="text-sm text-gray-400">
             {notifications.length === 0 ? 'No notifications yet.' : 'No notifications match your filters.'}
           </p>

@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { useTheme } from '@/components/providers/ThemeProvider'
-import { User, Building2, CheckCircle, Sun, Moon } from 'lucide-react'
+import { UserCircle2, Building2, CheckCircle2, Sun, Moon } from 'lucide-react'
 import { BackButton } from '@/components/ui/BackButton'
 
 interface ProfileForm {
@@ -102,7 +102,7 @@ const { register, handleSubmit, reset, formState: { errors } } = useForm<Profile
       {/* Account info (read-only) */}
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
         <div className="flex items-center gap-2 mb-4">
-          <User size={16} className="text-brand-600" />
+          <UserCircle2 size={16} className="text-brand-600" />
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm">Account</h2>
         </div>
         <div className="space-y-3">
@@ -185,7 +185,7 @@ const { register, handleSubmit, reset, formState: { errors } } = useForm<Profile
           )}
           {saved && (
             <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 text-sm rounded-lg px-4 py-3">
-              <CheckCircle size={16} /> Changes saved successfully.
+              <CheckCircle2 size={16} /> Changes saved successfully.
             </div>
           )}
 

@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Plus, Ticket, Clock, CheckCircle } from 'lucide-react'
+import { Plus, ClipboardList, Wrench, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { STATUS_COLORS, STATUS_LABELS, PRIORITY_COLORS, PRIORITY_LABELS, formatDate, formatDateTime } from '@/lib/utils'
@@ -56,16 +56,16 @@ export default async function ClientDashboard() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: 'Open',        value: open,   icon: Ticket,      color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' },
-          { label: 'In Progress', value: active, icon: Clock,       color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30' },
-          { label: 'Completed',   value: done,   icon: CheckCircle, color: 'text-green-600 bg-green-50 dark:bg-green-900/30' },
+          { label: 'Open',        value: open,   icon: ClipboardList, accent: 'border-l-blue-500',   iconCls: 'text-blue-600 dark:text-blue-400'   },
+          { label: 'In Progress', value: active, icon: Wrench,        accent: 'border-l-amber-500',  iconCls: 'text-amber-600 dark:text-amber-400' },
+          { label: 'Completed',   value: done,   icon: CheckCircle2,  accent: 'border-l-green-500',  iconCls: 'text-green-600 dark:text-green-400' },
         ].map(stat => (
-          <div key={stat.label} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 flex flex-col items-center gap-1">
-            <div className={`p-2 rounded-full ${stat.color}`}>
-              <stat.icon size={18} />
+          <div key={stat.label} className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 ${stat.accent} p-4 flex items-center gap-3`}>
+            <stat.icon size={20} className={`shrink-0 ${stat.iconCls}`} />
+            <div>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{stat.label}</p>
             </div>
-            <p className="text-2xl font-bold dark:text-white">{stat.value}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{stat.label}</p>
           </div>
         ))}
       </div>

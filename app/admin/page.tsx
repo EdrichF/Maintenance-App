@@ -4,10 +4,13 @@ import { Badge } from '@/components/ui/Badge'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
-  formatDate, formatDateTime,
+  formatDateTime,
 } from '@/lib/utils'
 import type { Ticket } from '@/lib/types'
-import { AlertCircle, Clock, CheckCircle, List, Star } from 'lucide-react'
+import {
+  Star, ClipboardList, ShieldAlert,
+  ReceiptText, Wrench, BadgeCheck, CheckCircle2,
+} from 'lucide-react'
 
 export default async function AdminDashboard() {
   const supabase = createClient()
@@ -28,7 +31,7 @@ export default async function AdminDashboard() {
       : Promise.resolve({ data: null }),
   ])
 
-  const tickets     = ticketsResult.data
+  const tickets     = ticketsResult.data ?? []
   const companyName = (profileResult as any).data?.company_name ?? 'Dashboard'
   const ratings     = (ratingsResult as any).data ?? []
   const ratingCount = ratings.length
@@ -36,17 +39,24 @@ export default async function AdminDashboard() {
     ? ratings.reduce((sum: number, r: any) => sum + r.score, 0) / ratingCount
     : null
 
-  const total    = tickets?.length ?? 0
-  const open     = tickets?.filter(t => t.status === 'open' || t.status === 'declined').length ?? 0
-  const urgent   = tickets?.filter(t => t.priority === 'urgent' && t.status === 'open').length ?? 0
-  const quoted   = tickets?.filter(t => t.status === 'quoted').length ?? 0
-  const active   = tickets?.filter(t => t.status === 'in_progress').length ?? 0
-  const completed = tickets?.filter(t => t.status === 'completed').length ?? 0
-  const completionPct = total > 0 ? Math.round((completed / total) * 100) : 0
-  const openActivePct = total > 0 ? Math.round(((open + active + quoted) / total) * 100) : 0
+  const total          = tickets.length
+  const openCount      = tickets.filter(t => t.status === 'open').length
+  const declinedCount  = tickets.filter(t => t.status === 'declined').length
+  const urgentCount    = tickets.filter(t => t.priority === 'urgent' && t.status === 'open').length
+  const quotedCount    = tickets.filter(t => t.status === 'quoted').length
+  const acceptedCount  = tickets.filter(t => t.status === 'accepted').length
+  const progressCount  = tickets.filter(t => t.status === 'in_progress').length
+  const signOffCount   = tickets.filter(t => t.status === 'pending_sign_off').length
+  const snagCount      = tickets.filter(t => ['snag','snag_in_progress'].includes(t.status)).length
+  const completedCount = tickets.filter(t => t.status === 'completed').length
+  const cancelledCount = tickets.filter(t => t.status === 'cancelled').length
+
+  const pct = (n: number) => total > 0 ? Math.round((n / total) * 100) : 0
 
   return (
     <div className="space-y-6">
+
+      {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{companyName}</h1>
         <Link href="/admin/reviews">
@@ -65,44 +75,57 @@ export default async function AdminDashboard() {
         </Link>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {[
-          { label: 'Open Tickets', value: open,   icon: List,         color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' },
-          { label: 'Urgent',     value: urgent, icon: AlertCircle,  color: 'text-red-600 bg-red-50 dark:bg-red-900/30' },
-          { label: 'Quoted',     value: quoted, icon: Clock,        color: 'text-purple-600 bg-purple-50 dark:bg-purple-900/30' },
-          { label: 'In Progress',value: active, icon: CheckCircle,  color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30' },
+          { label: 'Open Tickets',     value: openCount + declinedCount, icon: ClipboardList, accent: 'border-l-blue-500',   iconCls: 'text-blue-600 dark:text-blue-400',   href: '/admin/tickets?status=open' },
+          { label: 'Urgent',           value: urgentCount,               icon: ShieldAlert,   accent: 'border-l-red-500',    iconCls: 'text-red-600 dark:text-red-400',     href: '/admin/tickets?status=open' },
+          { label: 'Quoted',           value: quotedCount,               icon: ReceiptText,   accent: 'border-l-purple-500', iconCls: 'text-purple-600 dark:text-purple-400', href: '/admin/tickets?status=quoted' },
+          { label: 'In Progress',      value: progressCount,             icon: Wrench,        accent: 'border-l-amber-500',  iconCls: 'text-amber-600 dark:text-amber-400', href: '/admin/tickets?status=in_progress' },
+          { label: 'Pending Sign-off', value: signOffCount,              icon: BadgeCheck,    accent: 'border-l-orange-500', iconCls: 'text-orange-600 dark:text-orange-400', href: '/admin/tickets?status=pending_sign_off' },
+          { label: 'Snag',             value: snagCount,                 icon: ShieldAlert,   accent: 'border-l-rose-500',   iconCls: 'text-rose-600 dark:text-rose-400',   href: '/admin/snag' },
+          { label: 'Completed',        value: completedCount,            icon: CheckCircle2,  accent: 'border-l-green-500',  iconCls: 'text-green-600 dark:text-green-400', href: '/admin/tickets?status=completed' },
         ].map(stat => (
-          <div key={stat.label} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 flex items-center gap-3">
-            <div className={`p-2 rounded-full ${stat.color}`}>
-              <stat.icon size={18} />
+          <Link key={stat.label} href={stat.href}>
+            <div className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 ${stat.accent} p-4 flex items-center gap-3 hover:opacity-80 transition-opacity h-full`}>
+              <stat.icon size={22} className={`shrink-0 ${stat.iconCls}`} />
+              <div>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{stat.label}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-2xl font-bold dark:text-white">{stat.value}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{stat.label}</p>
-            </div>
-          </div>
+          </Link>
         ))}
       </div>
 
-      {/* Completed vs Open Tickets bar */}
+      {/* Full status progress bar */}
       {total > 0 && (
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between text-sm">
-            <span className="font-medium text-gray-700 dark:text-gray-200">Completed vs Open Tickets</span>
-            <span className="text-gray-500 dark:text-gray-400">{completed} of {total} completed</span>
+            <span className="font-medium text-gray-700 dark:text-gray-200">Ticket Status Overview</span>
+            <span className="text-gray-500 dark:text-gray-400">{completedCount} of {total} completed</span>
           </div>
-          <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden flex">
-            <div className="h-full bg-green-500 transition-all rounded-l-full" style={{ width: `${completionPct}%` }} />
-            <div className="h-full bg-blue-400 transition-all" style={{ width: `${openActivePct}%` }} />
+          <div className="h-3 rounded-full overflow-hidden flex bg-gray-100 dark:bg-gray-700">
+            {completedCount  > 0 && <div className="h-full bg-green-500"  style={{ width: `${pct(completedCount)}%` }} />}
+            {progressCount   > 0 && <div className="h-full bg-amber-500"  style={{ width: `${pct(progressCount)}%` }} />}
+            {acceptedCount   > 0 && <div className="h-full bg-teal-500"   style={{ width: `${pct(acceptedCount)}%` }} />}
+            {quotedCount     > 0 && <div className="h-full bg-purple-500" style={{ width: `${pct(quotedCount)}%` }} />}
+            {openCount       > 0 && <div className="h-full bg-blue-500"   style={{ width: `${pct(openCount)}%` }} />}
+            {signOffCount    > 0 && <div className="h-full bg-orange-400" style={{ width: `${pct(signOffCount)}%` }} />}
+            {snagCount       > 0 && <div className="h-full bg-rose-500"   style={{ width: `${pct(snagCount)}%` }} />}
+            {declinedCount   > 0 && <div className="h-full bg-red-400"    style={{ width: `${pct(declinedCount)}%` }} />}
+            {cancelledCount  > 0 && <div className="h-full bg-gray-400"   style={{ width: `${pct(cancelledCount)}%` }} />}
           </div>
-          <div className="flex items-center gap-6 text-xs">
-            <span className="flex items-center gap-1.5 font-medium text-green-700 dark:text-green-400">
-              <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block" />{completionPct}% Completed ({completed})
-            </span>
-            <span className="flex items-center gap-1.5 font-medium text-blue-600 dark:text-blue-400">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-400 inline-block" />{openActivePct}% Open Tickets ({open + quoted + active})
-            </span>
+          <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs">
+            {completedCount > 0 && <span className="flex items-center gap-1.5 text-green-700 dark:text-green-400"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />{pct(completedCount)}% Completed ({completedCount})</span>}
+            {progressCount  > 0 && <span className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />{pct(progressCount)}% In Progress ({progressCount})</span>}
+            {acceptedCount  > 0 && <span className="flex items-center gap-1.5 text-teal-700 dark:text-teal-400"><span className="w-2 h-2 rounded-full bg-teal-500 inline-block" />{pct(acceptedCount)}% Accepted ({acceptedCount})</span>}
+            {quotedCount    > 0 && <span className="flex items-center gap-1.5 text-purple-700 dark:text-purple-400"><span className="w-2 h-2 rounded-full bg-purple-500 inline-block" />{pct(quotedCount)}% Quoted ({quotedCount})</span>}
+            {openCount      > 0 && <span className="flex items-center gap-1.5 text-blue-700 dark:text-blue-400"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />{pct(openCount)}% Open ({openCount})</span>}
+            {signOffCount   > 0 && <span className="flex items-center gap-1.5 text-orange-700 dark:text-orange-400"><span className="w-2 h-2 rounded-full bg-orange-400 inline-block" />{pct(signOffCount)}% Sign-off ({signOffCount})</span>}
+            {snagCount      > 0 && <span className="flex items-center gap-1.5 text-rose-700 dark:text-rose-400"><span className="w-2 h-2 rounded-full bg-rose-500 inline-block" />{pct(snagCount)}% Snag ({snagCount})</span>}
+            {declinedCount  > 0 && <span className="flex items-center gap-1.5 text-red-600 dark:text-red-400"><span className="w-2 h-2 rounded-full bg-red-400 inline-block" />{pct(declinedCount)}% Declined ({declinedCount})</span>}
+            {cancelledCount > 0 && <span className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400"><span className="w-2 h-2 rounded-full bg-gray-400 inline-block" />{pct(cancelledCount)}% Cancelled ({cancelledCount})</span>}
           </div>
         </div>
       )}
@@ -113,12 +136,11 @@ export default async function AdminDashboard() {
           <h2 className="font-semibold text-gray-900 dark:text-white">Recent Tickets</h2>
           <Link href="/admin/tickets" className="text-sm text-brand-600 hover:underline">View all</Link>
         </div>
-
         <div className="space-y-2">
-          {(tickets?.slice(0, 8) as (Ticket & { profiles: any; quotes: any[] })[])?.map(ticket => {
+          {(tickets.slice(0, 8) as (Ticket & { profiles: any; quotes: any[] })[]).map(ticket => {
             const tkt = ticket as any
             const declinedQuote = tkt.quotes?.find((q: any) => q.status === 'declined' && q.decline_reason)
-            const latestQuote = (tkt.quotes ?? [])
+            const latestQuote   = (tkt.quotes ?? [])
               .filter((q: any) => q.status !== 'declined')
               .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
             return (
@@ -132,7 +154,7 @@ export default async function AdminDashboard() {
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
-                        {(ticket as any).profiles?.company_name} — {(ticket as any).profiles?.sub_store} · {(ticket as any).profiles?.full_name}
+                        {tkt.profiles?.company_name} — {tkt.profiles?.sub_store} · {tkt.profiles?.full_name}
                       </p>
                       <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                         Created: {formatDateTime(ticket.created_at)}
@@ -146,17 +168,17 @@ export default async function AdminDashboard() {
                         </p>
                       )}
                     </div>
-                  <div className="flex flex-col gap-1 items-end shrink-0">
-                    <Badge className={PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}>
-                      {PRIORITY_LABELS[ticket.priority as keyof typeof PRIORITY_LABELS]}
-                    </Badge>
-                    <Badge className={STATUS_COLORS[ticket.status as keyof typeof STATUS_COLORS]}>
-                      {STATUS_LABELS[ticket.status as keyof typeof STATUS_LABELS]}
-                    </Badge>
+                    <div className="flex flex-col gap-1 items-end shrink-0">
+                      <Badge className={PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}>
+                        {PRIORITY_LABELS[ticket.priority as keyof typeof PRIORITY_LABELS]}
+                      </Badge>
+                      <Badge className={STATUS_COLORS[ticket.status as keyof typeof STATUS_COLORS]}>
+                        {STATUS_LABELS[ticket.status as keyof typeof STATUS_COLORS]}
+                      </Badge>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Link>
+              </Link>
             )
           })}
         </div>

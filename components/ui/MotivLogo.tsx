@@ -7,14 +7,14 @@ interface MotivLogoProps {
   className?: string
 }
 
-export function MotivLogo({ size = 36, className = '' }: MotivLogoProps) {
+export function MotivLogo({ size = 44, className = '' }: MotivLogoProps) {
   return (
     <Image
-      src="/logo.png"
+      src="/logo.svg"
       alt="Motiv"
       width={size}
       height={size}
-      className={`rounded-md object-contain ${className}`}
+      className={`object-contain ${className}`}
       priority
     />
   )

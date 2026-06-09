@@ -1,8 +1,8 @@
 import { createAdminClient } from '@/lib/supabase/server'
 import { formatCurrency } from '@/lib/utils'
 import {
-  BarChart2, Ticket, CheckCircle, Clock,
-  AlertCircle, TrendingUp, Users, Store, FileText,
+  BarChart2, ClipboardList, CheckCircle2, Wrench,
+  ShieldAlert, TrendingUp, Users, Building2, ReceiptText,
 } from 'lucide-react'
 
 function Bar({ value, max, color }: { value: number; max: number; color: string }) {
@@ -116,14 +116,14 @@ export default async function AdminStatsPage() {
       {/* Key numbers */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Total Tickets', value: t.length,           icon: Ticket,      color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' },
-          { label: 'Open Tickets',  value: openTickets,        icon: Clock,       color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30' },
-          { label: 'Completed',     value: byStatus.completed, icon: CheckCircle, color: 'text-green-600 bg-green-50 dark:bg-green-900/30' },
+          { label: 'Total Tickets', value: t.length,           icon: ClipboardList, accent: 'border-l-blue-500',   iconCls: 'text-blue-600 dark:text-blue-400'   },
+          { label: 'Open Tickets',  value: openTickets,        icon: Wrench,        accent: 'border-l-amber-500',  iconCls: 'text-amber-600 dark:text-amber-400' },
+          { label: 'Completed',     value: byStatus.completed, icon: CheckCircle2,  accent: 'border-l-green-500',  iconCls: 'text-green-600 dark:text-green-400' },
           { label: 'Urgent Open',   value: t.filter(x => x.priority === 'urgent' && !['completed','cancelled','declined'].includes(x.status)).length,
-                                           icon: AlertCircle,  color: 'text-red-600 bg-red-50 dark:bg-red-900/30' },
+                                           icon: ShieldAlert,  accent: 'border-l-red-500',    iconCls: 'text-red-600 dark:text-red-400'     },
         ].map(s => (
-          <div key={s.label} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 flex items-center gap-3">
-            <div className={`p-2 rounded-lg shrink-0 ${s.color}`}><s.icon size={18} /></div>
+          <div key={s.label} className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-l-4 ${s.accent} rounded-xl p-4 flex items-center gap-3`}>
+            <s.icon size={22} className={`shrink-0 ${s.iconCls}`} />
             <div>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{s.value}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">{s.label}</p>
@@ -160,7 +160,7 @@ export default async function AdminStatsPage() {
         {/* Ticket status breakdown */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-4 flex items-center gap-2">
-            <Ticket size={14} className="text-brand-600" /> Tickets by Status
+            <ClipboardList size={14} className="text-brand-600" /> Tickets by Status
           </h2>
           <div className="space-y-3">
             {[
@@ -187,7 +187,7 @@ export default async function AdminStatsPage() {
         {/* Priority breakdown */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-4 flex items-center gap-2">
-            <AlertCircle size={14} className="text-red-500" /> Tickets by Priority
+            <ShieldAlert size={14} className="text-red-500" /> Tickets by Priority
           </h2>
           <div className="space-y-3">
             {[
@@ -220,7 +220,7 @@ export default async function AdminStatsPage() {
         {/* Quote stats */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-4 flex items-center gap-2">
-            <FileText size={14} className="text-purple-500" /> Quotes
+            <ReceiptText size={14} className="text-purple-500" /> Quotes
           </h2>
           <div className="flex items-center justify-center mb-4">
             <div className="text-center">
@@ -268,7 +268,7 @@ export default async function AdminStatsPage() {
         {/* People & coverage */}
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 space-y-4">
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm flex items-center gap-2">
-            <Users size={14} className="text-brand-600" /> People & Coverage
+            <Users size={14} className="text-brand-600" /> People &amp; Coverage
           </h2>
           <div className="grid grid-cols-3 gap-3 text-center">
             <div className="bg-brand-50 dark:bg-brand-900/20 rounded-xl p-3">
@@ -317,7 +317,7 @@ export default async function AdminStatsPage() {
       {topStores.length > 0 && (
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-4 flex items-center gap-2">
-            <Store size={14} className="text-brand-600" /> Top Stores by Ticket Volume
+            <Building2 size={14} className="text-brand-600" /> Top Stores by Ticket Volume
           </h2>
           <div className="space-y-3">
             {topStores.map((s, i) => (

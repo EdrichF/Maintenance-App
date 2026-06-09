@@ -145,10 +145,21 @@ export default async function RegionalDashboard() {
           { label: 'Snag',             value: snagTickets,                           icon: Wrench,        accent: 'border-l-amber-500',   iconCls: 'text-amber-600 dark:text-amber-400',   href: '/regional/snag' },
           { label: 'Pending Sign-off', value: pendingSignOffTickets,                 icon: BadgeCheck,    accent: 'border-l-orange-500',  iconCls: 'text-orange-600 dark:text-orange-400', href: '/regional/signoff' },
           { label: 'Done This Month',  value: stats.completedThisMonth,              icon: CheckCircle2,  accent: 'border-l-green-500',   iconCls: 'text-green-600 dark:text-green-400',   href: '/regional/tickets?status=completed' },
-          { label: 'Accepted Value',   value: formatCurrency(stats.totalQuoteValue), icon: Banknote,      accent: 'border-l-purple-500',  iconCls: 'text-purple-600 dark:text-purple-400', href: null },
-          { label: 'Pending Value',    value: formatCurrency(stats.pendingQuoteValue), icon: Clock4,      accent: 'border-l-slate-400',   iconCls: 'text-slate-500 dark:text-slate-400',   href: null },
+          { label: 'Accepted Value',   value: formatCurrency(stats.totalQuoteValue),   icon: Banknote,  accent: 'border-l-purple-500', iconCls: 'text-purple-600 dark:text-purple-400', href: null, currency: true },
+          { label: 'Pending Value',    value: formatCurrency(stats.pendingQuoteValue),  icon: Clock4,    accent: 'border-l-slate-400',  iconCls: 'text-slate-500 dark:text-slate-400',   href: null, currency: true },
         ].map(stat => {
-          const inner = (
+          const isCurrency = (stat as any).currency === true
+          const inner = isCurrency ? (
+            /* Currency card — stacked layout so long values never overflow */
+            <div className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 ${stat.accent} p-4 flex flex-col justify-between gap-2 h-full`}>
+              <div className="flex items-center gap-2">
+                <stat.icon size={15} className={`shrink-0 ${stat.iconCls}`} />
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">{stat.label}</p>
+              </div>
+              <p className="text-sm font-bold text-gray-900 dark:text-white leading-snug break-words">{stat.value}</p>
+            </div>
+          ) : (
+            /* Numeric card — horizontal layout */
             <div className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 ${stat.accent} p-4 flex items-center gap-4 h-full`}>
               <stat.icon size={22} className={`shrink-0 ${stat.iconCls}`} />
               <div className="min-w-0">
@@ -158,7 +169,7 @@ export default async function RegionalDashboard() {
             </div>
           )
           return stat.href
-            ? <Link key={stat.label} href={stat.href} className="hover:opacity-80 transition-opacity">{inner}</Link>
+            ? <Link key={stat.label} href={(stat as any).href} className="hover:opacity-80 transition-opacity">{inner}</Link>
             : <div key={stat.label}>{inner}</div>
         })}
       </div>
