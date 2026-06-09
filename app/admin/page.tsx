@@ -15,7 +15,7 @@ export default async function AdminDashboard() {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [ticketsResult, ratingsResult] = await Promise.all([
+  const [ticketsResult, ratingsResult, profileResult] = await Promise.all([
     supabase
       .from('tickets')
       .select('*, profiles(full_name, company_name, sub_store), quotes(id, decline_reason, status, created_at)')
@@ -23,9 +23,13 @@ export default async function AdminDashboard() {
     user
       ? adminDb.from('ratings').select('score').eq('contractor_id', user.id)
       : Promise.resolve({ data: [] }),
+    user
+      ? supabase.from('profiles').select('company_name').eq('id', user.id).single()
+      : Promise.resolve({ data: null }),
   ])
 
   const tickets     = ticketsResult.data
+  const companyName = (profileResult as any).data?.company_name ?? 'Dashboard'
   const ratings     = (ratingsResult as any).data ?? []
   const ratingCount = ratings.length
   const avgRating   = ratingCount > 0
@@ -44,7 +48,7 @@ export default async function AdminDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Motiv</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{companyName}</h1>
         <Link href="/admin/reviews">
           {avgRating !== null ? (
             <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 rounded-xl px-4 py-2 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors">

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { useTheme } from '@/components/providers/ThemeProvider'
 import { createClient } from '@/lib/supabase/client'
 import { User, Building2, CheckCircle, LogOut, Sun, Moon } from 'lucide-react'
+import { BackButton } from '@/components/ui/BackButton'
 
 interface ProfileForm {
   full_name: string
@@ -99,9 +100,12 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-lg mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your account information.</p>
+      <div className="flex items-center gap-3">
+        <BackButton />
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Settings</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your account information.</p>
+        </div>
       </div>
 
       {/* Account info (read-only) */}
