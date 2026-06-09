@@ -45,21 +45,23 @@ export default async function RMDetailPage({ params }: { params: { id: string } 
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-l-4 border-l-brand-500 rounded-xl p-5 space-y-3">
         <h2 className="font-semibold text-sm text-gray-900 dark:text-white mb-4">Contact Details</h2>
         {[
-          { icon: Mail,    value: rm.email,   href: rm.email   ? `mailto:${rm.email}`   : null },
-          { icon: Phone,   value: rm.phone,   href: rm.phone   ? `tel:${rm.phone}`       : null },
-          { icon: MapPin,  value: rm.address, href: null },
-        ].map(({ icon: Icon, value, href }) =>
-          value ? (
-            <div key={value} className="flex items-center gap-3">
-              <Icon size={15} className="text-gray-400 shrink-0" />
-              {href ? (
+          { icon: Mail,   label: 'Email',   value: rm.email,   href: rm.email  ? `mailto:${rm.email}` : null },
+          { icon: Phone,  label: 'Phone',   value: rm.phone,   href: rm.phone  ? `tel:${rm.phone}`    : null },
+          { icon: MapPin, label: 'Address', value: rm.address, href: null },
+        ].map(({ icon: Icon, label, value, href }) => (
+          <div key={label} className="flex items-center gap-3">
+            <Icon size={15} className="text-gray-400 shrink-0" />
+            {value ? (
+              href ? (
                 <a href={href} className="text-sm text-gray-700 dark:text-gray-200 hover:underline truncate">{value}</a>
               ) : (
                 <span className="text-sm text-gray-700 dark:text-gray-200 truncate">{value}</span>
-              )}
-            </div>
-          ) : null
-        )}
+              )
+            ) : (
+              <span className="text-sm text-gray-400 italic">Not set</span>
+            )}
+          </div>
+        ))}
         <div className="pt-3 border-t border-gray-100 dark:border-gray-700">
           <p className="text-xs text-gray-400">
             {branchList.length} branch{branchList.length !== 1 ? 'es' : ''} under management

@@ -62,11 +62,12 @@ export default async function AdminStatsPage() {
     low:    t.filter(x => x.priority === 'low').length,
   }
 
-  const qAccepted = q.filter(x => x.status === 'accepted').length
-  const qDeclined = q.filter(x => x.status === 'declined').length
-  const qPending  = q.filter(x => x.status === 'pending').length
-  const qValue    = q.filter(x => x.status === 'accepted').reduce((s, x) => s + (x.amount ?? 0), 0)
-  const acceptRate = (qAccepted + qDeclined) > 0 ? Math.round((qAccepted / (qAccepted + qDeclined)) * 100) : 0
+  const qAccepted     = q.filter(x => x.status === 'accepted').length
+  const qDeclined     = q.filter(x => x.status === 'declined').length
+  const qPending      = q.filter(x => x.status === 'pending').length
+  const qValue        = q.filter(x => x.status === 'accepted').reduce((s, x) => s + (x.amount ?? 0), 0)
+  const qPendingValue = q.filter(x => x.status === 'pending').reduce((s, x)  => s + (x.amount ?? 0), 0)
+  const acceptRate    = (qAccepted + qDeclined) > 0 ? Math.round((qAccepted / (qAccepted + qDeclined)) * 100) : 0
 
   const totalTickets  = t.length
   const openTickets   = byStatus.open + byStatus.quoted + byStatus.accepted + byStatus.in_progress
@@ -233,9 +234,15 @@ export default async function AdminStatsPage() {
             <div><p className="text-xl font-bold text-yellow-600">{qPending}</p><p className="text-xs text-gray-400">Pending</p></div>
             <div><p className="text-xl font-bold text-gray-500">{qDeclined}</p><p className="text-xs text-gray-400">Declined</p></div>
           </div>
-          <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 text-center">
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(qValue)}</p>
-            <p className="text-xs text-gray-400">Total accepted value</p>
+          <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 grid grid-cols-2 gap-3 text-center">
+            <div>
+              <p className="text-lg font-bold text-gray-900 dark:text-white">{formatCurrency(qValue)}</p>
+              <p className="text-xs text-gray-400">Accepted value</p>
+            </div>
+            <div>
+              <p className="text-lg font-bold text-yellow-600 dark:text-yellow-400">{formatCurrency(qPendingValue)}</p>
+              <p className="text-xs text-gray-400">Pending value</p>
+            </div>
           </div>
         </div>
       </div>
@@ -270,7 +277,7 @@ export default async function AdminStatsPage() {
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm flex items-center gap-2">
             <Users size={14} className="text-brand-600" /> People &amp; Coverage
           </h2>
-          <div className="grid grid-cols-3 gap-3 text-center">
+          <div className="grid grid-cols-2 gap-3 text-center">
             <div className="bg-brand-50 dark:bg-brand-900/20 rounded-xl p-3">
               <p className="text-2xl font-bold text-brand-700 dark:text-brand-400">{rms.length}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Regional Managers</p>
@@ -278,22 +285,6 @@ export default async function AdminStatsPage() {
             <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3">
               <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">{stores.length}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Stores</p>
-            </div>
-            <div className={`${unassigned > 0 ? 'bg-orange-50 dark:bg-orange-900/20' : 'bg-green-50 dark:bg-green-900/20'} rounded-xl p-3`}>
-              <p className={`text-2xl font-bold ${unassigned > 0 ? 'text-orange-600' : 'text-green-600'}`}>{unassigned}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Unassigned</p>
-            </div>
-          </div>
-          <div>
-            <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1.5">
-              <span>Store coverage</span>
-              <span>{stores.length > 0 ? Math.round(((stores.length - unassigned) / stores.length) * 100) : 0}% assigned</span>
-            </div>
-            <div className="h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-green-500 rounded-full"
-                style={{ width: `${stores.length > 0 ? Math.round(((stores.length - unassigned) / stores.length) * 100) : 0}%` }}
-              />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3 pt-2">

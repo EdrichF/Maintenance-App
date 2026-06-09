@@ -86,9 +86,9 @@ export default async function AdminRegionalPage({
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900 dark:text-white truncate">{rm.full_name ?? 'Unnamed'}</p>
-                    {rm.company_name && (
-                      <p className="text-sm text-brand-600 dark:text-brand-400 truncate">{rm.company_name}</p>
-                    )}
+                    <p className={`text-sm truncate ${rm.company_name ? 'text-brand-600 dark:text-brand-400' : 'text-gray-400 italic'}`}>
+                      {rm.company_name ?? 'No company set'}
+                    </p>
                   </div>
 
                   {/* Branch count + arrow */}
