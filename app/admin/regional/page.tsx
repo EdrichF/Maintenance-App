@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createAdminClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Users, ArrowRight, SearchX } from 'lucide-react'
