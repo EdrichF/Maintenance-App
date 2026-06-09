@@ -1,9 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { Bell, Settings } from 'lucide-react'
+import { Bell, Settings, LogOut } from 'lucide-react'
 import { MotivLogo } from '@/components/ui/MotivLogo'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import type { Notification } from '@/lib/types'
 
 type NavRole = 'client' | 'admin' | 'regional'
@@ -15,7 +17,14 @@ const BASE: Record<NavRole, string> = {
 }
 
 export function Navbar({ role }: { role: NavRole }) {
+  const router = useRouter()
   const [unread, setUnread] = useState(0)
+
+  async function handleLogout() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/auth/login')
+  }
 
   useEffect(() => {
     fetchUnread()
@@ -59,6 +68,10 @@ export function Navbar({ role }: { role: NavRole }) {
           <Link href="/settings" className={iconBtn} title="Settings">
             <Settings size={18} />
           </Link>
+
+          <button onClick={handleLogout} className={iconBtn} title="Log out">
+            <LogOut size={18} />
+          </button>
         </div>
       </div>
     </nav>

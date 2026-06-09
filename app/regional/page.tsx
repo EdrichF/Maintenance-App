@@ -2,8 +2,9 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import {
-  Store, AlertCircle, Clock, FileText,
-  TrendingUp, CheckCircle, ArrowRight, Zap, ClipboardCheck,
+  Building2, ShieldAlert, ReceiptText,
+  TrendingUp, CheckCircle2, Zap, ClipboardList,
+  Wrench, BadgeCheck, Banknote, Clock4,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import {
@@ -134,35 +135,32 @@ export default async function RegionalDashboard() {
         </p>
       </div>
 
-      {/* Summary stats — all clickable */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-9 gap-3">
+      {/* Summary stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {[
-          { label: 'Stores',          value: stats.totalStores,        icon: Store,       color: 'text-brand-600 bg-brand-50 dark:bg-brand-900/30',    href: '/regional/stores' },
-          { label: 'Open Tickets',    value: stats.openTickets,        icon: FileText,    color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/30',       href: '/regional/tickets' },
-          { label: 'Urgent',          value: stats.urgentTickets,      icon: AlertCircle, color: 'text-red-600 bg-red-50 dark:bg-red-900/30',          href: '/regional/tickets?status=open' },
-          { label: 'Pending Quotes',  value: stats.pendingQuotes,      icon: Clock,       color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30', href: '/regional/tickets?status=quoted' },
-          { label: 'Snag',            value: snagTickets,              icon: AlertCircle, color: 'text-amber-700 bg-amber-50 dark:bg-amber-900/30',      href: '/regional/snag' },
-          { label: 'Pending Sign-off', value: pendingSignOffTickets,    icon: ClipboardCheck, color: 'text-orange-600 bg-orange-50 dark:bg-orange-900/30',  href: '/regional/signoff' },
-          { label: 'Done This Month', value: stats.completedThisMonth, icon: CheckCircle, color: 'text-green-600 bg-green-50 dark:bg-green-900/30',    href: '/regional/tickets?status=completed' },
-          { label: 'Accepted Value',  value: formatCurrency(stats.totalQuoteValue),   icon: TrendingUp, color: 'text-purple-600 bg-purple-50 dark:bg-purple-900/30', href: '', noLink: true },
-          { label: 'Pending Value',   value: formatCurrency(stats.pendingQuoteValue), icon: Clock,      color: 'text-yellow-600 bg-yellow-50 dark:bg-yellow-900/30', href: '', noLink: true },
-        ].map(stat => (
-          (stat as any).noLink
-            ? <div key={stat.label} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 flex flex-col gap-2">
-                <div className={`p-2 rounded-lg w-fit ${stat.color}`}><stat.icon size={16} /></div>
-                <div className="min-w-0">
-                  <p className="text-sm font-bold text-gray-900 dark:text-white leading-tight">{stat.value}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{stat.label}</p>
-                </div>
+          { label: 'Stores',           value: stats.totalStores,                     icon: Building2,     accent: 'border-l-brand-500',   iconCls: 'text-brand-600 dark:text-brand-400',   href: '/regional/stores' },
+          { label: 'Open Tickets',     value: stats.openTickets,                     icon: ClipboardList, accent: 'border-l-blue-500',    iconCls: 'text-blue-600 dark:text-blue-400',     href: '/regional/tickets' },
+          { label: 'Urgent',           value: stats.urgentTickets,                   icon: ShieldAlert,   accent: 'border-l-red-500',     iconCls: 'text-red-600 dark:text-red-400',       href: '/regional/tickets?status=open' },
+          { label: 'Pending Quotes',   value: stats.pendingQuotes,                   icon: ReceiptText,   accent: 'border-l-yellow-500',  iconCls: 'text-yellow-600 dark:text-yellow-400', href: '/regional/tickets?status=quoted' },
+          { label: 'Snag',             value: snagTickets,                           icon: Wrench,        accent: 'border-l-amber-500',   iconCls: 'text-amber-600 dark:text-amber-400',   href: '/regional/snag' },
+          { label: 'Pending Sign-off', value: pendingSignOffTickets,                 icon: BadgeCheck,    accent: 'border-l-orange-500',  iconCls: 'text-orange-600 dark:text-orange-400', href: '/regional/signoff' },
+          { label: 'Done This Month',  value: stats.completedThisMonth,              icon: CheckCircle2,  accent: 'border-l-green-500',   iconCls: 'text-green-600 dark:text-green-400',   href: '/regional/tickets?status=completed' },
+          { label: 'Accepted Value',   value: formatCurrency(stats.totalQuoteValue), icon: Banknote,      accent: 'border-l-purple-500',  iconCls: 'text-purple-600 dark:text-purple-400', href: null },
+          { label: 'Pending Value',    value: formatCurrency(stats.pendingQuoteValue), icon: Clock4,      accent: 'border-l-slate-400',   iconCls: 'text-slate-500 dark:text-slate-400',   href: null },
+        ].map(stat => {
+          const inner = (
+            <div className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 ${stat.accent} p-4 flex items-center gap-4 h-full`}>
+              <stat.icon size={22} className={`shrink-0 ${stat.iconCls}`} />
+              <div className="min-w-0">
+                <p className="text-xl font-bold text-gray-900 dark:text-white leading-none">{stat.value}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{stat.label}</p>
               </div>
-            : <Link key={stat.label} href={(stat as any).href} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 flex flex-col gap-2 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
-                <div className={`p-2 rounded-lg w-fit ${stat.color}`}><stat.icon size={16} /></div>
-                <div className="min-w-0">
-                  <p className="text-sm font-bold text-gray-900 dark:text-white leading-tight">{stat.value}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{stat.label}</p>
-                </div>
-              </Link>
-        ))}
+            </div>
+          )
+          return stat.href
+            ? <Link key={stat.label} href={stat.href} className="hover:opacity-80 transition-opacity">{inner}</Link>
+            : <div key={stat.label}>{inner}</div>
+        })}
       </div>
 
       {/* Ticket status bar */}
@@ -205,83 +203,9 @@ export default async function RegionalDashboard() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* Store performance */}
-        <div className="lg:col-span-2 space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-              <Store size={16} className="text-brand-600" /> Store Performance
-            </h2>
-            <Link href="/regional/stores" className="text-sm text-brand-600 hover:underline flex items-center gap-1">
-              View all <ArrowRight size={14} />
-            </Link>
-          </div>
-
-          {storePerformance.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center">
-              <Store size={28} className="mx-auto text-gray-300 mb-2" />
-              <p className="text-sm text-gray-400">No stores assigned yet.</p>
-              <p className="text-xs text-gray-400 mt-1">Ask your administrator to link stores to your account.</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {storePerformance.map((store: any) => (
-                <Link key={store.id} href={`/regional/stores/${store.id}`}>
-                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div className="min-w-0">
-                        <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{store.company_name}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{store.sub_store}</p>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        {store.ticketCounts.total > 0 && store.acceptanceRate !== null && (
-                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                            store.acceptanceRate >= 70 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                            store.acceptanceRate >= 40 ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                            'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                          }`}>
-                            {store.acceptanceRate}% accept
-                          </span>
-                        )}
-                        <ArrowRight size={14} className="text-gray-400" />
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex gap-1 flex-1 h-1.5 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700">
-                        {store.ticketCounts.total > 0 ? (
-                          <>
-                            <div className="bg-blue-500 transition-all" style={{ width: `${(store.ticketCounts.open / store.ticketCounts.total) * 100}%` }} />
-                            <div className="bg-amber-500 transition-all" style={{ width: `${(store.ticketCounts.in_progress / store.ticketCounts.total) * 100}%` }} />
-                            <div className="bg-green-500 transition-all" style={{ width: `${(store.ticketCounts.completed / store.ticketCounts.total) * 100}%` }} />
-                            {store.ticketCounts.pending_sign_off > 0 && (
-                              <div className="bg-orange-400 transition-all" style={{ width: `${(store.ticketCounts.pending_sign_off / store.ticketCounts.total) * 100}%` }} />
-                            )}
-                          </>
-                        ) : (
-                          <div className="bg-gray-200 dark:bg-gray-600 w-full" />
-                        )}
-                      </div>
-                      <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 shrink-0">
-                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />{store.ticketCounts.open} open</span>
-                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />{store.ticketCounts.in_progress} in progress</span>
-                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />{store.ticketCounts.completed} completed</span>
-                        {store.ticketCounts.pending_sign_off > 0 && (
-                          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-400 inline-block" />{store.ticketCounts.pending_sign_off} sign-off</span>
-                        )}
-                      </div>
-                    </div>
-                    {store.lastActivity && (
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">Last activity: {formatDateTime(store.lastActivity)}</p>
-                    )}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Right column */}
+        {/* Left column */}
         <div className="space-y-6">
 
           {/* Needs attention */}
@@ -291,7 +215,7 @@ export default async function RegionalDashboard() {
             </h2>
             {storesNeedingAttention.length === 0 ? (
               <div className="bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 rounded-xl p-4 text-center">
-                <CheckCircle size={20} className="mx-auto text-green-500 mb-1" />
+                <CheckCircle2 size={20} className="mx-auto text-green-500 mb-1" />
                 <p className="text-xs text-green-700 dark:text-green-400">All stores are in good shape!</p>
               </div>
             ) : (
@@ -328,7 +252,7 @@ export default async function RegionalDashboard() {
           {/* Recent activity */}
           <div>
             <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-3">
-              <Clock size={16} className="text-brand-600" /> Recent Tickets
+              <Clock4 size={16} className="text-brand-600" /> Recent Tickets
             </h2>
             {recentTickets.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-4">No tickets yet.</p>
