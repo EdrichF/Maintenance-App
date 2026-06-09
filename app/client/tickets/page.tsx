@@ -7,9 +7,17 @@ import { CollapsibleArchive } from '@/components/ui/CollapsibleArchive'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
-  formatDate, formatDateTime,
+  formatDateTime,
 } from '@/lib/utils'
 import type { Ticket } from '@/lib/types'
+
+// Dashboard card "open" maps to open + quoted + accepted + in_progress + declined etc.
+// We group them into three friendly buckets matching the dashboard cards.
+const STATUS_GROUPS: Record<string, string[]> = {
+  open:        ['open', 'quoted', 'declined'],
+  in_progress: ['accepted', 'in_progress', 'pending_sign_off', 'snag', 'snag_in_progress'],
+  completed:   ['completed', 'cancelled'],
+}
 
 function TicketRow({ ticket }: { ticket: Ticket & { quotes?: any[] } }) {
   const quotes = (ticket as any).quotes ?? []
@@ -45,7 +53,11 @@ function TicketRow({ ticket }: { ticket: Ticket & { quotes?: any[] } }) {
   )
 }
 
-export default async function ClientTicketsPage() {
+export default async function ClientTicketsPage({
+  searchParams,
+}: {
+  searchParams: { status?: string }
+}) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -55,11 +67,18 @@ export default async function ClientTicketsPage() {
     .eq('client_id', user!.id)
     .order('created_at', { ascending: false })
 
-  const active   = (tickets ?? []).filter(t => !['completed','cancelled'].includes(t.status))
-  const archived = (tickets ?? []).filter(t =>  ['completed','cancelled'].includes(t.status))
+  const allTickets  = tickets ?? []
+  const activeGroup = searchParams.status && STATUS_GROUPS[searchParams.status]
 
+  // If a group filter is active, show only those statuses (no archive split)
+  const displayed = activeGroup
+    ? allTickets.filter(t => activeGroup.includes(t.status))
+    : allTickets
 
-  const allTickets = tickets ?? []
+  const active   = activeGroup ? displayed : displayed.filter(t => !['completed','cancelled'].includes(t.status))
+  const archived = activeGroup ? []        : displayed.filter(t =>  ['completed','cancelled'].includes(t.status))
+
+  const totalCount = allTickets.length
   const statusCounts = {
     open:             allTickets.filter((t: any) => t.status === 'open').length,
     quoted:           allTickets.filter((t: any) => t.status === 'quoted').length,
@@ -72,7 +91,13 @@ export default async function ClientTicketsPage() {
     declined:         allTickets.filter((t: any) => t.status === 'declined').length,
     cancelled:        allTickets.filter((t: any) => t.status === 'cancelled').length,
   }
-  const totalCount = allTickets.length
+
+  const FILTER_TABS = [
+    { key: null,          label: 'All' },
+    { key: 'open',        label: 'Open' },
+    { key: 'in_progress', label: 'In Progress' },
+    { key: 'completed',   label: 'Completed' },
+  ]
 
   return (
     <div className="space-y-6">
@@ -83,8 +108,28 @@ export default async function ClientTicketsPage() {
         </Link>
       </div>
 
-      {/* Ticket status breakdown bar */}
-      {totalCount > 0 && (
+      {/* Filter tabs */}
+      <div className="flex gap-2 flex-wrap">
+        {FILTER_TABS.map(tab => {
+          const isActive = (tab.key === null && !searchParams.status) || tab.key === searchParams.status
+          return (
+            <Link
+              key={tab.label}
+              href={tab.key ? `/client/tickets?status=${tab.key}` : '/client/tickets'}
+              className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                isActive
+                  ? 'bg-brand-600 text-white border-brand-600'
+                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400'
+              }`}
+            >
+              {tab.label}
+            </Link>
+          )
+        })}
+      </div>
+
+      {/* Ticket status breakdown bar — only shown when no filter active */}
+      {!searchParams.status && totalCount > 0 && (
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between text-sm">
             <span className="font-medium text-gray-700 dark:text-gray-200">Ticket Status Breakdown</span>
@@ -117,30 +162,36 @@ export default async function ClientTicketsPage() {
         </div>
       )}
 
-      {active.length === 0 && archived.length === 0 ? (
+      {displayed.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-10 text-center">
-          <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">No tickets yet.</p>
-          <Link href="/client/tickets/new">
-            <Button variant="secondary" size="sm">Submit your first ticket</Button>
-          </Link>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">
+            {searchParams.status ? 'No tickets in this category.' : 'No tickets yet.'}
+          </p>
+          {!searchParams.status && (
+            <Link href="/client/tickets/new">
+              <Button variant="secondary" size="sm">Submit your first ticket</Button>
+            </Link>
+          )}
         </div>
       ) : (
         <>
           <div className="space-y-2">
-            {active.length === 0 ? (
+            {active.length === 0 && !activeGroup ? (
               <p className="text-sm text-gray-400 text-center py-4">No active tickets.</p>
             ) : (
               active.map(t => <TicketRow key={t.id} ticket={t as Ticket} />)
             )}
           </div>
 
-          <CollapsibleArchive count={archived.length}>
-            {archived.map(t => (
-              <div key={t.id} className="px-4 py-3 opacity-75 hover:opacity-100 transition-opacity">
-                <TicketRow ticket={t as Ticket} />
-              </div>
-            ))}
-          </CollapsibleArchive>
+          {archived.length > 0 && (
+            <CollapsibleArchive count={archived.length}>
+              {archived.map(t => (
+                <div key={t.id} className="px-4 py-3 opacity-75 hover:opacity-100 transition-opacity">
+                  <TicketRow ticket={t as Ticket} />
+                </div>
+              ))}
+            </CollapsibleArchive>
+          )}
         </>
       )}
     </div>

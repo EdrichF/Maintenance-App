@@ -56,17 +56,17 @@ export default async function ClientDashboard() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: 'Open',        value: open,   icon: ClipboardList, accent: 'border-l-blue-500',   iconCls: 'text-blue-600 dark:text-blue-400'   },
-          { label: 'In Progress', value: active, icon: Wrench,        accent: 'border-l-amber-500',  iconCls: 'text-amber-600 dark:text-amber-400' },
-          { label: 'Completed',   value: done,   icon: CheckCircle2,  accent: 'border-l-green-500',  iconCls: 'text-green-600 dark:text-green-400' },
+          { label: 'Open',        value: open,   icon: ClipboardList, accent: 'border-l-blue-500',  iconCls: 'text-blue-600 dark:text-blue-400',   href: '/client/tickets?status=open'        },
+          { label: 'In Progress', value: active, icon: Wrench,        accent: 'border-l-amber-500', iconCls: 'text-amber-600 dark:text-amber-400', href: '/client/tickets?status=in_progress' },
+          { label: 'Completed',   value: done,   icon: CheckCircle2,  accent: 'border-l-green-500', iconCls: 'text-green-600 dark:text-green-400', href: '/client/tickets?status=completed'   },
         ].map(stat => (
-          <div key={stat.label} className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 ${stat.accent} p-4 flex items-center gap-3`}>
-            <stat.icon size={20} className={`shrink-0 ${stat.iconCls}`} />
-            <div>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{stat.label}</p>
+          <Link key={stat.label} href={stat.href} className="hover:opacity-80 transition-opacity">
+            <div className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 ${stat.accent} p-3 flex flex-col items-center justify-center text-center gap-1.5 h-full`}>
+              <stat.icon size={18} className={stat.iconCls} />
+              <p className="text-xl font-bold text-gray-900 dark:text-white leading-none">{stat.value}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-tight">{stat.label}</p>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
