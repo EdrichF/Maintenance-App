@@ -4,12 +4,13 @@ import { Badge } from '@/components/ui/Badge'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
-  formatDateTime,
+  formatDateTime, formatCurrency,
 } from '@/lib/utils'
 import type { Ticket } from '@/lib/types'
 import {
   Star, ClipboardList, ShieldAlert,
   ReceiptText, Wrench, BadgeCheck, CheckCircle2,
+  Banknote, Clock4, Hash,
 } from 'lucide-react'
 
 export default async function AdminDashboard() {
@@ -21,7 +22,7 @@ export default async function AdminDashboard() {
   const [ticketsResult, ratingsResult, profileResult] = await Promise.all([
     supabase
       .from('tickets')
-      .select('*, profiles(full_name, company_name, sub_store), quotes(id, decline_reason, status, created_at)')
+      .select('*, profiles(full_name, company_name, sub_store), quotes(id, decline_reason, status, amount, created_at)')
       .order('created_at', { ascending: false }),
     user
       ? adminDb.from('ratings').select('score').eq('contractor_id', user.id)
@@ -53,6 +54,10 @@ export default async function AdminDashboard() {
 
   const pct = (n: number) => total > 0 ? Math.round((n / total) * 100) : 0
 
+  const allQuotes     = tickets.flatMap((t: any) => t.quotes ?? [])
+  const acceptedValue = allQuotes.filter((q: any) => q.status === 'accepted').reduce((s: number, q: any) => s + (q.amount ?? 0), 0)
+  const pendingValue  = allQuotes.filter((q: any) => q.status === 'pending').reduce((s: number, q: any) => s + (q.amount ?? 0), 0)
+
   return (
     <div className="space-y-6">
 
@@ -77,7 +82,9 @@ export default async function AdminDashboard() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        {/* Numeric cards */}
         {[
+          { label: 'Total Tickets',    value: total,                     icon: Hash,          accent: 'border-l-gray-400',   iconCls: 'text-gray-500 dark:text-gray-400',   href: '/admin/tickets' },
           { label: 'Open Tickets',     value: openCount + declinedCount, icon: ClipboardList, accent: 'border-l-blue-500',   iconCls: 'text-blue-600 dark:text-blue-400',   href: '/admin/tickets?status=open' },
           { label: 'Urgent',           value: urgentCount,               icon: ShieldAlert,   accent: 'border-l-red-500',    iconCls: 'text-red-600 dark:text-red-400',     href: '/admin/tickets?status=open' },
           { label: 'Quoted',           value: quotedCount,               icon: ReceiptText,   accent: 'border-l-purple-500', iconCls: 'text-purple-600 dark:text-purple-400', href: '/admin/tickets?status=quoted' },
@@ -95,6 +102,20 @@ export default async function AdminDashboard() {
               </div>
             </div>
           </Link>
+        ))}
+
+        {/* Currency cards — stacked layout so long values never overflow */}
+        {[
+          { label: 'Accepted Value', value: formatCurrency(acceptedValue), icon: Banknote, accent: 'border-l-green-500',  iconCls: 'text-green-600 dark:text-green-400'  },
+          { label: 'Pending Value',  value: formatCurrency(pendingValue),  icon: Clock4,   accent: 'border-l-yellow-500', iconCls: 'text-yellow-600 dark:text-yellow-400' },
+        ].map(stat => (
+          <div key={stat.label} className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 ${stat.accent} p-4 flex flex-col justify-between gap-2 h-full`}>
+            <div className="flex items-center gap-2">
+              <stat.icon size={15} className={`shrink-0 ${stat.iconCls}`} />
+              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">{stat.label}</p>
+            </div>
+            <p className="text-sm font-bold text-gray-900 dark:text-white leading-snug break-words">{stat.value}</p>
+          </div>
         ))}
       </div>
 
