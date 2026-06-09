@@ -31,6 +31,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     } else {
       root.classList.remove('dark')
     }
+    // Explicitly set color-scheme so Samsung Chrome's "Force Dark" feature
+    // respects the user's chosen theme and doesn't re-invert colours.
+    root.style.colorScheme = t
   }
 
   function toggle() {

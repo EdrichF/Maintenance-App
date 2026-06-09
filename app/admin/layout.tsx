@@ -17,7 +17,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <Navbar role="admin" />
       <RealtimeRefresh tables={['tickets', 'quotes', 'notifications', 'profiles', 'completions']} />
       <SwipeNav links={LINKS}>
-        <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-6 pb-24">
+        <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 pb-24">
           {children}
         </main>
       </SwipeNav>

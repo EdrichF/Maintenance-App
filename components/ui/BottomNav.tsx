@@ -54,7 +54,7 @@ export function BottomNav({ role }: { role: NavRole }) {
               href={href}
               className={`flex flex-col items-center justify-center flex-1 gap-1 text-[10px] font-medium transition-colors ${
                 active
-                  ? 'text-white'
+                  ? 'text-[#C6A35D]'
                   : 'text-gray-400 hover:text-gray-200'
               }`}
             >

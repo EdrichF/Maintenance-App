@@ -47,15 +47,15 @@ export default async function RMDetailPage({ params }: { params: { id: string } 
       <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-l-4 border-l-brand-500 rounded-xl p-5 space-y-3">
         <h2 className="font-semibold text-sm text-gray-900 dark:text-white mb-4">Contact Details</h2>
         {[
-          { icon: Mail,   label: 'Email',   value: rm.email,   href: rm.email  ? `mailto:${rm.email}` : null },
-          { icon: Phone,  label: 'Phone',   value: rm.phone,   href: rm.phone  ? `tel:${rm.phone}`    : null },
-          { icon: MapPin, label: 'Address', value: rm.address, href: null },
+          { icon: Mail,   label: 'Email',   value: rm.email,   href: rm.email   ? `mailto:${rm.email}` : null },
+          { icon: Phone,  label: 'Phone',   value: rm.phone,   href: rm.phone   ? `tel:${rm.phone}`    : null },
+          { icon: MapPin, label: 'Address', value: rm.address, href: rm.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(rm.address)}` : null },
         ].map(({ icon: Icon, label, value, href }) => (
           <div key={label} className="flex items-center gap-3">
             <Icon size={15} className="text-gray-400 shrink-0" />
             {value ? (
               href ? (
-                <a href={href} className="text-sm text-gray-700 dark:text-gray-200 hover:underline truncate">{value}</a>
+                <a href={href} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-700 dark:text-gray-200 hover:underline truncate">{value}</a>
               ) : (
                 <span className="text-sm text-gray-700 dark:text-gray-200 truncate">{value}</span>
               )
