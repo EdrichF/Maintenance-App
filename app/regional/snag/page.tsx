@@ -43,7 +43,7 @@ export default async function RegionalSnagPage() {
   const storeGroups = Object.values(byStore)
 
   return (
-    <div className="space-y-5 max-w-3xl">
+    <div className="space-y-5">
       <div>
         <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <AlertTriangle size={20} className="text-amber-500" /> Snag Tickets
@@ -85,25 +85,26 @@ export default async function RegionalSnagPage() {
                   return (
                     <Link key={ticket.id} href={`/regional/tickets/${ticket.id}`}>
                       <div className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{formatDateTime(ticket.updated_at)}</p>
-                            {latestRejection?.reject_reason && (
-                              <p className="text-xs text-amber-700 dark:text-amber-400 mt-1 font-medium bg-amber-50 dark:bg-amber-900/20 rounded px-2 py-0.5 inline-block">
-                                Rejection: {latestRejection.reject_reason}
-                              </p>
-                            )}
-                          </div>
-                          <div className="flex flex-col gap-1 items-end shrink-0">
-                            <Badge className={PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}>
-                              {PRIORITY_LABELS[ticket.priority as keyof typeof PRIORITY_LABELS]}
-                            </Badge>
-                            <Badge className={STATUS_COLORS[ticket.status as keyof typeof STATUS_COLORS]}>
-                              {STATUS_LABELS[ticket.status as keyof typeof STATUS_LABELS]}
-                            </Badge>
-                          </div>
+                        <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                          {store?.company_name ?? '—'} — {store?.sub_store ?? '—'}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                          <Badge className={PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}>
+                            {PRIORITY_LABELS[ticket.priority as keyof typeof PRIORITY_LABELS]}
+                          </Badge>
+                          <Badge className={STATUS_COLORS[ticket.status as keyof typeof STATUS_COLORS]}>
+                            {STATUS_LABELS[ticket.status as keyof typeof STATUS_LABELS]}
+                          </Badge>
                         </div>
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
+                          Updated: {formatDateTime(ticket.updated_at)}
+                        </p>
+                        {latestRejection?.reject_reason && (
+                          <p className="text-xs text-amber-700 dark:text-amber-400 mt-1 font-medium bg-amber-50 dark:bg-amber-900/20 rounded px-2 py-0.5 inline-block">
+                            Rejection: {latestRejection.reject_reason}
+                          </p>
+                        )}
                       </div>
                     </Link>
                   )

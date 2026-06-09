@@ -16,24 +16,34 @@ import {
 } from '@/lib/utils'
 import type { Ticket, Quote } from '@/lib/types'
 
-function TicketRow({ ticket }: { ticket: Ticket }) {
+function TicketRow({ ticket, storeName }: { ticket: Ticket; storeName?: string }) {
+  const latestQuote = ((ticket as any).quotes ?? [])
+    .filter((q: any) => q.status !== 'declined')
+    .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
+
   return (
     <Link href={`/regional/tickets/${ticket.id}`}>
-      <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
-            <p className="text-xs text-gray-400 mt-0.5">{formatDateTime(ticket.created_at)}</p>
-          </div>
-          <div className="flex flex-col gap-1 items-end shrink-0">
-            <Badge className={PRIORITY_COLORS[ticket.priority]}>
-              {PRIORITY_LABELS[ticket.priority]}
-            </Badge>
-            <Badge className={STATUS_COLORS[ticket.status]}>
-              {STATUS_LABELS[ticket.status]}
-            </Badge>
-          </div>
+      <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-400 dark:hover:border-gray-400 transition-colors">
+        <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
+        {storeName && (
+          <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{storeName}</p>
+        )}
+        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+          <Badge className={PRIORITY_COLORS[ticket.priority]}>
+            {PRIORITY_LABELS[ticket.priority]}
+          </Badge>
+          <Badge className={STATUS_COLORS[ticket.status]}>
+            {STATUS_LABELS[ticket.status]}
+          </Badge>
         </div>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
+          Created: {formatDateTime(ticket.created_at)}
+          {latestQuote && (
+            <span className="ml-2 text-purple-500 dark:text-purple-400">
+              · Quoted: {formatDateTime(latestQuote.created_at)}
+            </span>
+          )}
+        </p>
       </div>
     </Link>
   )
@@ -125,7 +135,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
     : null
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6">
 
       {/* Header */}
       <div className="flex items-center gap-3">
@@ -379,7 +389,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
         >
           {(archivedQuotes as any[]).map((q: any) => (
             <Link key={q.id} href={`/regional/tickets/${q.ticketId}`}>
-              <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 flex items-center justify-between gap-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
+              <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 flex items-center justify-between gap-3 hover:border-brand-400 dark:hover:border-gray-400 transition-colors">
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{q.ticketTitle}</p>
                   <p className="text-xs text-gray-400 mt-0.5">{formatCurrency(q.amount)} · {formatDateTime(q.created_at)}</p>

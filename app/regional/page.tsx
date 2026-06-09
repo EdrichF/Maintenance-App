@@ -1,6 +1,7 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { RecentTicketsStack } from '@/components/regional/RecentTicketsStack'
 import {
   Building2, ShieldAlert, ReceiptText,
   TrendingUp, CheckCircle2, Zap, ClipboardList,
@@ -87,13 +88,16 @@ export default async function RegionalDashboard() {
     .sort((a: any, b: any) => b.urgentCount - a.urgentCount)
     .slice(0, 5)
 
+  const sevenDaysAgo = new Date()
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+
   const recentTickets = allTickets
     .map((t: any) => {
       const store = storeList.find((s: any) => (s.tickets ?? []).some((st: any) => st.id === t.id))
       return { ...t, store }
     })
+    .filter((t: any) => new Date(t.created_at) >= sevenDaysAgo)
     .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 8)
 
   const storePerformance = storeList.map((s: any) => {
     const tickets = s.tickets ?? []
@@ -216,84 +220,53 @@ export default async function RegionalDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* Left column */}
-        <div className="space-y-6">
+        {/* LEFT — Recent Tickets (stacked card deck) */}
+        <div>
+          <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-3">
+            <Clock4 size={16} className="text-brand-600" /> Recent Tickets
+          </h2>
+          <RecentTicketsStack tickets={recentTickets} />
+        </div>
 
-          {/* Needs attention */}
-          <div>
-            <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-3">
-              <Zap size={16} className="text-red-500" /> Needs Attention
-            </h2>
-            {storesNeedingAttention.length === 0 ? (
-              <div className="bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 rounded-xl p-4 text-center">
-                <CheckCircle2 size={20} className="mx-auto text-green-500 mb-1" />
-                <p className="text-xs text-green-700 dark:text-green-400">All stores are in good shape!</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {storesNeedingAttention.map((store: any) => (
-                  <Link key={store.id} href={`/regional/stores/${store.id}`}>
-                    <div className="bg-slate-50 dark:bg-gray-800 border border-red-100 dark:border-red-900/40 rounded-xl px-3 py-2.5 hover:border-red-300 transition-colors">
-                      <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{store.company_name}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{store.sub_store}</p>
-                      <div className="flex gap-2 mt-1.5">
-                        {store.urgentCount > 0 && (
-                          <span className="text-xs bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-2 py-0.5 rounded-full">
-                            {store.urgentCount} urgent
-                          </span>
-                        )}
-                        {store.highCount > 0 && (
-                          <span className="text-xs bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 px-2 py-0.5 rounded-full">
-                            {store.highCount} high
-                          </span>
-                        )}
-                      </div>
-                      {store.lastActivity && (
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                          Last ticket: {formatDateTime(store.lastActivity)}
-                        </p>
+        {/* RIGHT — Needs Attention */}
+        <div>
+          <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-3">
+            <Zap size={16} className="text-red-500" /> Needs Attention
+          </h2>
+          {storesNeedingAttention.length === 0 ? (
+            <div className="bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 rounded-xl p-4 text-center">
+              <CheckCircle2 size={20} className="mx-auto text-green-500 mb-1" />
+              <p className="text-xs text-green-700 dark:text-green-400">All stores are in good shape!</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {storesNeedingAttention.map((store: any) => (
+                <Link key={store.id} href={`/regional/stores/${store.id}`}>
+                  <div className="bg-slate-50 dark:bg-gray-800 border border-red-100 dark:border-red-900/40 rounded-xl px-3 py-2.5 hover:border-red-400 dark:hover:border-red-500 transition-colors">
+                    <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{store.company_name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{store.sub_store}</p>
+                    <div className="flex gap-2 mt-1.5">
+                      {store.urgentCount > 0 && (
+                        <span className="text-xs bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-2 py-0.5 rounded-full">
+                          {store.urgentCount} urgent
+                        </span>
+                      )}
+                      {store.highCount > 0 && (
+                        <span className="text-xs bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 px-2 py-0.5 rounded-full">
+                          {store.highCount} high
+                        </span>
                       )}
                     </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Recent activity */}
-          <div>
-            <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-3">
-              <Clock4 size={16} className="text-brand-600" /> Recent Tickets
-            </h2>
-            {recentTickets.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-4">No tickets yet.</p>
-            ) : (
-              <div className="space-y-2">
-                {recentTickets.map((ticket: any) => (
-                  <Link key={ticket.id} href={`/regional/tickets/${ticket.id}`}>
-                    <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{ticket.title}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
-                        {ticket.store?.company_name} — {ticket.store?.sub_store}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1.5">
-                        <Badge className={`text-xs ${PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}`}>
-                          {PRIORITY_LABELS[ticket.priority as keyof typeof PRIORITY_LABELS]}
-                        </Badge>
-                        <Badge className={`text-xs ${STATUS_COLORS[ticket.status as keyof typeof STATUS_COLORS]}`}>
-                          {STATUS_LABELS[ticket.status as keyof typeof STATUS_LABELS]}
-                        </Badge>
-                      </div>
+                    {store.lastActivity && (
                       <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                        Created: {formatDateTime(ticket.created_at)}
-                        {(() => { const qs = (ticket as any).quotes ?? []; const latest = qs.filter((q: any) => q.status !== 'declined').sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]; if (!latest) return null; return <span className="ml-2 text-purple-500 dark:text-purple-400">Quoted: {formatDateTime(latest.created_at)}</span> })()}
+                        Last ticket: {formatDateTime(store.lastActivity)}
                       </p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

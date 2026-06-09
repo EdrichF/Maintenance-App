@@ -71,7 +71,7 @@ export default async function RegionalStoresPage() {
         <div className="space-y-4">
           {storeList.map((store: any) => (
             <Link key={store.id} href={`/regional/stores/${store.id}`}>
-              <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
+              <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-brand-400 dark:hover:border-gray-400 transition-colors">
 
                 {/* Header */}
                 <div className="flex items-start justify-between gap-2 mb-4">

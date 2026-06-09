@@ -166,30 +166,15 @@ export default async function AdminDashboard() {
               .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
             return (
               <Link key={ticket.id} href={`/admin/tickets/${ticket.id}`}>
-                <div className={`border rounded-xl px-4 py-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors ${
+                <div className={`border rounded-xl px-4 py-3 hover:border-brand-400 dark:hover:border-gray-400 transition-colors ${
                   ticket.status === 'declined'
                     ? 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/40'
                     : 'bg-slate-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                 }`}>
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
-                        {tkt.profiles?.company_name} — {tkt.profiles?.sub_store} · {tkt.profiles?.full_name}
-                      </p>
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                        Created: {formatDateTime(ticket.created_at)}
-                        {latestQuote && (
-                          <span className="ml-2 text-purple-500 dark:text-purple-400">· Quoted: {formatDateTime(latestQuote.created_at)}</span>
-                        )}
-                      </p>
-                      {tkt.status === 'declined' && declinedQuote?.decline_reason && (
-                        <p className="text-xs text-red-600 dark:text-red-400 mt-1 font-medium">
-                          Declined — {declinedQuote.decline_reason}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-1 items-end shrink-0">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{tkt.profiles?.company_name}</p>
+                    <p className="font-medium text-sm text-gray-700 dark:text-gray-200 truncate mt-0.5">{ticket.title}</p>
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                       <Badge className={PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}>
                         {PRIORITY_LABELS[ticket.priority as keyof typeof PRIORITY_LABELS]}
                       </Badge>
@@ -197,6 +182,17 @@ export default async function AdminDashboard() {
                         {STATUS_LABELS[ticket.status as keyof typeof STATUS_COLORS]}
                       </Badge>
                     </div>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
+                      Created: {formatDateTime(ticket.created_at)}
+                      {latestQuote && (
+                        <span className="ml-2 text-purple-500 dark:text-purple-400">· Quoted: {formatDateTime(latestQuote.created_at)}</span>
+                      )}
+                    </p>
+                    {tkt.status === 'declined' && declinedQuote?.decline_reason && (
+                      <p className="text-xs text-red-600 dark:text-red-400 mt-1 font-medium">
+                        Declined — {declinedQuote.decline_reason}
+                      </p>
+                    )}
                   </div>
                 </div>
               </Link>

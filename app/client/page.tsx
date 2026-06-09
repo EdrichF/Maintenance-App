@@ -89,7 +89,7 @@ export default async function ClientDashboard() {
           <div className="space-y-2">
             {(tickets as TicketType[]).map(ticket => (
               <Link key={ticket.id} href={`/client/tickets/${ticket.id}`}>
-                <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-300 dark:hover:border-brand-600 transition-colors flex items-center justify-between gap-3">
+                <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-400 dark:hover:border-gray-400 transition-colors flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">

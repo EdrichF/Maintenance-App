@@ -17,7 +17,7 @@ const VISIBLE_STATUSES = ['open', 'in_progress', 'completed']
 function TicketRow({ ticket }: { ticket: Ticket }) {
   return (
     <Link href={`/client/tickets/${ticket.id}`}>
-      <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-4 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
+      <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-4 hover:border-brand-400 dark:hover:border-gray-400 transition-colors">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-gray-900 dark:text-white truncate">{ticket.title}</p>

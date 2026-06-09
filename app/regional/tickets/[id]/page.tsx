@@ -265,7 +265,7 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
               )
               return q.file_url ? (
                 <a key={q.id} href={q.file_url} target="_blank" rel="noopener noreferrer"
-                  className="block bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
+                  className="block bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-brand-400 dark:hover:border-gray-400 transition-colors">
                   {inner}
                 </a>
               ) : (

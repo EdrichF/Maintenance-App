@@ -45,7 +45,7 @@ export default async function RegionalSignoffPage() {
   const storeGroups = Object.values(byStore)
 
   return (
-    <div className="space-y-5 max-w-3xl">
+    <div className="space-y-5">
       <div>
         <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <ClipboardCheck size={20} className="text-orange-500" /> Sign-off Queue
@@ -80,22 +80,22 @@ export default async function RegionalSignoffPage() {
               <div className="border-t border-gray-100 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700/60">
                 {storeTickets.map((ticket: any) => (
                   <Link key={ticket.id} href={`/regional/tickets/${ticket.id}`}>
-                    <div className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors flex items-center justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                          Submitted: {formatDateTime(ticket.updated_at)}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
+                    <div className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                      <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                        {store?.company_name ?? '—'} — {store?.sub_store ?? '—'}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                         <Badge className={PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}>
                           {PRIORITY_LABELS[ticket.priority as keyof typeof PRIORITY_LABELS]}
                         </Badge>
                         <Badge className={STATUS_COLORS[ticket.status as keyof typeof STATUS_COLORS]}>
                           {STATUS_LABELS[ticket.status as keyof typeof STATUS_LABELS]}
                         </Badge>
-                        <ArrowRight size={14} className="text-gray-400" />
                       </div>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
+                        Submitted: {formatDateTime(ticket.updated_at)}
+                      </p>
                     </div>
                   </Link>
                 ))}
