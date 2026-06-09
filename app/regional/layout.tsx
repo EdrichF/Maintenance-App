@@ -1,4 +1,5 @@
 import { Navbar } from '@/components/ui/Navbar'
+import { BottomNav } from '@/components/ui/BottomNav'
 import { RealtimeRefresh } from '@/components/ui/RealtimeRefresh'
 import { SwipeNav } from '@/components/ui/SwipeNav'
 
@@ -16,10 +17,11 @@ export default function RegionalLayout({ children }: { children: React.ReactNode
       <Navbar role="regional" />
       <RealtimeRefresh tables={['tickets', 'quotes', 'notifications', 'completions']} />
       <SwipeNav links={LINKS}>
-        <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
+        <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6 pb-24">
           {children}
         </main>
       </SwipeNav>
+      <BottomNav role="regional" />
     </div>
   )
 }
