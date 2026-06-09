@@ -114,8 +114,8 @@ export default async function AdminTicketsPage({
           {(active as (Ticket & { profiles: any })[]).map(ticket => (
             <Link key={ticket.id} href={`/admin/tickets/${ticket.id}`}>
               <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-400 dark:hover:border-gray-400 transition-colors">
-                <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{ticket.profiles?.company_name}</p>
-                <p className="font-medium text-sm text-gray-700 dark:text-gray-200 truncate mt-0.5">{ticket.title}</p>
+                <p className="font-bold text-base text-gray-900 dark:text-white truncate">{ticket.profiles?.company_name}</p>
+                <p className="text-xs text-gray-600 dark:text-gray-300 truncate mt-0.5">{ticket.title}</p>
                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                   <Badge className={PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}>
                     {PRIORITY_LABELS[ticket.priority as keyof typeof PRIORITY_LABELS]}

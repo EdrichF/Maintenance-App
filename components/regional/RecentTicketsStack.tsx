@@ -66,14 +66,7 @@ export function RecentTicketsStack({ tickets }: { tickets: RecentTicket[] }) {
   // Show up to 3 background layers (even if fewer tickets)
   const layerCount = Math.min(tickets.length - 1, 3)
 
-  // Layer config: translateY offset and scale for each background layer
-  const layers = [
-    { translateY: 8,  scaleX: 0.975, opacity: 0.55 },
-    { translateY: 16, scaleX: 0.950, opacity: 0.35 },
-    { translateY: 24, scaleX: 0.925, opacity: 0.20 },
-  ].slice(0, layerCount)
-
-  const stackBottomSpace = layerCount * 8 + 8 // px to reserve below stack
+  const stackBottomSpace = layerCount * 10 + 12 // px to reserve below stack
 
   return (
     <div>
@@ -86,23 +79,26 @@ export function RecentTicketsStack({ tickets }: { tickets: RecentTicket[] }) {
           {/* Stack wrapper — extra bottom margin gives room for peeking layers */}
           <div className="relative" style={{ marginBottom: `${stackBottomSpace}px` }}>
 
-            {/* Background layers — rendered first, transformed downward */}
-            {layers.map((layer, i) => (
-              <div
-                key={i}
-                className="absolute inset-0 rounded-xl border border-gray-200 dark:border-gray-600 bg-slate-100 dark:bg-gray-700"
-                style={{
-                  transform: `translateY(${layer.translateY}px) scaleX(${layer.scaleX})`,
-                  opacity: layer.opacity,
-                  zIndex: i,
-                }}
-              />
-            ))}
+            {/* Background layers — progressively darker toward the back
+                Light mode: layer0=gray-200, layer1=gray-300, layer2=gray-400
+                Dark mode:  layer0=gray-600, layer1=gray-500, layer2=gray-400  */}
+            {layerCount >= 1 && (
+              <div className="absolute inset-0 rounded-xl border border-gray-300 dark:border-gray-500 bg-gray-200 dark:bg-gray-600"
+                style={{ transform: 'translateY(10px) scaleX(0.972)', zIndex: 0 }} />
+            )}
+            {layerCount >= 2 && (
+              <div className="absolute inset-0 rounded-xl border border-gray-400 dark:border-gray-400 bg-gray-300 dark:bg-gray-500"
+                style={{ transform: 'translateY(20px) scaleX(0.944)', zIndex: 0 }} />
+            )}
+            {layerCount >= 3 && (
+              <div className="absolute inset-0 rounded-xl border border-gray-500 dark:border-gray-300 bg-gray-400 dark:bg-gray-400"
+                style={{ transform: 'translateY(30px) scaleX(0.916)', zIndex: 0 }} />
+            )}
 
             {/* Top card */}
             <div
               className="relative bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4"
-              style={{ zIndex: layers.length }}
+              style={{ zIndex: layerCount + 1 }}
             >
               <TicketContent ticket={topTicket} />
 

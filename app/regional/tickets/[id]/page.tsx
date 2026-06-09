@@ -82,7 +82,7 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
 
 
   return (
-    <div className="max-w-2xl space-y-5">
+    <div className="space-y-5">
 
       {/* Back */}
       <div className="flex items-center gap-3">

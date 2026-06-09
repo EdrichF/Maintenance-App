@@ -172,8 +172,8 @@ export default async function AdminDashboard() {
                     : 'bg-slate-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                 }`}>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{tkt.profiles?.company_name}</p>
-                    <p className="font-medium text-sm text-gray-700 dark:text-gray-200 truncate mt-0.5">{ticket.title}</p>
+                    <p className="font-bold text-base text-gray-900 dark:text-white truncate">{tkt.profiles?.company_name}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-300 truncate mt-0.5">{ticket.title}</p>
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                       <Badge className={PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}>
                         {PRIORITY_LABELS[ticket.priority as keyof typeof PRIORITY_LABELS]}

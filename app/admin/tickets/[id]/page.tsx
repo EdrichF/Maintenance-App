@@ -47,7 +47,7 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
     && !['pending_sign_off', 'completed', 'cancelled'].includes(ticketStatus)
 
   return (
-    <div className="max-w-2xl mx-auto space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center gap-3">
         <BackButton />
         <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">{ticket.title}</h1>

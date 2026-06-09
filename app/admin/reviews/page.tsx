@@ -43,7 +43,7 @@ export default async function AdminReviewsPage() {
     : null
 
   return (
-    <div className="max-w-2xl space-y-5">
+    <div className="space-y-5">
       <div className="flex items-center gap-3">
         <BackButton />
         <div>
