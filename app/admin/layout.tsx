@@ -4,11 +4,12 @@ import { RealtimeRefresh } from '@/components/ui/RealtimeRefresh'
 import { SwipeNav } from '@/components/ui/SwipeNav'
 
 const LINKS = [
-  { href: '/admin',          label: 'Dashboard' },
-  { href: '/admin/tickets',  label: 'Tickets'   },
-  { href: '/admin/regional', label: 'Clients'   },
-  { href: '/admin/stats',    label: 'Stats'     },
-  { href: '/admin/snag',     label: 'Snag'      },
+  { href: '/admin',           label: 'Dashboard' },
+  { href: '/admin/tickets',   label: 'Tickets'   },
+  { href: '/admin/regional',  label: 'Clients'   },
+  { href: '/admin/suppliers', label: 'Suppliers' },
+  { href: '/admin/stats',     label: 'Stats'     },
+  { href: '/admin/snag',      label: 'Snag'      },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

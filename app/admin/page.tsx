@@ -7,7 +7,7 @@ import { RecentTicketsStack } from '@/components/regional/RecentTicketsStack'
 import {
   Star, ClipboardList, ShieldAlert,
   ReceiptText, Wrench, BadgeCheck, CheckCircle2,
-  Banknote, Clock4, Hash,
+  Banknote, Clock4, Hash, Zap,
 } from 'lucide-react'
 
 export default async function AdminDashboard() {
@@ -20,7 +20,7 @@ export default async function AdminDashboard() {
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
   const sevenDaysAgoISO = sevenDaysAgo.toISOString()
 
-  const [ticketsResult, recentTicketsResult, ratingsResult, profileResult] = await Promise.all([
+  const [ticketsResult, recentTicketsResult, attentionTicketsResult, ratingsResult, profileResult] = await Promise.all([
     supabase
       .from('tickets')
       .select('id, status, priority, created_at, quotes(status, amount)')
@@ -30,6 +30,13 @@ export default async function AdminDashboard() {
       .select('id, title, status, priority, created_at, profiles(full_name, company_name, sub_store), quotes(status, created_at)')
       .gte('created_at', sevenDaysAgoISO)
       .order('created_at', { ascending: false }),
+    supabase
+      .from('tickets')
+      .select('id, title, status, priority, created_at, profiles(full_name, company_name, sub_store), quotes(status, created_at)')
+      .in('priority', ['urgent', 'high'])
+      .not('status', 'in', '(completed,cancelled,declined)')
+      .order('created_at', { ascending: false })
+      .limit(30),
     user
       ? adminDb.from('ratings').select('score').eq('contractor_id', user.id)
       : Promise.resolve({ data: [] }),
@@ -40,6 +47,11 @@ export default async function AdminDashboard() {
 
   const tickets       = ticketsResult.data ?? []
   const recentTickets = recentTicketsResult.data ?? []
+  const attentionTickets = (attentionTicketsResult.data ?? []).sort((a: any, b: any) => {
+    if (a.priority === 'urgent' && b.priority !== 'urgent') return -1
+    if (b.priority === 'urgent' && a.priority !== 'urgent') return 1
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  })
   const companyName   = (profileResult as any).data?.company_name ?? 'Dashboard'
   const ratings     = (ratingsResult as any).data ?? []
   const ratingCount = ratings.length
@@ -158,17 +170,44 @@ export default async function AdminDashboard() {
         </div>
       )}
 
-      {/* Recent tickets */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-semibold text-gray-900 dark:text-white">Recent Tickets</h2>
-          <Link href="/admin/tickets" className="text-sm text-brand-600 hover:underline">View all</Link>
+      {/* Two-column grid: Needs Attention first (top on mobile), Recent Tickets second */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        {/* LEFT — Needs Attention */}
+        <div>
+          <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-3">
+            <Zap size={16} className="text-red-500" /> Needs Attention
+          </h2>
+          {attentionTickets.length === 0 ? (
+            <div className="bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 rounded-xl p-4 text-center">
+              <CheckCircle2 size={20} className="mx-auto text-green-500 mb-1" />
+              <p className="text-xs text-green-700 dark:text-green-400">No urgent or high priority tickets — all clear!</p>
+            </div>
+          ) : (
+            <RecentTicketsStack
+              tickets={attentionTickets as any}
+              variant="admin"
+              basePath="/admin/tickets"
+              countLabel="need attention"
+            />
+          )}
         </div>
-        <RecentTicketsStack
-          tickets={recentTickets as any}
-          variant="admin"
-          basePath="/admin/tickets"
-        />
+
+        {/* RIGHT — Recent Tickets */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              <Clock4 size={16} className="text-brand-600" /> Recent Tickets
+            </h2>
+            <Link href="/admin/tickets" className="text-sm text-brand-600 hover:underline">View all</Link>
+          </div>
+          <RecentTicketsStack
+            tickets={recentTickets as any}
+            variant="admin"
+            basePath="/admin/tickets"
+            countLabel="last 7 days"
+          />
+        </div>
       </div>
     </div>
   )

@@ -3,10 +3,10 @@
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
-import { useDropzone } from 'react-dropzone'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/Button'
-import { Upload, X, ArrowLeft } from 'lucide-react'
+import { PhotoUploader } from '@/components/ui/PhotoUploader'
+import { ArrowLeft } from 'lucide-react'
 import type { Priority } from '@/lib/types'
 
 interface TicketForm {
@@ -48,19 +48,10 @@ export default function NewTicketPage() {
   })
   const priority = watch('priority')
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const newFiles = acceptedFiles.slice(0, 5 - photos.length)
-    setPhotos(prev => [...prev, ...newFiles])
-    setPreviews(prev => [...prev, ...newFiles.map(f => URL.createObjectURL(f))])
-  }, [photos])
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: { 'image/*': [] },
-    maxSize: 10 * 1024 * 1024, // 10MB
-    maxFiles: 5,
-    disabled: photos.length >= 5,
-  })
+  function addPhotos(files: File[]) {
+    setPhotos(prev => [...prev, ...files])
+    setPreviews(prev => [...prev, ...files.map(f => URL.createObjectURL(f))])
+  }
 
   function removePhoto(index: number) {
     setPhotos(prev => prev.filter((_, i) => i !== index))
@@ -175,50 +166,14 @@ export default function NewTicketPage() {
               Photos <span className="text-red-500">*</span>
               <span className="text-gray-400 font-normal ml-1">(minimum 2, up to 5)</span>
             </label>
-
-            {/* Previews */}
-            {previews.length > 0 && (
-              <div className="grid grid-cols-3 gap-2 mb-3">
-                {previews.map((src, i) => (
-                  <div key={i} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
-                    <img src={src} alt="" className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => removePhoto(i)}
-                      className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5 hover:bg-black/70"
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {photos.length > 0 && photos.length < 2 && (
-              <p className="text-xs text-amber-600 dark:text-amber-400 mb-2">
-                Add {2 - photos.length} more photo{2 - photos.length !== 1 ? 's' : ''} — at least 2 required.
-              </p>
-            )}
-            {photos.length > 0 && photos.length < 2 && (
-              <p className="text-xs text-amber-600 dark:text-amber-400 mb-2">
-                Add {2 - photos.length} more photo{2 - photos.length !== 1 ? 's' : ''} — at least 2 required.
-              </p>
-            )}
-            {photos.length < 5 && (
-              <div
-                {...getRootProps()}
-                className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
-                  isDragActive ? 'border-brand-400 bg-brand-50 dark:bg-brand-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-brand-300 dark:hover:bg-gray-700/50'
-                }`}
-              >
-                <input {...getInputProps()} />
-                <Upload className="mx-auto text-gray-400 mb-2" size={24} />
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {isDragActive ? 'Drop photos here' : 'Tap to upload or drag & drop'}
-                </p>
-                <p className="text-xs text-gray-400 mt-1">PNG, JPG up to 10MB</p>
-              </div>
-            )}
+            <PhotoUploader
+              photos={photos}
+              previews={previews}
+              onAdd={addPhotos}
+              onRemove={removePhoto}
+              max={5}
+              minHint={2}
+            />
           </div>
 
           {error && (

@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDropzone } from 'react-dropzone'
 import { Button } from '@/components/ui/Button'
+import { PhotoUploader } from '@/components/ui/PhotoUploader'
 import { UploadCloud, X, FileText, CheckCircle, AlertTriangle, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
@@ -30,15 +31,10 @@ export function SubmitCompletionForm({ ticketId }: Props) {
   // POC photos (min 2)
   const [pocFiles, setPocFiles] = useState<File[]>([])
   const [pocPreviews, setPocPreviews] = useState<string[]>([])
-  const onDropPoc = useCallback((files: File[]) => {
-    const add = files.slice(0, 10 - pocFiles.length)
-    setPocFiles(p => [...p, ...add])
-    setPocPreviews(p => [...p, ...add.map(f => URL.createObjectURL(f))])
-  }, [pocFiles])
-  const { getRootProps: getPocProps, getInputProps: getPocInput, isDragActive: pocDrag } = useDropzone({
-    onDrop: onDropPoc, accept: { 'image/*': [] }, maxSize: 10 * 1024 * 1024,
-    disabled: pocFiles.length >= 10,
-  })
+  function addPoc(files: File[]) {
+    setPocFiles(p => [...p, ...files])
+    setPocPreviews(p => [...p, ...files.map(f => URL.createObjectURL(f))])
+  }
   function removePoc(i: number) {
     setPocFiles(p => p.filter((_, idx) => idx !== i))
     setPocPreviews(p => p.filter((_, idx) => idx !== i))
@@ -129,28 +125,15 @@ export function SubmitCompletionForm({ ticketId }: Props) {
           Proof of Completion (POC) Photos <span className="text-red-500">*</span>
           <span className="text-gray-400 font-normal ml-1">(minimum 2, up to 10)</span>
         </label>
-        {pocPreviews.length > 0 && (
-          <div className="grid grid-cols-4 gap-2 mb-3">
-            {pocPreviews.map((src, i) => (
-              <div key={i} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
-                <img src={src} alt="" className="w-full h-full object-cover" />
-                <button type="button" onClick={() => removePoc(i)} className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-0.5 hover:bg-black/70">
-                  <X size={10} />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-        {pocFiles.length > 0 && pocFiles.length < 2 && (
-          <p className="text-xs text-amber-600 dark:text-amber-400 mb-2">Add {2 - pocFiles.length} more photo{2 - pocFiles.length !== 1 ? 's' : ''} — minimum 2 required.</p>
-        )}
-        {pocFiles.length < 10 && (
-          <div {...getPocProps()} className={`border-2 border-dashed rounded-lg p-5 text-center cursor-pointer transition-colors ${pocDrag ? 'border-green-500 bg-green-50 dark:bg-green-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-green-400'}`}>
-            <input {...getPocInput()} />
-            <UploadCloud size={22} className="mx-auto text-gray-400 mb-1" />
-            <p className="text-sm text-gray-500 dark:text-gray-400">{pocDrag ? 'Drop photos…' : 'Tap to add photos (PNG, JPG, up to 10 MB)'}</p>
-          </div>
-        )}
+        <PhotoUploader
+          photos={pocFiles}
+          previews={pocPreviews}
+          onAdd={addPoc}
+          onRemove={removePoc}
+          max={10}
+          minHint={2}
+          cols={4}
+        />
       </div>
 
       {/* Notes */}

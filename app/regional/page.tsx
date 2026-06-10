@@ -12,7 +12,7 @@ import {
 import { Badge } from '@/components/ui/Badge'
 import {
   STATUS_COLORS, STATUS_LABELS, PRIORITY_COLORS, PRIORITY_LABELS,
-  formatDate, formatDateTime, formatCurrency,
+  formatDate, formatCurrency,
 } from '@/lib/utils'
 import type { Ticket, Quote } from '@/lib/types'
 
@@ -76,28 +76,28 @@ export default async function RegionalDashboard() {
     pendingQuoteValue: allQuotes.filter((q: any) => q.status === 'pending').reduce((sum: number, q: any) => sum + (q.amount ?? 0), 0),
   }
 
-  const storesNeedingAttention = storeList
-    .map((s: any) => {
-      const urgent = (s.tickets ?? []).filter((t: any) => t.priority === 'urgent' && !['completed','cancelled','declined'].includes(t.status)).length
-      const high   = (s.tickets ?? []).filter((t: any) => t.priority === 'high'   && !['completed','cancelled','declined'].includes(t.status)).length
-      const allTix = s.tickets ?? []
-      const lastAct = allTix.length > 0
-        ? allTix.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0].created_at
-        : null
-      return { ...s, urgentCount: urgent, highCount: high, lastActivity: lastAct }
-    })
-    .filter((s: any) => s.urgentCount > 0 || s.highCount > 0)
-    .sort((a: any, b: any) => b.urgentCount - a.urgentCount)
-    .slice(0, 5)
 
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
-  const recentTickets = allTickets
-    .map((t: any) => {
-      const store = storeList.find((s: any) => (s.tickets ?? []).some((st: any) => st.id === t.id))
-      return { ...t, store }
+  // Attach store info to every ticket once, reused by both lists below
+  const ticketsWithStore = allTickets.map((t: any) => {
+    const store = storeList.find((s: any) => (s.tickets ?? []).some((st: any) => st.id === t.id))
+    return { ...t, store }
+  })
+
+  const attentionTickets = ticketsWithStore
+    .filter((t: any) =>
+      ['urgent', 'high'].includes(t.priority) &&
+      !['completed', 'cancelled', 'declined'].includes(t.status)
+    )
+    .sort((a: any, b: any) => {
+      if (a.priority === 'urgent' && b.priority !== 'urgent') return -1
+      if (b.priority === 'urgent' && a.priority !== 'urgent') return 1
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     })
+
+  const recentTickets = ticketsWithStore
     .filter((t: any) => new Date(t.created_at) >= sevenDaysAgo)
     .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
@@ -222,53 +222,37 @@ export default async function RegionalDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* LEFT — Recent Tickets (stacked card deck) */}
-        <div>
-          <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-3">
-            <Clock4 size={16} className="text-brand-600" /> Recent Tickets
-          </h2>
-          <RecentTicketsStack tickets={recentTickets} />
-        </div>
-
-        {/* RIGHT — Needs Attention */}
+        {/* LEFT — Needs Attention (first on mobile too) */}
         <div>
           <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-3">
             <Zap size={16} className="text-red-500" /> Needs Attention
           </h2>
-          {storesNeedingAttention.length === 0 ? (
+          {attentionTickets.length === 0 ? (
             <div className="bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800 rounded-xl p-4 text-center">
               <CheckCircle2 size={20} className="mx-auto text-green-500 mb-1" />
-              <p className="text-xs text-green-700 dark:text-green-400">All stores are in good shape!</p>
+              <p className="text-xs text-green-700 dark:text-green-400">No urgent or high priority tickets — all clear!</p>
             </div>
           ) : (
-            <div className="space-y-2">
-              {storesNeedingAttention.map((store: any) => (
-                <Link key={store.id} href={`/regional/stores/${store.id}`}>
-                  <div className="bg-slate-50 dark:bg-gray-800 border border-red-100 dark:border-red-900/40 rounded-xl px-3 py-2.5 hover:border-red-400 dark:hover:border-red-500 transition-colors">
-                    <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{store.company_name}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{store.sub_store}</p>
-                    <div className="flex gap-2 mt-1.5">
-                      {store.urgentCount > 0 && (
-                        <span className="text-xs bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-2 py-0.5 rounded-full">
-                          {store.urgentCount} urgent
-                        </span>
-                      )}
-                      {store.highCount > 0 && (
-                        <span className="text-xs bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 px-2 py-0.5 rounded-full">
-                          {store.highCount} high
-                        </span>
-                      )}
-                    </div>
-                    {store.lastActivity && (
-                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                        Last ticket: {formatDateTime(store.lastActivity)}
-                      </p>
-                    )}
-                  </div>
-                </Link>
-              ))}
-            </div>
+            <RecentTicketsStack
+              tickets={attentionTickets}
+              variant="regional"
+              basePath="/regional/tickets"
+              countLabel="need attention"
+            />
           )}
+        </div>
+
+        {/* RIGHT — Recent Tickets */}
+        <div>
+          <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-3">
+            <Clock4 size={16} className="text-brand-600" /> Recent Tickets
+          </h2>
+          <RecentTicketsStack
+            tickets={recentTickets}
+            variant="regional"
+            basePath="/regional/tickets"
+            countLabel="last 7 days"
+          />
         </div>
       </div>
     </div>

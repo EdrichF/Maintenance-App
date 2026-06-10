@@ -4,18 +4,19 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Ticket, Users, BarChart2,
-  AlertTriangle, Store, ClipboardCheck,
+  AlertTriangle, Store, ClipboardCheck, Truck,
 } from 'lucide-react'
 
 type NavRole = 'client' | 'admin' | 'regional'
 
 const NAV_LINKS: Record<NavRole, { href: string; label: string; icon: React.ElementType }[]> = {
   admin: [
-    { href: '/admin',          label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/admin/tickets',  label: 'Tickets',   icon: Ticket          },
-    { href: '/admin/regional', label: 'Clients',   icon: Users           },
-    { href: '/admin/stats',    label: 'Stats',     icon: BarChart2       },
-    { href: '/admin/snag',     label: 'Snag',      icon: AlertTriangle   },
+    { href: '/admin',           label: 'Home',      icon: LayoutDashboard },
+    { href: '/admin/tickets',   label: 'Tickets',   icon: Ticket          },
+    { href: '/admin/regional',  label: 'Clients',   icon: Users           },
+    { href: '/admin/suppliers', label: 'Suppliers', icon: Truck           },
+    { href: '/admin/stats',     label: 'Stats',     icon: BarChart2       },
+    { href: '/admin/snag',      label: 'Snag',      icon: AlertTriangle   },
   ],
   regional: [
     { href: '/regional',         label: 'Dashboard', icon: LayoutDashboard },

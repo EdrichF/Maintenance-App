@@ -78,12 +78,15 @@ interface RecentTicketsStackProps {
   variant?: Variant
   /** Base path for ticket detail links, e.g. '/regional/tickets' or '/admin/tickets' */
   basePath?: string
+  /** Label shown next to ticket count, e.g. 'last 7 days' or 'need attention' */
+  countLabel?: string
 }
 
 export function RecentTicketsStack({
   tickets,
   variant = 'regional',
   basePath,
+  countLabel = 'last 7 days',
 }: RecentTicketsStackProps) {
   const [expanded, setExpanded] = useState(false)
 
@@ -109,7 +112,7 @@ export function RecentTicketsStack({
         <ChevronUp size={12} /> Collapse
       </span>
       <span className="text-gray-400 dark:text-gray-500">
-        {tickets.length} ticket{tickets.length !== 1 ? 's' : ''} · last 7 days
+        {tickets.length} ticket{tickets.length !== 1 ? 's' : ''} · {countLabel}
       </span>
     </button>
   )
@@ -149,7 +152,7 @@ export function RecentTicketsStack({
 
               <div className="mt-3 pt-2.5 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
                 <span className="text-xs text-gray-400 dark:text-gray-500">
-                  {tickets.length} ticket{tickets.length !== 1 ? 's' : ''} · last 7 days
+                  {tickets.length} ticket{tickets.length !== 1 ? 's' : ''} · {countLabel}
                 </span>
                 <span className="text-xs font-medium text-[#C6A35D] flex items-center gap-1">
                   View all <ChevronDown size={11} />

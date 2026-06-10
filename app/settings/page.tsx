@@ -102,7 +102,7 @@ const { register, handleSubmit, reset, formState: { errors } } = useForm<Profile
       {/* Account info (read-only) */}
       <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
         <div className="flex items-center gap-2 mb-4">
-          <UserCircle2 size={16} className="text-brand-600" />
+          <UserCircle2 size={16} className="text-[#C6A35D]" />
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm">Account</h2>
         </div>
         <div className="space-y-3">
@@ -122,7 +122,7 @@ const { register, handleSubmit, reset, formState: { errors } } = useForm<Profile
       {/* Editable profile */}
       <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
         <div className="flex items-center gap-2 mb-4">
-          <Building2 size={16} className="text-brand-600" />
+          <Building2 size={16} className="text-[#C6A35D]" />
           <h2 className="font-semibold text-gray-900 dark:text-white text-sm">{sectionLabel}</h2>
         </div>
 
@@ -207,7 +207,7 @@ const { register, handleSubmit, reset, formState: { errors } } = useForm<Profile
             onClick={toggle}
             className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
-            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            {theme === 'dark' ? <Sun size={16} className="text-[#C6A35D]" /> : <Moon size={16} className="text-[#C6A35D]" />}
             {theme === 'dark' ? 'Light mode' : 'Dark mode'}
           </button>
         </div>

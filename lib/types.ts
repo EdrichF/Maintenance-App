@@ -55,6 +55,23 @@ export interface Notification {
   created_at: string
 }
 
+export interface Supplier {
+  id: string
+  company_name: string
+  contact_name: string | null
+  email: string | null
+  phone: string | null
+  address: string | null
+  trade: string | null
+  qualified: boolean
+  qualification_number: string | null
+  qualification_expiry: string | null
+  vat_number: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
 export function isStoreManager(role: UserRole | string | null) {
   return role === 'store_manager' || role === 'client'
 }
