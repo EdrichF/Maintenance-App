@@ -4,9 +4,11 @@ self.addEventListener('push', function (event) {
   event.waitUntil(
     self.registration.showNotification(data.title ?? 'Motiv', {
       body:    data.body ?? '',
-      icon:    '/icon-192.png',
-      badge:   '/icon-192.png',
+      icon:    '/logo.png',
+      badge:   '/logo.png',
       vibrate: [200, 100, 200],
+      tag:     data.url ?? '/',    // collapses duplicate notifications for the same ticket
+      renotify: false,
       data:    { url: data.url ?? '/' },
     })
   )
