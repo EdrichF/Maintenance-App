@@ -58,7 +58,7 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
   const adminIds = Array.from(new Set(quotes.map((q: any) => q.admin_id).filter(Boolean))) as string[]
   const [contractorProfilesResult, ratingsResult] = adminIds.length > 0
     ? await Promise.all([
-        adminClient.from('profiles').select('id, full_name, email, phone').in('id', adminIds),
+        adminClient.from('profiles').select('id, full_name, email, phone, address').in('id', adminIds),
         adminClient.from('ratings').select('contractor_id, score, comment, created_at').in('contractor_id', adminIds),
       ])
     : [{ data: [] }, { data: [] }]
@@ -223,7 +223,8 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
                             <div className="mt-2 bg-gray-50 dark:bg-gray-700/40 rounded-lg p-3 space-y-1 text-xs text-gray-600 dark:text-gray-300">
                               {contractor.email && <p>✉ {contractor.email}</p>}
                               {contractor.phone && <p>📞 {contractor.phone}</p>}
-                              {!contractor.email && !contractor.phone && <p className="text-gray-400 italic">No contact info.</p>}
+                              {contractor.address && <p>📍 {contractor.address}</p>}
+                              {!contractor.email && !contractor.phone && !contractor.address && <p className="text-gray-400 italic">No contact info.</p>}
                             </div>
                           </details>
                           {rating && (
