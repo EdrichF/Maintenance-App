@@ -115,8 +115,8 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
       {/* Photos */}
       {ticket.photo_urls?.length > 0 && (
         <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-1.5">
-            <ImageIcon size={12} /> Photos ({ticket.photo_urls.length})
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+            Photos ({ticket.photo_urls.length})
           </p>
           <div className="flex flex-wrap gap-3">
             {ticket.photo_urls.map((url: string, i: number) => (
