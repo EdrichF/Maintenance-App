@@ -1,14 +1,24 @@
+// v5 — correct icon mapping
+
+// Take over immediately — don't wait for all tabs to close
+self.addEventListener('install', function (event) {
+  self.skipWaiting()
+})
+
+self.addEventListener('activate', function (event) {
+  event.waitUntil(clients.claim())
+})
+
 self.addEventListener('push', function (event) {
   if (!event.data) return
   const data = event.data.json()
   event.waitUntil(
     self.registration.showNotification(data.title ?? 'Motiv', {
-      body:    data.body ?? '',
-      icon:    '/motiv_logo_softgold_offwhite.svg',
-      vibrate: [200, 100, 200],
-      tag:     data.url ?? '/',    // collapses duplicate notifications for the same ticket
+      body:     data.body ?? '',
+      vibrate:  [200, 100, 200],
+      tag:      data.url ?? '/',
       renotify: false,
-      data:    { url: data.url ?? '/' },
+      data:     { url: data.url ?? '/' },
     })
   )
 })
