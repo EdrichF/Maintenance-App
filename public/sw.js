@@ -5,7 +5,7 @@ self.addEventListener('push', function (event) {
     self.registration.showNotification(data.title ?? 'Motiv', {
       body:    data.body ?? '',
       icon:    '/logo.png',
-      badge:   '/logo.png',
+      badge:   '/motiv_logo_softgold_offwhite.svg',
       vibrate: [200, 100, 200],
       tag:     data.url ?? '/',    // collapses duplicate notifications for the same ticket
       renotify: false,
