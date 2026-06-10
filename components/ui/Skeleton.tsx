@@ -51,7 +51,15 @@ export function SkeletonStackedDeck() {
     <div className="relative mb-4">
       <div className="absolute rounded-xl bg-gray-300 dark:bg-gray-600" style={{ left: '14px', right: '14px', top: 0, bottom: '-10px', zIndex: 0 }} />
       <div className="absolute rounded-xl bg-gray-200 dark:bg-gray-700" style={{ left: '7px', right: '7px', top: 0, bottom: '-5px', zIndex: 1 }} />
-      <SkeletonCard className="relative" style={{ zIndex: 2 } as React.CSSProperties} />
+      <div className="relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3" style={{ zIndex: 2 }}>
+        <Skeleton className="h-4 w-2/3" />
+        <Skeleton className="h-3 w-1/2" />
+        <div className="flex gap-2">
+          <Skeleton className="h-5 w-16 rounded-full" />
+          <Skeleton className="h-5 w-20 rounded-full" />
+        </div>
+        <Skeleton className="h-3 w-1/3" />
+      </div>
     </div>
   )
 }
