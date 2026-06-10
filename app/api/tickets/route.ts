@@ -1,12 +1,16 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
+import { rateLimit } from '@/lib/rate-limit'
 
 // POST /api/tickets — create a new ticket
 export async function POST(request: Request) {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
+
+  if (!rateLimit(`tickets:${user.id}`, 10, 60_000))
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
 
   const body = await request.json()
   const { title, description, priority, photo_urls } = body
@@ -21,40 +25,35 @@ export async function POST(request: Request) {
 
   const adminClient = createAdminClient()
 
-  // Notify all admins
-  const { data: adminProfiles } = await adminClient
-    .from('profiles')
-    .select('id')
-    .eq('role', 'admin')
+  // Fetch admins and store profile in parallel
+  const [{ data: adminProfiles }, { data: storeProfile }] = await Promise.all([
+    adminClient.from('profiles').select('id').eq('role', 'admin'),
+    adminClient.from('profiles').select('regional_manager_id, company_name, sub_store').eq('id', user.id).single(),
+  ])
 
-  if (adminProfiles?.length) {
-    await adminClient.from('notifications').insert(
-      adminProfiles.map(admin => ({
-        user_id: admin.id,
-        type: 'new_ticket',
-        title: 'New Maintenance Ticket',
-        message: `A new ${priority} priority ticket has been submitted: "${title}"`,
-        link: `/admin/tickets/${ticket.id}`,
-      }))
-    )
-  }
-
-  // Notify the regional manager of this store (if assigned)
-  const { data: storeProfile } = await adminClient
-    .from('profiles')
-    .select('regional_manager_id, company_name, sub_store')
-    .eq('id', user.id)
-    .single()
-
-  if (storeProfile?.regional_manager_id) {
-    await adminClient.from('notifications').insert({
-      user_id: storeProfile.regional_manager_id,
-      type: 'new_ticket',
-      title: 'New Ticket from Your Region',
-      message: `${storeProfile.company_name ?? 'A store'} (${storeProfile.sub_store ?? ''}) submitted a new ${priority} priority ticket: "${title}"`,
-      link: `/regional/tickets/${ticket.id}`,
-    })
-  }
+  // Fire all notifications in parallel
+  await Promise.all([
+    adminProfiles?.length
+      ? adminClient.from('notifications').insert(
+          adminProfiles.map(admin => ({
+            user_id: admin.id,
+            type: 'new_ticket',
+            title: 'New Maintenance Ticket',
+            message: `A new ${priority} priority ticket has been submitted: "${title}"`,
+            link: `/admin/tickets/${ticket.id}`,
+          }))
+        )
+      : Promise.resolve(),
+    storeProfile?.regional_manager_id
+      ? adminClient.from('notifications').insert({
+          user_id: storeProfile.regional_manager_id,
+          type: 'new_ticket',
+          title: 'New Ticket from Your Region',
+          message: `${storeProfile.company_name ?? 'A store'} (${storeProfile.sub_store ?? ''}) submitted a new ${priority} priority ticket: "${title}"`,
+          link: `/regional/tickets/${ticket.id}`,
+        })
+      : Promise.resolve(),
+  ])
 
   revalidatePath('/client')
   revalidatePath('/admin')

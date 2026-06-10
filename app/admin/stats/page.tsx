@@ -1,3 +1,5 @@
+﻿export const dynamic = 'force-dynamic'
+
 import { createAdminClient } from '@/lib/supabase/server'
 import { formatCurrency } from '@/lib/utils'
 import {
@@ -327,3 +329,4 @@ export default async function AdminStatsPage() {
     </div>
   )
 }
+

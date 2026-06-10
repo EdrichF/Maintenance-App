@@ -1,6 +1,7 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
+import { rateLimit } from '@/lib/rate-limit'
 
 export async function PATCH(
   request: Request,
@@ -9,6 +10,9 @@ export async function PATCH(
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
+
+  if (!rateLimit(`review:${user.id}`, 20, 60_000))
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'regional_manager') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -36,56 +40,56 @@ export async function PATCH(
 
   if (!completion) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  await adminClient.from('completions').update({
-    status,
-    reject_reason: status === 'rejected' ? reject_reason : null,
-    reviewed_by: user.id,
-    reviewed_at: new Date().toISOString(),
-  }).eq('id', params.id)
-
-  const ticketStatus = status === 'approved' ? 'completed' : 'snag'
-  await adminClient.from('tickets').update({ status: ticketStatus }).eq('id', completion.ticket_id)
-
-  // Save the rating when approving
-  if (status === 'approved' && score) {
-    await adminClient.from('ratings').insert({
-      ticket_id:     completion.ticket_id,
-      completion_id: params.id,
-      rated_by:      user.id,
-      contractor_id: completion.admin_id,
-      score,
-      comment:       comment || null,
-    })
-  }
-
   const ticket = (completion as any).tickets
+  const ticketStatus = status === 'approved' ? 'completed' : 'snag'
 
-  // Notify admins
-  const { data: admins } = await adminClient.from('profiles').select('id').eq('role', 'admin')
-  if (admins?.length && ticket) {
-    await adminClient.from('notifications').insert(
-      admins.map((a: any) => ({
-        user_id: a.id,
-        type: status === 'approved' ? 'sign_off_approved' : 'sign_off_rejected',
-        title: status === 'approved' ? 'Sign-off Approved' : 'Sign-off Rejected — Snag',
-        message: status === 'approved'
-          ? `Regional manager approved the COC/POC for "${ticket.title}". Rated ${score}/5.`
-          : `Regional manager rejected the COC/POC for "${ticket.title}". Reason: "${reject_reason}". Ticket moved to Snag.`,
-        link: `/admin/tickets/${completion.ticket_id}`,
-      }))
-    )
-  }
+  // Write completion update, ticket status, rating, and fetch admins — all in parallel
+  const [, , , { data: admins }] = await Promise.all([
+    adminClient.from('completions').update({
+      status,
+      reject_reason: status === 'rejected' ? reject_reason : null,
+      reviewed_by: user.id,
+      reviewed_at: new Date().toISOString(),
+    }).eq('id', params.id),
+    adminClient.from('tickets').update({ status: ticketStatus }).eq('id', completion.ticket_id),
+    status === 'approved' && score
+      ? adminClient.from('ratings').insert({
+          ticket_id:     completion.ticket_id,
+          completion_id: params.id,
+          rated_by:      user.id,
+          contractor_id: completion.admin_id,
+          score,
+          comment:       comment || null,
+        })
+      : Promise.resolve(),
+    adminClient.from('profiles').select('id').eq('role', 'admin'),
+  ])
 
-  // Notify store manager when approved
-  if (status === 'approved' && ticket?.client_id) {
-    await adminClient.from('notifications').insert({
-      user_id: ticket.client_id,
-      type: 'sign_off_approved',
-      title: 'Job Completed & Signed Off',
-      message: `Your ticket "${ticket.title}" has been approved and marked as completed.`,
-      link: `/client/tickets/${completion.ticket_id}`,
-    })
-  }
+  // Fire all notifications in parallel
+  await Promise.all([
+    admins?.length && ticket
+      ? adminClient.from('notifications').insert(
+          admins.map((a: any) => ({
+            user_id: a.id,
+            type: status === 'approved' ? 'sign_off_approved' : 'sign_off_rejected',
+            title: status === 'approved' ? 'Sign-off Approved' : 'Sign-off Rejected — Snag',
+            message: status === 'approved'
+              ? `Regional manager approved the COC/POC for "${ticket.title}". Rated ${score}/5.`
+              : `Regional manager rejected the COC/POC for "${ticket.title}". Reason: "${reject_reason}". Ticket moved to Snag.`,
+            link: `/admin/tickets/${completion.ticket_id}`,
+          }))
+        )
+      : Promise.resolve(),
+    status === 'approved' && ticket?.client_id
+      ? adminClient.from('notifications').insert({
+          user_id: ticket.client_id,
+          type: 'sign_off_approved',
+          title: 'Job Completed & Signed Off',
+          message: `Your ticket "${ticket.title}" has been approved and marked as completed.`,
+          link: `/client/tickets/${completion.ticket_id}`,
+        })
+      : Promise.resolve(),
+  ])
 
   revalidatePath('/admin/tickets/' + completion.ticket_id)
   revalidatePath('/admin/tickets')

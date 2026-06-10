@@ -32,6 +32,11 @@ export function SwipeNav({ links, children }: SwipeNavProps) {
   function onTouchStart(e: React.TouchEvent) {
     startX.current = e.touches[0].clientX
     startY.current = e.touches[0].clientY
+    // Prefetch adjacent routes immediately on touch so they're ready when swipe completes
+    const idx = currentIndex()
+    if (idx === -1) return
+    if (links[idx + 1]) router.prefetch(links[idx + 1].href)
+    if (links[idx - 1]) router.prefetch(links[idx - 1].href)
   }
 
   function onTouchEnd(e: React.TouchEvent) {

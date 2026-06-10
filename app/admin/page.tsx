@@ -1,3 +1,5 @@
+﻿export const dynamic = 'force-dynamic'
+
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { formatCurrency } from '@/lib/utils'
@@ -14,10 +16,19 @@ export default async function AdminDashboard() {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [ticketsResult, ratingsResult, profileResult] = await Promise.all([
+  const sevenDaysAgo = new Date()
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+  const sevenDaysAgoISO = sevenDaysAgo.toISOString()
+
+  const [ticketsResult, recentTicketsResult, ratingsResult, profileResult] = await Promise.all([
     supabase
       .from('tickets')
-      .select('*, profiles(full_name, company_name, sub_store), quotes(id, decline_reason, status, amount, created_at)')
+      .select('id, status, priority, created_at, quotes(status, amount)')
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('tickets')
+      .select('id, title, status, priority, created_at, profiles(full_name, company_name, sub_store), quotes(status, created_at)')
+      .gte('created_at', sevenDaysAgoISO)
       .order('created_at', { ascending: false }),
     user
       ? adminDb.from('ratings').select('score').eq('contractor_id', user.id)
@@ -27,19 +38,14 @@ export default async function AdminDashboard() {
       : Promise.resolve({ data: null }),
   ])
 
-  const tickets     = ticketsResult.data ?? []
-  const companyName = (profileResult as any).data?.company_name ?? 'Dashboard'
+  const tickets       = ticketsResult.data ?? []
+  const recentTickets = recentTicketsResult.data ?? []
+  const companyName   = (profileResult as any).data?.company_name ?? 'Dashboard'
   const ratings     = (ratingsResult as any).data ?? []
   const ratingCount = ratings.length
   const avgRating   = ratingCount > 0
     ? ratings.reduce((sum: number, r: any) => sum + r.score, 0) / ratingCount
     : null
-
-  const sevenDaysAgo = new Date()
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-  const recentTickets = tickets
-    .filter(t => new Date(t.created_at) >= sevenDaysAgo)
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   const total          = tickets.length
   const openCount      = tickets.filter(t => t.status === 'open').length
@@ -167,3 +173,4 @@ export default async function AdminDashboard() {
     </div>
   )
 }
+

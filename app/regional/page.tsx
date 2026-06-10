@@ -1,3 +1,5 @@
+﻿export const dynamic = 'force-dynamic'
+
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -34,7 +36,7 @@ export default async function RegionalDashboard() {
       id, full_name, company_name, sub_store, email, phone, address,
       tickets(
         id, title, status, priority, created_at, updated_at,
-        quotes(id, amount, status, created_at)
+        quotes(status, amount)
       )
     `)
     .eq('regional_manager_id', user.id)
@@ -272,3 +274,4 @@ export default async function RegionalDashboard() {
     </div>
   )
 }
+
