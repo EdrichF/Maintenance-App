@@ -105,10 +105,11 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
         {ticket.photo_urls?.length > 0 && (
           <div>
             <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2">Photos</p>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="flex flex-wrap gap-3">
               {ticket.photo_urls.map((url: string, i: number) => (
-                <a key={i} href={url} target="_blank" rel="noopener noreferrer">
-                  <img src={url} alt={`Photo ${i + 1}`} className="aspect-square object-cover rounded-lg w-full" />
+                <a key={i} href={url} target="_blank" rel="noopener noreferrer"
+                  className="text-sm text-brand-600 dark:text-brand-400 hover:underline font-medium">
+                  View Photo {i + 1}
                 </a>
               ))}
             </div>
@@ -206,10 +207,11 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
                   </a>
                 )}
                 {comp.poc_urls?.length > 0 && (
-                  <div className="grid grid-cols-4 gap-1.5">
+                  <div className="flex flex-wrap gap-3">
                     {comp.poc_urls.map((url: string, i: number) => (
-                      <a key={i} href={url} target="_blank" rel="noopener noreferrer">
-                        <img src={url} alt="" className="w-full aspect-square object-cover rounded-lg" />
+                      <a key={i} href={url} target="_blank" rel="noopener noreferrer"
+                        className="text-sm text-brand-600 dark:text-brand-400 hover:underline font-medium">
+                        View Photo {i + 1}
                       </a>
                     ))}
                   </div>

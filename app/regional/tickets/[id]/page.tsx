@@ -2,7 +2,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { BackButton } from '@/components/ui/BackButton'
-import { Building2, Mail, Phone, MapPin, Image as ImageIcon, Star } from 'lucide-react'
+import { Building2, Mail, Phone, MapPin, Star } from 'lucide-react'
 import { CompletionReviewCard } from '@/components/regional/CompletionReviewCard'
 import { QuoteApprovalCard } from '@/components/regional/QuoteApprovalCard'
 import { Badge } from '@/components/ui/Badge'
@@ -118,14 +118,11 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3 flex items-center gap-1.5">
             <ImageIcon size={12} /> Photos ({ticket.photo_urls.length})
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <div className="flex flex-wrap gap-3">
             {ticket.photo_urls.map((url: string, i: number) => (
-              <a key={i} href={url} target="_blank" rel="noopener noreferrer">
-                <img
-                  src={url}
-                  alt={`Photo ${i + 1}`}
-                  className="w-full aspect-square object-cover rounded-lg border border-gray-200 dark:border-gray-700 hover:opacity-90 transition-opacity"
-                />
+              <a key={i} href={url} target="_blank" rel="noopener noreferrer"
+                className="text-sm text-brand-600 dark:text-brand-400 hover:underline font-medium">
+                View Photo {i + 1}
               </a>
             ))}
           </div>

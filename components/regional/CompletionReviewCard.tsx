@@ -133,11 +133,11 @@ export function CompletionReviewCard({ completion }: Props) {
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
             <ImageIcon size={12} /> Proof of Completion ({completion.poc_urls.length} photo{completion.poc_urls.length !== 1 ? 's' : ''})
           </p>
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+          <div className="flex flex-wrap gap-3">
             {completion.poc_urls.map((url, i) => (
-              <a key={i} href={url} target="_blank" rel="noopener noreferrer">
-                <img src={url} alt={`POC ${i + 1}`}
-                  className="w-full aspect-square object-cover rounded-lg border border-gray-200 dark:border-gray-700 hover:opacity-90 transition-opacity" />
+              <a key={i} href={url} target="_blank" rel="noopener noreferrer"
+                className="text-sm text-brand-600 dark:text-brand-400 hover:underline font-medium">
+                View Photo {i + 1}
               </a>
             ))}
           </div>

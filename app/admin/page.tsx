@@ -1,12 +1,7 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Badge } from '@/components/ui/Badge'
-import {
-  STATUS_COLORS, STATUS_LABELS,
-  PRIORITY_COLORS, PRIORITY_LABELS,
-  formatDateTime, formatCurrency,
-} from '@/lib/utils'
-import type { Ticket } from '@/lib/types'
+import { formatCurrency } from '@/lib/utils'
+import { RecentTicketsStack } from '@/components/regional/RecentTicketsStack'
 import {
   Star, ClipboardList, ShieldAlert,
   ReceiptText, Wrench, BadgeCheck, CheckCircle2,
@@ -39,6 +34,12 @@ export default async function AdminDashboard() {
   const avgRating   = ratingCount > 0
     ? ratings.reduce((sum: number, r: any) => sum + r.score, 0) / ratingCount
     : null
+
+  const sevenDaysAgo = new Date()
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+  const recentTickets = tickets
+    .filter(t => new Date(t.created_at) >= sevenDaysAgo)
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   const total          = tickets.length
   const openCount      = tickets.filter(t => t.status === 'open').length
@@ -157,48 +158,11 @@ export default async function AdminDashboard() {
           <h2 className="font-semibold text-gray-900 dark:text-white">Recent Tickets</h2>
           <Link href="/admin/tickets" className="text-sm text-brand-600 hover:underline">View all</Link>
         </div>
-        <div className="space-y-2">
-          {(tickets.slice(0, 8) as (Ticket & { profiles: any; quotes: any[] })[]).map(ticket => {
-            const tkt = ticket as any
-            const declinedQuote = tkt.quotes?.find((q: any) => q.status === 'declined' && q.decline_reason)
-            const latestQuote   = (tkt.quotes ?? [])
-              .filter((q: any) => q.status !== 'declined')
-              .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
-            return (
-              <Link key={ticket.id} href={`/admin/tickets/${ticket.id}`}>
-                <div className={`border rounded-xl px-4 py-3 hover:border-brand-400 dark:hover:border-gray-400 transition-colors ${
-                  ticket.status === 'declined'
-                    ? 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/40'
-                    : 'bg-slate-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
-                }`}>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-base text-gray-900 dark:text-white truncate">{tkt.profiles?.company_name}</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-300 truncate mt-0.5">{ticket.title}</p>
-                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      <Badge className={PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}>
-                        {PRIORITY_LABELS[ticket.priority as keyof typeof PRIORITY_LABELS]}
-                      </Badge>
-                      <Badge className={STATUS_COLORS[ticket.status as keyof typeof STATUS_COLORS]}>
-                        {STATUS_LABELS[ticket.status as keyof typeof STATUS_COLORS]}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
-                      Created: {formatDateTime(ticket.created_at)}
-                      {latestQuote && (
-                        <span className="ml-2 text-purple-500 dark:text-purple-400">· Quoted: {formatDateTime(latestQuote.created_at)}</span>
-                      )}
-                    </p>
-                    {tkt.status === 'declined' && declinedQuote?.decline_reason && (
-                      <p className="text-xs text-red-600 dark:text-red-400 mt-1 font-medium">
-                        Declined — {declinedQuote.decline_reason}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </Link>
-            )
-          })}
-        </div>
+        <RecentTicketsStack
+          tickets={recentTickets as any}
+          variant="admin"
+          basePath="/admin/tickets"
+        />
       </div>
     </div>
   )

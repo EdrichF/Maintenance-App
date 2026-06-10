@@ -16,21 +16,43 @@ export interface RecentTicket {
   status: string
   priority: string
   created_at: string
+  /** Regional variant: store info */
   store?: { company_name?: string | null; sub_store?: string | null }
+  /** Admin variant: client profile */
+  profiles?: { company_name?: string | null; sub_store?: string | null; full_name?: string | null }
   quotes?: { status: string; created_at: string }[]
 }
 
-function TicketContent({ ticket }: { ticket: RecentTicket }) {
+type Variant = 'regional' | 'admin'
+
+function TicketContent({ ticket, variant }: { ticket: RecentTicket; variant: Variant }) {
   const latestQuote = (ticket.quotes ?? [])
     .filter(q => q.status !== 'declined')
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
 
+  const companyName = variant === 'admin'
+    ? ticket.profiles?.company_name
+    : ticket.store?.company_name
+
+  const subStore = variant === 'admin'
+    ? ticket.profiles?.sub_store
+    : ticket.store?.sub_store
+
   return (
     <>
-      <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
-      <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
-        {ticket.store?.company_name} — {ticket.store?.sub_store}
-      </p>
+      {variant === 'admin' ? (
+        <>
+          <p className="font-bold text-base text-gray-900 dark:text-white truncate">{companyName ?? '—'}</p>
+          <p className="text-xs text-gray-600 dark:text-gray-300 truncate mt-0.5">{ticket.title}</p>
+        </>
+      ) : (
+        <>
+          <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+            {companyName} — {subStore}
+          </p>
+        </>
+      )}
       <div className="flex items-center gap-2 mt-1.5 flex-wrap">
         <Badge className={`text-xs ${PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}`}>
           {PRIORITY_LABELS[ticket.priority as keyof typeof PRIORITY_LABELS]}
@@ -51,8 +73,21 @@ function TicketContent({ ticket }: { ticket: RecentTicket }) {
   )
 }
 
-export function RecentTicketsStack({ tickets }: { tickets: RecentTicket[] }) {
+interface RecentTicketsStackProps {
+  tickets: RecentTicket[]
+  variant?: Variant
+  /** Base path for ticket detail links, e.g. '/regional/tickets' or '/admin/tickets' */
+  basePath?: string
+}
+
+export function RecentTicketsStack({
+  tickets,
+  variant = 'regional',
+  basePath,
+}: RecentTicketsStackProps) {
   const [expanded, setExpanded] = useState(false)
+
+  const detailPath = basePath ?? (variant === 'admin' ? '/admin/tickets' : '/regional/tickets')
 
   if (tickets.length === 0) {
     return (
@@ -63,46 +98,55 @@ export function RecentTicketsStack({ tickets }: { tickets: RecentTicket[] }) {
   }
 
   const topTicket = tickets[0]
-  // Show up to 3 background layers (even if fewer tickets)
-  const layerCount = Math.min(tickets.length - 1, 3)
+  const layerCount = Math.min(tickets.length - 1, 2)
 
-  const stackBottomSpace = layerCount * 10 + 12 // px to reserve below stack
+  const collapseBar = (
+    <button
+      onClick={() => setExpanded(false)}
+      className="w-full text-xs text-[#C6A35D] hover:text-amber-600 flex items-center justify-between py-2 px-1 transition-colors"
+    >
+      <span className="flex items-center gap-1 font-medium">
+        <ChevronUp size={12} /> Collapse
+      </span>
+      <span className="text-gray-400 dark:text-gray-500">
+        {tickets.length} ticket{tickets.length !== 1 ? 's' : ''} · last 7 days
+      </span>
+    </button>
+  )
 
   return (
     <div>
       {!expanded ? (
         <button
           onClick={() => setExpanded(true)}
-          className="w-full text-left focus:outline-none"
+          className="w-full text-left focus:outline-none group"
           aria-label="Expand recent tickets"
         >
-          {/* Stack wrapper — extra bottom margin gives room for peeking layers */}
-          <div className="relative" style={{ marginBottom: `${stackBottomSpace}px` }}>
+          <div className="relative mb-4">
 
-            {/* Background layers — progressively darker toward the back
-                Light mode: layer0=gray-200, layer1=gray-300, layer2=gray-400
-                Dark mode:  layer0=gray-600, layer1=gray-500, layer2=gray-400  */}
-            {layerCount >= 1 && (
-              <div className="absolute inset-0 rounded-xl border border-gray-300 dark:border-gray-500 bg-gray-200 dark:bg-gray-600"
-                style={{ transform: 'translateY(10px) scaleX(0.972)', zIndex: 0 }} />
-            )}
+            {/* Layer 2 — deepest, most inset */}
             {layerCount >= 2 && (
-              <div className="absolute inset-0 rounded-xl border border-gray-400 dark:border-gray-400 bg-gray-300 dark:bg-gray-500"
-                style={{ transform: 'translateY(20px) scaleX(0.944)', zIndex: 0 }} />
+              <div
+                className="absolute rounded-xl bg-slate-300 dark:bg-gray-600"
+                style={{ left: '14px', right: '14px', top: 0, bottom: '-10px', zIndex: 0 }}
+              />
             )}
-            {layerCount >= 3 && (
-              <div className="absolute inset-0 rounded-xl border border-gray-500 dark:border-gray-300 bg-gray-400 dark:bg-gray-400"
-                style={{ transform: 'translateY(30px) scaleX(0.916)', zIndex: 0 }} />
+
+            {/* Layer 1 — middle */}
+            {layerCount >= 1 && (
+              <div
+                className="absolute rounded-xl bg-slate-200 dark:bg-gray-700"
+                style={{ left: '7px', right: '7px', top: 0, bottom: '-5px', zIndex: 1 }}
+              />
             )}
 
             {/* Top card */}
             <div
-              className="relative bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4"
-              style={{ zIndex: layerCount + 1 }}
+              className="relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm group-hover:border-brand-400 dark:group-hover:border-gray-500 group-hover:shadow-md transition-all"
+              style={{ zIndex: 2 }}
             >
-              <TicketContent ticket={topTicket} />
+              <TicketContent ticket={topTicket} variant={variant} />
 
-              {/* Footer row */}
               <div className="mt-3 pt-2.5 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
                 <span className="text-xs text-gray-400 dark:text-gray-500">
                   {tickets.length} ticket{tickets.length !== 1 ? 's' : ''} · last 7 days
@@ -115,24 +159,22 @@ export function RecentTicketsStack({ tickets }: { tickets: RecentTicket[] }) {
           </div>
         </button>
       ) : (
-        /* Expanded — full list */
         <div>
+          {/* Collapse button — TOP */}
+          <div className="mb-3">{collapseBar}</div>
+
           <div className="space-y-2">
             {tickets.map(ticket => (
-              <Link key={ticket.id} href={`/regional/tickets/${ticket.id}`}>
-                <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-brand-400 dark:hover:border-gray-400 transition-colors">
-                  <TicketContent ticket={ticket} />
+              <Link key={ticket.id} href={`${detailPath}/${ticket.id}`}>
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-brand-400 dark:hover:border-gray-500 transition-colors">
+                  <TicketContent ticket={ticket} variant={variant} />
                 </div>
               </Link>
             ))}
           </div>
 
-          <button
-            onClick={() => setExpanded(false)}
-            className="mt-3 w-full text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 flex items-center justify-center gap-1 py-2 transition-colors"
-          >
-            <ChevronUp size={12} /> Collapse
-          </button>
+          {/* Collapse button — BOTTOM */}
+          <div className="mt-3">{collapseBar}</div>
         </div>
       )}
     </div>
