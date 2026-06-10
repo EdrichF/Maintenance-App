@@ -2,6 +2,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { rateLimit } from '@/lib/rate-limit'
+import { sendPushToUser, sendPushToMany } from '@/lib/push'
 
 export async function PATCH(
   request: Request,
@@ -90,6 +91,24 @@ export async function PATCH(
         })
       : Promise.resolve(),
   ])
+
+  // Fire push — non-blocking
+  if (admins?.length && ticket) {
+    void sendPushToMany(admins.map((a: any) => a.id), {
+      title: status === 'approved' ? 'Sign-off Approved' : 'Sign-off Rejected — Snag',
+      body: status === 'approved'
+        ? `COC/POC approved for "${ticket.title}". Rated ${score}/5.`
+        : `COC/POC rejected for "${ticket.title}". Moved to Snag.`,
+      url: `/admin/tickets/${completion.ticket_id}`,
+    })
+  }
+  if (status === 'approved' && ticket?.client_id) {
+    void sendPushToUser(ticket.client_id, {
+      title: 'Job Completed & Signed Off',
+      body: `Your ticket "${ticket.title}" has been approved and marked as completed.`,
+      url: `/client/tickets/${completion.ticket_id}`,
+    })
+  }
 
   revalidatePath('/admin/tickets/' + completion.ticket_id)
   revalidatePath('/admin/tickets')

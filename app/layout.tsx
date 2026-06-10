@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { ThemeProvider } from '@/components/providers/ThemeProvider'
+import { ServiceWorkerSetup } from '@/components/ui/ServiceWorkerSetup'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen antialiased">
         <ThemeProvider>
+          <ServiceWorkerSetup />
           {children}
         </ThemeProvider>
       </body>

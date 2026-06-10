@@ -2,6 +2,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { rateLimit } from '@/lib/rate-limit'
+import { sendPushToUser } from '@/lib/push'
 
 export async function POST(request: Request) {
   const supabase = createClient()
@@ -61,6 +62,20 @@ export async function POST(request: Request) {
         link: `/client/tickets/${ticket_id}`,
       }),
     ])
+
+    // Fire push — non-blocking (inside if(ticket) so storeProfile is in scope)
+    if (storeProfile?.regional_manager_id) {
+      void sendPushToUser(storeProfile.regional_manager_id, {
+        title: 'Sign-off Required',
+        body: `COC/POC submitted for "${ticket.title}". Please review and sign off.`,
+        url: `/regional/tickets/${ticket_id}`,
+      })
+    }
+    void sendPushToUser(ticket.client_id, {
+      title: 'Job Submitted for Sign-off',
+      body: `Work on "${ticket.title}" has been submitted for regional sign-off.`,
+      url: `/client/tickets/${ticket_id}`,
+    })
   }
 
   revalidatePath('/admin/tickets/' + ticket_id)

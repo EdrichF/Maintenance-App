@@ -214,23 +214,18 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
                       <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(q.amount)}</p>
                       <p className="text-xs text-gray-400 mt-0.5">{formatDateTime(q.created_at)}</p>
                       {contractor && (
-                        <div className="mt-1.5 flex items-center gap-2 flex-wrap">
-                          <details className="flex-1 min-w-0">
-                            <summary className="text-xs text-brand-600 dark:text-brand-400 cursor-pointer hover:underline list-none flex items-center gap-1">
-                              {contractor.full_name ?? 'Contractor'}
-                              <span className="text-gray-400 ml-0.5">▾</span>
-                            </summary>
-                            <div className="mt-2 bg-gray-50 dark:bg-gray-700/40 rounded-lg p-3 space-y-1 text-xs text-gray-600 dark:text-gray-300">
-                              {contractor.email && <p>✉ {contractor.email}</p>}
-                              {contractor.phone && <p>📞 {contractor.phone}</p>}
-                              {contractor.address && <p>📍 {contractor.address}</p>}
-                              {!contractor.email && !contractor.phone && !contractor.address && <p className="text-gray-400 italic">No contact info.</p>}
-                            </div>
-                          </details>
+                        <div className="mt-1.5 flex items-center gap-3 flex-wrap">
+                          <Link
+                            href={`/regional/contractors/${q.admin_id}`}
+                            className="flex items-center gap-1.5 text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline"
+                          >
+                            {contractor.full_name ?? 'Contractor'}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                          </Link>
                           {rating && (
                             <Link
                               href={`/regional/reviews/${q.admin_id}`}
-                              className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 hover:underline shrink-0"
+                              className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400 hover:underline"
                             >
                               <Star size={11} className="fill-amber-400 text-amber-400" />
                               {rating.avg.toFixed(1)} / 5 ({rating.count})

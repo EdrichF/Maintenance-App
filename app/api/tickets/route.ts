@@ -2,6 +2,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { rateLimit } from '@/lib/rate-limit'
+import { sendPushToUser, sendPushToMany } from '@/lib/push'
 
 // POST /api/tickets — create a new ticket
 export async function POST(request: Request) {
@@ -54,6 +55,21 @@ export async function POST(request: Request) {
         })
       : Promise.resolve(),
   ])
+
+  // Fire push notifications — non-blocking
+  if (adminProfiles?.length) {
+    void sendPushToMany(
+      adminProfiles.map((a: any) => a.id),
+      { title: 'New Maintenance Ticket', body: `A new ${priority} ticket: "${title}"`, url: `/admin/tickets/${ticket.id}` }
+    )
+  }
+  if (storeProfile?.regional_manager_id) {
+    void sendPushToUser(storeProfile.regional_manager_id, {
+      title: 'New Ticket from Your Region',
+      body: `${storeProfile.company_name ?? 'A store'} submitted a new ${priority} ticket: "${title}"`,
+      url: `/regional/tickets/${ticket.id}`,
+    })
+  }
 
   revalidatePath('/client')
   revalidatePath('/admin')

@@ -2,6 +2,7 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { NextResponse } from 'next/server'
 import { rateLimit } from '@/lib/rate-limit'
+import { sendPushToUser } from '@/lib/push'
 
 // POST /api/quotes — admin only
 export async function POST(request: Request) {
@@ -68,6 +69,20 @@ export async function POST(request: Request) {
           })
         : Promise.resolve(),
     ])
+
+    // Fire push — non-blocking
+    void sendPushToUser(ticket.client_id, {
+      title: 'Quote Received',
+      body: `A quote has been submitted for your ticket: "${ticket.title}"`,
+      url: `/client/tickets/${ticket_id}`,
+    })
+    if (storeProfile?.regional_manager_id) {
+      void sendPushToUser(storeProfile.regional_manager_id, {
+        title: 'Quote Awaiting Your Approval',
+        body: `A quote has been submitted for "${ticket.title}" and requires your approval.`,
+        url: `/regional/tickets/${ticket_id}`,
+      })
+    }
   }
 
   revalidatePath('/client')

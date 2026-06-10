@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { useTheme } from '@/components/providers/ThemeProvider'
 import { UserCircle2, Building2, CheckCircle2, Sun, Moon } from 'lucide-react'
 import { BackButton } from '@/components/ui/BackButton'
+import { PushNotificationToggle } from '@/components/ui/PushNotificationToggle'
 
 interface ProfileForm {
   full_name: string
@@ -193,6 +194,12 @@ const { register, handleSubmit, reset, formState: { errors } } = useForm<Profile
             Save Changes
           </Button>
         </form>
+      </div>
+
+      {/* Notifications */}
+      <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+        <h2 className="font-semibold text-gray-900 dark:text-white text-sm mb-4">Notifications</h2>
+        <PushNotificationToggle />
       </div>
 
       {/* Appearance */}

@@ -1,6 +1,7 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
+import { sendPushToUser, sendPushToMany } from '@/lib/push'
 
 export async function PATCH(
   request: Request,
@@ -98,6 +99,24 @@ export async function PATCH(
         )
       : Promise.resolve(),
   ])
+
+  // Fire push — non-blocking
+  if (ticket?.client_id && !isStoreManager) {
+    void sendPushToUser(ticket.client_id, {
+      title: status === 'accepted' ? 'Quote Approved' : 'Quote Declined',
+      body: status === 'accepted'
+        ? `Your quote for "${ticket.title}" has been approved.`
+        : `The quote for "${ticket.title}" was declined.${reasonNote}`,
+      url: `/client/tickets/${quote.ticket_id}`,
+    })
+  }
+  if (admins?.length) {
+    void sendPushToMany(admins.map((a: any) => a.id), {
+      title: status === 'accepted' ? 'Quote Accepted' : 'Quote Declined',
+      body: `${actorLabel} ${status === 'accepted' ? 'accepted' : 'declined'} the quote for "${ticket?.title}".`,
+      url: `/admin/tickets/${quote.ticket_id}`,
+    })
+  }
 
   revalidatePath('/admin/tickets')
   revalidatePath(`/admin/tickets/${quote.ticket_id}`)
