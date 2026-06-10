@@ -7,6 +7,6 @@
   "background_color": "#0d1f2d",
   "theme_color": "#0d1f2d",
   "icons": [
-    { "src": "/motiv_logo_softgold_offwhite.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    { "src": "/logo.png", "sizes": "any", "type": "image/png", "purpose": "any maskable" }
   ]
 }

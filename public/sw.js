@@ -1,4 +1,4 @@
-// v5 — correct icon mapping
+// v6 — logo.png home screen + SVG status bar badge
 
 // Take over immediately — don't wait for all tabs to close
 self.addEventListener('install', function (event) {
@@ -15,6 +15,7 @@ self.addEventListener('push', function (event) {
   event.waitUntil(
     self.registration.showNotification(data.title ?? 'Motiv', {
       body:     data.body ?? '',
+      badge:    '/motiv_logo_softgold_offwhite.svg',
       vibrate:  [200, 100, 200],
       tag:      data.url ?? '/',
       renotify: false,
