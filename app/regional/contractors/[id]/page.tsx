@@ -28,10 +28,8 @@ export default async function ContractorProfilePage({ params }: { params: { id: 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: rmProfile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (rmProfile?.role !== 'regional_manager') redirect('/auth/login')
-
-  const [{ data: contractor }, { data: ratings }] = await Promise.all([
+  const [{ data: rmProfile }, { data: contractor }, { data: ratings }] = await Promise.all([
+    supabase.from('profiles').select('role').eq('id', user.id).single(),
     adminDb.from('profiles')
       .select('id, full_name, email, phone, address, role')
       .eq('id', params.id)
@@ -41,6 +39,8 @@ export default async function ContractorProfilePage({ params }: { params: { id: 
       .eq('contractor_id', params.id)
       .order('created_at', { ascending: false }),
   ])
+
+  if (rmProfile?.role !== 'regional_manager') redirect('/auth/login')
 
   if (!contractor || contractor.role !== 'admin') notFound()
 

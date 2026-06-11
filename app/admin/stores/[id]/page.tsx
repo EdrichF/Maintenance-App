@@ -15,26 +15,26 @@ import type { Ticket } from '@/lib/types'
 export default async function AdminStoreDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
 
-  const { data: store } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', params.id)
-    .in('role', ['store_manager', 'client'])
-    .single()
+  const [{ data: store }, { data: tickets }, { data: regionalManagers }] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', params.id)
+      .in('role', ['store_manager', 'client'])
+      .single(),
+    supabase
+      .from('tickets')
+      .select('*, quotes(id, amount, status)')
+      .eq('client_id', params.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('profiles')
+      .select('id, full_name, company_name')
+      .eq('role', 'regional_manager')
+      .order('full_name'),
+  ])
 
   if (!store) notFound()
-
-  const { data: tickets } = await supabase
-    .from('tickets')
-    .select('*, quotes(id, amount, status)')
-    .eq('client_id', params.id)
-    .order('created_at', { ascending: false })
-
-  const { data: regionalManagers } = await supabase
-    .from('profiles')
-    .select('id, full_name, company_name')
-    .eq('role', 'regional_manager')
-    .order('full_name')
 
   const currentRm = store.regional_manager_id
     ? (regionalManagers ?? []).find((rm: any) => rm.id === store.regional_manager_id)

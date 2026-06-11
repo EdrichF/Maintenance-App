@@ -14,16 +14,17 @@ export default async function AdminRegionalPage({
   const adminClient = createAdminClient()
   const q = (searchParams.q ?? '').toLowerCase().trim()
 
-  const { data: regionalManagers } = await adminClient
-    .from('profiles')
-    .select('id, full_name, company_name, email, phone')
-    .eq('role', 'regional_manager')
-    .order('full_name')
-
-  const { data: stores } = await adminClient
-    .from('profiles')
-    .select('id, regional_manager_id')
-    .in('role', ['store_manager', 'client'])
+  const [{ data: regionalManagers }, { data: stores }] = await Promise.all([
+    adminClient
+      .from('profiles')
+      .select('id, full_name, company_name, email, phone')
+      .eq('role', 'regional_manager')
+      .order('full_name'),
+    adminClient
+      .from('profiles')
+      .select('id, regional_manager_id')
+      .in('role', ['store_manager', 'client']),
+  ])
 
   // Count branches per RM
   const branchCounts: Record<string, number> = {}

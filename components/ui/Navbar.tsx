@@ -6,7 +6,6 @@ import { MotivLogo } from '@/components/ui/MotivLogo'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import type { Notification } from '@/lib/types'
 
 type NavRole = 'client' | 'admin' | 'regional'
 
@@ -27,18 +26,25 @@ export function Navbar({ role }: { role: NavRole }) {
   }
 
   useEffect(() => {
+    const supabase = createClient()
+
+    // HEAD count query — no rows transferred, much cheaper than fetching
+    // the notification list just to count unread ones.
+    async function fetchUnread() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { count, error } = await supabase
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('read', false)
+      if (!error) setUnread(count ?? 0)
+    }
+
     fetchUnread()
     const interval = setInterval(fetchUnread, 30_000)
     return () => clearInterval(interval)
   }, [])
-
-  async function fetchUnread() {
-    const res = await fetch('/api/notifications')
-    if (!res.ok) return
-    const data = await res.json()
-    const count = (data.notifications as Notification[]).filter(n => !n.read).length
-    setUnread(count)
-  }
 
   const base = BASE[role]
 

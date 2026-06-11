@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
+import Image from 'next/image'
 import { BackButton } from '@/components/ui/BackButton'
 import { Clock, CheckCircle, FileText, XCircle, AlertTriangle, ClipboardCheck, Loader2 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
@@ -105,7 +106,14 @@ export default async function ClientTicketDetailPage({ params }: { params: { id:
             <div className="grid grid-cols-3 gap-2">
               {t.photo_urls.map((url: string, i: number) => (
                 <a key={i} href={url} target="_blank" rel="noopener noreferrer">
-                  <img src={url} alt="" className="aspect-square object-cover rounded-lg w-full" />
+                  <Image
+                    src={url}
+                    alt=""
+                    width={300}
+                    height={300}
+                    sizes="(max-width: 512px) 33vw, 170px"
+                    className="aspect-square object-cover rounded-lg w-full"
+                  />
                 </a>
               ))}
             </div>

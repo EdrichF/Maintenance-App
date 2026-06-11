@@ -13,14 +13,15 @@ export default async function RegionalSignoffPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: rmProfile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  const [{ data: rmProfile }, { data: stores }] = await Promise.all([
+    supabase.from('profiles').select('role').eq('id', user.id).single(),
+    adminClient
+      .from('profiles')
+      .select('id, company_name, sub_store')
+      .eq('regional_manager_id', user.id)
+      .in('role', ['store_manager', 'client']),
+  ])
   if (rmProfile?.role !== 'regional_manager') redirect('/auth/login')
-
-  const { data: stores } = await adminClient
-    .from('profiles')
-    .select('id, company_name, sub_store')
-    .eq('regional_manager_id', user.id)
-    .in('role', ['store_manager', 'client'])
 
   const storeIds = (stores ?? []).map((s: any) => s.id)
   const storeMap = Object.fromEntries((stores ?? []).map((s: any) => [s.id, s]))

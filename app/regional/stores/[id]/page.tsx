@@ -83,21 +83,22 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: store } = await adminClient
-    .from('profiles')
-    .select('*')
-    .eq('id', params.id)
-    .eq('regional_manager_id', user.id)
-    .in('role', ['store_manager', 'client'])
-    .single()
+  const [{ data: store }, { data: tickets }] = await Promise.all([
+    adminClient
+      .from('profiles')
+      .select('*')
+      .eq('id', params.id)
+      .eq('regional_manager_id', user.id)
+      .in('role', ['store_manager', 'client'])
+      .single(),
+    adminClient
+      .from('tickets')
+      .select('*, quotes(*)')
+      .eq('client_id', params.id)
+      .order('created_at', { ascending: false }),
+  ])
 
   if (!store) notFound()
-
-  const { data: tickets } = await adminClient
-    .from('tickets')
-    .select('*, quotes(*)')
-    .eq('client_id', params.id)
-    .order('created_at', { ascending: false })
 
   const ticketList = (tickets ?? []) as (Ticket & { quotes: Quote[] })[]
   const allQuotes  = ticketList.flatMap(t => t.quotes ?? [])

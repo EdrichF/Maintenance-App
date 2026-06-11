@@ -12,19 +12,20 @@ export default async function ClientDashboard() {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user!.id)
-    .single()
-
-  const { data: tickets } = await supabase
-    .from('tickets')
-    .select('*')
-    .eq('client_id', user!.id)
-    .in('status', ['open', 'in_progress', 'completed'])
-    .order('created_at', { ascending: false })
-    .limit(5)
+  const [{ data: profile }, { data: tickets }] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('full_name, company_name, sub_store, branch_code')
+      .eq('id', user!.id)
+      .single(),
+    supabase
+      .from('tickets')
+      .select('id, title, status, priority, created_at')
+      .eq('client_id', user!.id)
+      .in('status', ['open', 'in_progress', 'completed'])
+      .order('created_at', { ascending: false })
+      .limit(5),
+  ])
 
   const open   = tickets?.filter(t => t.status === 'open').length ?? 0
   const active = tickets?.filter(t => t.status === 'in_progress').length ?? 0

@@ -18,17 +18,22 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: rmProfile } = await supabase
-    .from('profiles').select('role').eq('id', user.id).single()
+  // Profile check, ticket and completions are independent — fetch in parallel
+  const [{ data: rmProfile }, { data: ticket }, { data: completionsData }] = await Promise.all([
+    supabase.from('profiles').select('role').eq('id', user.id).single(),
+    adminClient
+      .from('tickets')
+      .select('*, quotes(*)')
+      .eq('id', params.id)
+      .single(),
+    adminClient
+      .from('completions')
+      .select('*')
+      .eq('ticket_id', params.id)
+      .order('created_at', { ascending: false }),
+  ])
+
   if (rmProfile?.role !== 'regional_manager') redirect('/auth/login')
-
-  // Fetch ticket
-  const { data: ticket } = await adminClient
-    .from('tickets')
-    .select('*, quotes(*)')
-    .eq('id', params.id)
-    .single()
-
   if (!ticket) notFound()
 
   // Verify the ticket belongs to a store in this region
@@ -40,12 +45,6 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
     .single()
 
   if (!store) notFound()
-
-  const { data: completionsData } = await adminClient
-    .from('completions')
-    .select('*')
-    .eq('ticket_id', params.id)
-    .order('created_at', { ascending: false })
 
   const latestCompletion = (completionsData ?? [])[0] ?? null
 

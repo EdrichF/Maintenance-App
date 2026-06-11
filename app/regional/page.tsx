@@ -22,26 +22,27 @@ export default async function RegionalDashboard() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: rmProfile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
+  const [{ data: rmProfile }, { data: stores }] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('role, full_name')
+      .eq('id', user.id)
+      .single(),
+    adminClient
+      .from('profiles')
+      .select(`
+        id, full_name, company_name, sub_store, email, phone, address,
+        tickets(
+          id, title, status, priority, created_at, updated_at,
+          quotes(status, amount)
+        )
+      `)
+      .eq('regional_manager_id', user.id)
+      .in('role', ['store_manager', 'client'])
+      .order('company_name'),
+  ])
 
   if (rmProfile?.role !== 'regional_manager') redirect('/auth/login')
-
-  const { data: stores } = await adminClient
-    .from('profiles')
-    .select(`
-      id, full_name, company_name, sub_store, email, phone, address,
-      tickets(
-        id, title, status, priority, created_at, updated_at,
-        quotes(status, amount)
-      )
-    `)
-    .eq('regional_manager_id', user.id)
-    .in('role', ['store_manager', 'client'])
-    .order('company_name')
 
   const storeList = (stores ?? []) as any[]
 
@@ -81,10 +82,11 @@ export default async function RegionalDashboard() {
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
   // Attach store info to every ticket once, reused by both lists below
-  const ticketsWithStore = allTickets.map((t: any) => {
-    const store = storeList.find((s: any) => (s.tickets ?? []).some((st: any) => st.id === t.id))
-    return { ...t, store }
-  })
+  const storeByTicketId = new Map<string, any>()
+  for (const s of storeList) {
+    for (const st of (s.tickets ?? [])) storeByTicketId.set(st.id, s)
+  }
+  const ticketsWithStore = allTickets.map((t: any) => ({ ...t, store: storeByTicketId.get(t.id) }))
 
   const attentionTickets = ticketsWithStore
     .filter((t: any) =>

@@ -27,15 +27,15 @@ export default async function AdminReviewsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: profile } = await adminDb
-    .from('profiles').select('role, full_name').eq('id', user.id).single()
+  const [{ data: profile }, { data: ratings }] = await Promise.all([
+    adminDb.from('profiles').select('role, full_name').eq('id', user.id).single(),
+    adminDb
+      .from('ratings')
+      .select('id, score, comment, created_at, ticket_id, tickets(title)')
+      .eq('contractor_id', user.id)
+      .order('created_at', { ascending: false }),
+  ])
   if (profile?.role !== 'admin') redirect('/auth/login')
-
-  const { data: ratings } = await adminDb
-    .from('ratings')
-    .select('id, score, comment, created_at, ticket_id, tickets(title)')
-    .eq('contractor_id', user.id)
-    .order('created_at', { ascending: false })
 
   const reviews = (ratings ?? []) as any[]
   const avgRating = reviews.length > 0

@@ -7,15 +7,20 @@ export interface PushPayload {
   url?:  string
 }
 
+let vapidConfigured = false
+
 function getWebPush() {
   const pub  = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
   const priv = process.env.VAPID_PRIVATE_KEY
   if (!pub || !priv) return null
-  webpush.setVapidDetails(
-    process.env.VAPID_SUBJECT ?? 'mailto:admin@motiv.app',
-    pub,
-    priv
-  )
+  if (!vapidConfigured) {
+    webpush.setVapidDetails(
+      process.env.VAPID_SUBJECT ?? 'mailto:admin@motiv.app',
+      pub,
+      priv
+    )
+    vapidConfigured = true
+  }
   return webpush
 }
 

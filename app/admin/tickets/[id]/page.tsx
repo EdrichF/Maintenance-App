@@ -20,25 +20,25 @@ import type { Ticket, Quote } from '@/lib/types'
 export default async function AdminTicketDetailPage({ params }: { params: { id: string } }) {
   const supabase = createAdminClient()
 
-  const { data: ticket } = await supabase
-    .from('tickets')
-    .select('*, profiles(*)')
-    .eq('id', params.id)
-    .single()
+  const [{ data: ticket }, { data: quotes }, { data: completions }] = await Promise.all([
+    supabase
+      .from('tickets')
+      .select('*, profiles(*)')
+      .eq('id', params.id)
+      .single(),
+    supabase
+      .from('quotes')
+      .select('*')
+      .eq('ticket_id', params.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('completions')
+      .select('*')
+      .eq('ticket_id', params.id)
+      .order('created_at', { ascending: false }),
+  ])
 
   if (!ticket) notFound()
-
-  const { data: quotes } = await supabase
-    .from('quotes')
-    .select('*')
-    .eq('ticket_id', params.id)
-    .order('created_at', { ascending: false })
-
-  const { data: completions } = await supabase
-    .from('completions')
-    .select('*')
-    .eq('ticket_id', params.id)
-    .order('created_at', { ascending: false })
 
   const client = (ticket as any).profiles
   const hasAcceptedQuote = (quotes ?? []).some((q: any) => q.status === 'accepted')

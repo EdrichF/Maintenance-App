@@ -27,22 +27,22 @@ export default async function ContractorReviewsPage({ params }: { params: { id: 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const { data: rmProfile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  const [{ data: rmProfile }, { data: contractor }, { data: ratings }] = await Promise.all([
+    supabase.from('profiles').select('role').eq('id', user.id).single(),
+    adminDb
+      .from('profiles')
+      .select('full_name, email, phone, role')
+      .eq('id', params.id)
+      .single(),
+    adminDb
+      .from('ratings')
+      .select('id, score, comment, created_at, ticket_id, tickets(title)')
+      .eq('contractor_id', params.id)
+      .order('created_at', { ascending: false }),
+  ])
+
   if (rmProfile?.role !== 'regional_manager') redirect('/auth/login')
-
-  const { data: contractor } = await adminDb
-    .from('profiles')
-    .select('full_name, email, phone, role')
-    .eq('id', params.id)
-    .single()
-
   if (!contractor || contractor.role !== 'admin') notFound()
-
-  const { data: ratings } = await adminDb
-    .from('ratings')
-    .select('id, score, comment, created_at, ticket_id, tickets(title)')
-    .eq('contractor_id', params.id)
-    .order('created_at', { ascending: false })
 
   const reviews = (ratings ?? []) as any[]
   const avgRating = reviews.length > 0

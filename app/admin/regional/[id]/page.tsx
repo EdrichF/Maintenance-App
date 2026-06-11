@@ -11,21 +11,22 @@ import {
 export default async function RMDetailPage({ params }: { params: { id: string } }) {
   const adminClient = createAdminClient()
 
-  const { data: rm } = await adminClient
-    .from('profiles')
-    .select('*')
-    .eq('id', params.id)
-    .eq('role', 'regional_manager')
-    .single()
+  const [{ data: rm }, { data: branches }] = await Promise.all([
+    adminClient
+      .from('profiles')
+      .select('*')
+      .eq('id', params.id)
+      .eq('role', 'regional_manager')
+      .single(),
+    adminClient
+      .from('profiles')
+      .select('id, full_name, company_name, sub_store, email, phone, address, branch_code')
+      .eq('regional_manager_id', params.id)
+      .in('role', ['store_manager', 'client'])
+      .order('company_name'),
+  ])
 
   if (!rm) notFound()
-
-  const { data: branches } = await adminClient
-    .from('profiles')
-    .select('id, full_name, company_name, sub_store, email, phone, address, branch_code')
-    .eq('regional_manager_id', params.id)
-    .in('role', ['store_manager', 'client'])
-    .order('company_name')
 
   const branchList = branches ?? []
 
