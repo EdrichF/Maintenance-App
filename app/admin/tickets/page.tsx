@@ -124,9 +124,9 @@ export default async function AdminTicketsPage({
                     {STATUS_LABELS[ticket.status as keyof typeof STATUS_LABELS]}
                   </Badge>
                 </div>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
-                  Created: {formatDateTime(ticket.created_at)}
-                  {(() => { const qs = (ticket as any).quotes ?? []; const latest = qs.filter((q:any)=>q.status!=='declined').sort((a:any,b:any)=>new Date(b.created_at).getTime()-new Date(a.created_at).getTime())[0]; return latest ? <span className="ml-2 text-purple-500 dark:text-purple-400">· Quoted: {formatDateTime(latest.created_at)}</span> : null })()}
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5 flex items-center flex-wrap gap-x-1 min-w-0">
+                  <span className="shrink-0">Created: {formatDateTime(ticket.created_at)}</span>
+                  {(() => { const qs = (ticket as any).quotes ?? []; const latest = qs.filter((q:any)=>q.status!=='declined').sort((a:any,b:any)=>new Date(b.created_at).getTime()-new Date(a.created_at).getTime())[0]; return latest ? <span className="shrink-0 text-purple-500 dark:text-purple-400">· Quoted: {formatDateTime(latest.created_at)}</span> : null })()}
                 </p>
               </div>
             </Link>

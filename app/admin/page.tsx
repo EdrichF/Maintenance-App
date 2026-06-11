@@ -108,7 +108,7 @@ export default async function AdminDashboard() {
           { label: 'Urgent',           value: urgentCount,               icon: ShieldAlert,   accent: 'border-l-red-500',    iconCls: 'text-red-600 dark:text-red-400',     href: '/admin/tickets?status=open' },
           { label: 'Quoted',           value: quotedCount,               icon: ReceiptText,   accent: 'border-l-purple-500', iconCls: 'text-purple-600 dark:text-purple-400', href: '/admin/tickets?status=quoted' },
           { label: 'In Progress',      value: progressCount,             icon: Wrench,        accent: 'border-l-amber-500',  iconCls: 'text-amber-600 dark:text-amber-400', href: '/admin/tickets?status=in_progress' },
-          { label: 'Pending Sign-off', value: signOffCount,              icon: BadgeCheck,    accent: 'border-l-orange-500', iconCls: 'text-orange-600 dark:text-orange-400', href: '/admin/tickets?status=pending_sign_off' },
+          { label: 'Pending\nSign-off', value: signOffCount,              icon: BadgeCheck,    accent: 'border-l-orange-500', iconCls: 'text-orange-600 dark:text-orange-400', href: '/admin/tickets?status=pending_sign_off' },
           { label: 'Snag',             value: snagCount,                 icon: ShieldAlert,   accent: 'border-l-rose-500',   iconCls: 'text-rose-600 dark:text-rose-400',   href: '/admin/snag' },
           { label: 'Completed',        value: completedCount,            icon: CheckCircle2,  accent: 'border-l-green-500',  iconCls: 'text-green-600 dark:text-green-400', href: '/admin/tickets?status=completed' },
         ].map(stat => (
@@ -117,7 +117,7 @@ export default async function AdminDashboard() {
               <stat.icon size={22} className={`shrink-0 ${stat.iconCls}`} />
               <div>
                 <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{stat.label}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 whitespace-pre-line">{stat.label}</p>
               </div>
             </div>
           </Link>

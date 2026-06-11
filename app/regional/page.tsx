@@ -34,7 +34,7 @@ export default async function RegionalDashboard() {
         id, full_name, company_name, sub_store, email, phone, address,
         tickets(
           id, title, status, priority, created_at, updated_at,
-          quotes(status, amount)
+          quotes(status, amount, created_at)
         )
       `)
       .eq('regional_manager_id', user.id)
@@ -151,7 +151,7 @@ export default async function RegionalDashboard() {
           { label: 'Urgent',           value: stats.urgentTickets,                   icon: ShieldAlert,   accent: 'border-l-red-500',     iconCls: 'text-red-600 dark:text-red-400',       href: '/regional/tickets?status=open' },
           { label: 'Pending Quotes',   value: stats.pendingQuotes,                   icon: ReceiptText,   accent: 'border-l-yellow-500',  iconCls: 'text-yellow-600 dark:text-yellow-400', href: '/regional/tickets?status=quoted' },
           { label: 'Snag',             value: snagTickets,                           icon: Wrench,        accent: 'border-l-amber-500',   iconCls: 'text-amber-600 dark:text-amber-400',   href: '/regional/snag' },
-          { label: 'Pending Sign-off', value: pendingSignOffTickets,                 icon: BadgeCheck,    accent: 'border-l-orange-500',  iconCls: 'text-orange-600 dark:text-orange-400', href: '/regional/signoff' },
+          { label: 'Pending\nSign-off', value: pendingSignOffTickets,                 icon: BadgeCheck,    accent: 'border-l-orange-500',  iconCls: 'text-orange-600 dark:text-orange-400', href: '/regional/signoff' },
           { label: 'Done This Month',  value: stats.completedThisMonth,              icon: CheckCircle2,  accent: 'border-l-green-500',   iconCls: 'text-green-600 dark:text-green-400',   href: '/regional/tickets?status=completed' },
           { label: 'Accepted Value',   value: formatCurrency(stats.totalQuoteValue),   icon: Banknote,  accent: 'border-l-purple-500', iconCls: 'text-purple-600 dark:text-purple-400', href: null, currency: true },
           { label: 'Pending Value',    value: formatCurrency(stats.pendingQuoteValue),  icon: Clock4,    accent: 'border-l-slate-400',  iconCls: 'text-slate-500 dark:text-slate-400',   href: null, currency: true },
@@ -172,7 +172,7 @@ export default async function RegionalDashboard() {
               <stat.icon size={22} className={`shrink-0 ${stat.iconCls}`} />
               <div className="min-w-0">
                 <p className="text-xl font-bold text-gray-900 dark:text-white leading-none">{stat.value}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{stat.label}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 whitespace-pre-line">{stat.label}</p>
               </div>
             </div>
           )
