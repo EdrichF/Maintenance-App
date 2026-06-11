@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/Badge'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
-  formatDateTime,
+  formatDateTimeShort,
 } from '@/lib/utils'
 
 export interface RecentTicket {
@@ -62,9 +62,9 @@ function TicketContent({ ticket, variant }: { ticket: RecentTicket; variant: Var
         </Badge>
       </div>
       <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5 truncate">
-        Created: {formatDateTime(ticket.created_at)}
+        Created: {formatDateTimeShort(ticket.created_at)}
         {latestQuote && (
-          <span className="text-purple-500 dark:text-purple-400"> · Quoted: {formatDateTime(latestQuote.created_at)}</span>
+          <span className="text-purple-500 dark:text-purple-400"> · Quoted: {formatDateTimeShort(latestQuote.created_at)}</span>
         )}
       </p>
     </>

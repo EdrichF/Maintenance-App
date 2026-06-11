@@ -71,3 +71,10 @@ export function formatDateTime(dateString: string) {
     hour: '2-digit', minute: '2-digit',
   })
 }
+
+export function formatDateTimeShort(dateString: string) {
+  return new Date(dateString).toLocaleString('en-ZA', {
+    day: 'numeric', month: 'short',
+    hour: '2-digit', minute: '2-digit',
+  })
+}
