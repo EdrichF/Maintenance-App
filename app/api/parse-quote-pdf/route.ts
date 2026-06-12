@@ -14,14 +14,17 @@ interface ParsedQuote {
 }
 
 const SYSTEM_PROMPT = (today: string) => `You are a quote document parser for a South African maintenance platform. Today's date is ${today}.
-Extract the following fields and return ONLY a JSON object with these exact keys:
-- "amount": the TOTAL EXCLUDING VAT as a number (no currency symbol, e.g. 1064758.18).
-  Priority order: "Total Excl. VAT" > "Total before VAT" > "Subtotal" > "Net Total" > "Total Excl" > Grand Total.
-  NEVER use the VAT amount or Total Including VAT. null if not found.
-- "description": concise summary of what the quote covers (1-3 sentences). null if not found.
-- "valid_until": quote expiry date as ISO YYYY-MM-DD. Look for "Valid until", "Quote valid", "Expiry", "Valid for X days" (add X days to today). null if not found.
+Extract the following fields and return ONLY a valid JSON object with these exact keys — no other text:
+- "amount": the TOTAL EXCLUDING VAT as a plain number (no currency symbol, no spaces, e.g. 1064758.18).
+  Search order: "Total Excl. VAT" > "Total before VAT" > "Subtotal" > "Nett" > "Net Total" > "Amount excl" > "Total excl" > "Quote Total" > any grand total.
+  ZAR numbers may be written as "R 45 000.00", "R45,000", "45 000,00" — strip R, spaces, commas and return a plain float.
+  NEVER use the VAT line amount or Total Including VAT / Total Incl. VAT.
+  If no excl-VAT total exists, use the largest single monetary total on the document.
+  null only if truly no monetary amount is anywhere on the document.
+- "description": 1–3 sentence summary of what work/items the quote covers. null if not found.
+- "valid_until": quote expiry as ISO YYYY-MM-DD. Check "Valid until", "Quote valid", "Expiry date", "Valid for X days/weeks" (compute from today). null if not found.
 
-Currency is ZAR. Ignore individual line item amounts — only use the overall total.`
+Return ONLY the JSON object. No markdown, no explanation.`
 
 /**
  * POST /api/parse-quote-pdf
@@ -101,7 +104,7 @@ async function extractFromPdf(file: File, today: string): Promise<Partial<Parsed
   if (!res.ok) throw new Error(`Groq LLM error: ${await res.text()}`)
 
   const json = await res.json() as { choices: Array<{ message: { content: string } }> }
-  return JSON.parse(json.choices[0].message.content) as Partial<ParsedQuote>
+  return parseJsonResponse(json.choices[0].message.content)
 }
 
 // ─── Image: vision model ──────────────────────────────────────────────────────
@@ -113,15 +116,15 @@ async function extractFromImage(file: File, today: string): Promise<Partial<Pars
     method: 'POST',
     headers: { Authorization: `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'llama-3.2-11b-vision-preview',
-      response_format: { type: 'json_object' },
+      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+      // No response_format — vision models may not support json_object mode; parse robustly below
       messages: [
         { role: 'system', content: SYSTEM_PROMPT(today) },
         {
           role: 'user',
           content: [
             { type: 'image_url', image_url: { url: dataUrl } },
-            { type: 'text', text: 'Extract the quote fields from this image. Return ONLY the JSON object.' },
+            { type: 'text', text: 'Extract the quote fields from this image. Return ONLY the JSON object, nothing else.' },
           ],
         },
       ],
@@ -131,5 +134,17 @@ async function extractFromImage(file: File, today: string): Promise<Partial<Pars
   if (!res.ok) throw new Error(`Groq vision error: ${await res.text()}`)
 
   const json = await res.json() as { choices: Array<{ message: { content: string } }> }
-  return JSON.parse(json.choices[0].message.content) as Partial<ParsedQuote>
+  return parseJsonResponse(json.choices[0].message.content)
+}
+
+// Robustly extract JSON from a model response that may contain surrounding text
+function parseJsonResponse(content: string): Partial<ParsedQuote> {
+  const trimmed = content.trim()
+  try { return JSON.parse(trimmed) } catch {}
+  // Model sometimes wraps in markdown code block or adds preamble text
+  const match = trimmed.match(/\{[\s\S]*\}/)
+  if (match) {
+    try { return JSON.parse(match[0]) } catch {}
+  }
+  throw new Error('Could not parse JSON from model response')
 }

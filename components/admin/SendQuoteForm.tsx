@@ -67,7 +67,11 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
     const f = accepted[0]
     if (!f) return
     setFile(f)
-    console.log('[parse-quote-pdf] onDrop fired, file:', f.name, f.type)
+    // Clear stale values from any previous parse so they don't bleed through
+    reset()
+    setValidNA(false)
+    setAutofilled(false)
+    setParseError(false)
 
     const parseable = f.type === 'application/pdf' || f.type.startsWith('image/')
     if (!parseable) return
@@ -102,7 +106,7 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
             if (data2.description !== null) setValue('description', data2.description)
             if (data2.valid_until !== null) { setValue('valid_until', data2.valid_until); setValidNA(false) }
             else { setValue('valid_until', ''); setValidNA(false) }
-            if (data2.amount !== null || data2.description !== null) setAutofilled(true)
+            if (data2.amount !== null || data2.description !== null || data2.valid_until !== null) setAutofilled(true)
             else setParseError('generic')
           } catch (convErr) {
             console.error('[parse-quote-pdf] PDF→image conversion failed:', convErr)
@@ -130,7 +134,7 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
         setValue('valid_until', '')
         setValidNA(false)
       }
-      if (data.amount !== null || data.description !== null) {
+      if (data.amount !== null || data.description !== null || data.valid_until !== null) {
         setAutofilled(true)
       } else {
         setParseError('generic')
