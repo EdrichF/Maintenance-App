@@ -32,9 +32,10 @@ async function pdfFirstPageToBlob(file: File): Promise<Blob> {
 }
 
 interface QuoteForm {
-  amount:      number
-  description: string
-  valid_until: string
+  amount:          number
+  amount_incl_vat: number | ''
+  description:     string
+  valid_until:     string
 }
 
 function addDays(days: number): string {
@@ -100,10 +101,11 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
               setParseError('generic')
               return
             }
-            const data2 = await res2.json() as { amount: number | null; description: string | null; valid_until: string | null }
+            const data2 = await res2.json() as { amount: number | null; amount_incl_vat: number | null; description: string | null; valid_until: string | null }
             console.log('[parse-quote-pdf] Vision extracted:', data2)
-            if (data2.amount      !== null) setValue('amount',      data2.amount)
-            if (data2.description !== null) setValue('description', data2.description)
+            if (data2.amount          !== null) setValue('amount',          data2.amount)
+            if (data2.amount_incl_vat !== null) setValue('amount_incl_vat', data2.amount_incl_vat)
+            if (data2.description     !== null) setValue('description',     data2.description)
             if (data2.valid_until !== null) { setValue('valid_until', data2.valid_until); setValidNA(false) }
             else { setValue('valid_until', ''); setValidNA(false) }
             if (data2.amount !== null || data2.description !== null || data2.valid_until !== null) setAutofilled(true)
@@ -119,14 +121,16 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
         return
       }
       const data = await res.json() as {
-        amount:      number | null
-        description: string | null
-        valid_until: string | null
+        amount:          number | null
+        amount_incl_vat: number | null
+        description:     string | null
+        valid_until:     string | null
       }
       console.log('[parse-quote-pdf] Extracted:', data)
 
-      if (data.amount      !== null) setValue('amount',      data.amount)
-      if (data.description !== null) setValue('description', data.description)
+      if (data.amount          !== null) setValue('amount',          data.amount)
+      if (data.amount_incl_vat !== null) setValue('amount_incl_vat', data.amount_incl_vat)
+      if (data.description     !== null) setValue('description',     data.description)
       if (data.valid_until !== null) {
         setValue('valid_until', data.valid_until)
         setValidNA(false)
@@ -196,10 +200,11 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...values,
-        ticket_id:   ticketId,
-        amount:      Number(values.amount),
-        file_url:    fileUrl,
-        valid_until: validNA ? null : values.valid_until,
+        ticket_id:       ticketId,
+        amount:          Number(values.amount),
+        amount_incl_vat: values.amount_incl_vat !== '' ? Number(values.amount_incl_vat) : null,
+        file_url:        fileUrl,
+        valid_until:     validNA ? null : values.valid_until,
       }),
     })
 
@@ -312,15 +317,32 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
           </div>
         )}
 
-        <Input
-          id="amount"
-          type="number"
-          step="0.01"
-          label="Amount (R)"
-          placeholder="1500.00"
-          error={errors.amount?.message}
-          {...register('amount', { required: 'Amount is required', min: { value: 1, message: 'Must be > 0' } })}
-        />
+        <div className="grid grid-cols-2 gap-3">
+          <Input
+            id="amount"
+            type="number"
+            step="0.01"
+            label="Amount Excl. VAT (R) *"
+            placeholder="45000.00"
+            error={errors.amount?.message}
+            {...register('amount', { required: 'Required', min: { value: 1, message: 'Must be > 0' } })}
+          />
+          <div>
+            <Input
+              id="amount_incl_vat"
+              type="number"
+              step="0.01"
+              label="Amount Incl. VAT (R)"
+              placeholder="51750.00"
+              error={errors.amount_incl_vat?.message}
+              {...register('amount_incl_vat', {
+                min: { value: 1, message: 'Must be > 0' },
+                setValueAs: v => v === '' ? '' : Number(v),
+              })}
+            />
+            <p className="mt-0.5 text-xs text-gray-400">Leave blank if supplier not VAT-registered</p>
+          </div>
+        </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>

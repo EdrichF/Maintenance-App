@@ -8,23 +8,36 @@ const GROQ_BASE    = 'https://api.groq.com/openai/v1'
 const IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
 
 interface ParsedQuote {
-  amount:      number | null
-  description: string | null
-  valid_until: string | null
+  amount:          number | null   // excl VAT (or full amount if supplier not VAT-registered)
+  amount_incl_vat: number | null   // incl VAT total; null if supplier not VAT-registered
+  description:     string | null
+  valid_until:     string | null
 }
 
-const SYSTEM_PROMPT = (today: string) => `You are a quote document parser for a South African maintenance platform. Today's date is ${today}.
-Extract the following fields and return ONLY a valid JSON object with these exact keys — no other text:
-- "amount": the TOTAL EXCLUDING VAT as a plain number (no currency symbol, no spaces, e.g. 1064758.18).
-  Search order: "Total Excl. VAT" > "Total before VAT" > "Subtotal" > "Nett" > "Net Total" > "Amount excl" > "Total excl" > "Quote Total" > any grand total.
-  ZAR numbers may be written as "R 45 000.00", "R45,000", "45 000,00" — strip R, spaces, commas and return a plain float.
-  NEVER use the VAT line amount or Total Including VAT / Total Incl. VAT.
-  If no excl-VAT total exists, use the largest single monetary total on the document.
-  null only if truly no monetary amount is anywhere on the document.
-- "description": 1–3 sentence summary of what work/items the quote covers. null if not found.
-- "valid_until": quote expiry as ISO YYYY-MM-DD. Check "Valid until", "Quote valid", "Expiry date", "Valid for X days/weeks" (compute from today). null if not found.
+const SYSTEM_PROMPT = (today: string) => `You are a quote parser for ConnexServ, a South African facilities-management and maintenance platform. Today is ${today}. Quotes come from contractors doing retail fitouts, building maintenance, and renovation work (electrical, plumbing, tiling, painting, ceilings, partitioning, shopfitting, HVAC, fire, security, etc.).
 
-Return ONLY the JSON object. No markdown, no explanation.`
+IMPORTANT: Some suppliers are NOT VAT-registered and will have no VAT breakdown — do NOT calculate or infer VAT amounts. Only extract numbers that are explicitly printed on the document.
+If you are not certain about a value, return null — do not guess.
+
+Return ONLY a valid JSON object with exactly these four keys — no markdown, no explanation:
+
+"amount": Amount EXCLUDING VAT as a plain float (e.g. 45000.00).
+  Look for: "Total Excl. VAT", "Excl. VAT", "Total before VAT", "Nett", "Net Total", "Subtotal", "Amount excl", "Quote Total".
+  If no excl-VAT label exists but only a single total appears (no VAT line on the document), use that total here and set amount_incl_vat to null.
+  ZAR formatting: "R 45 000.00", "R45,000", "45 000,00" — strip R, spaces, thousand separators; return a plain float.
+  null if not clearly found.
+
+"amount_incl_vat": Amount INCLUDING VAT as a plain float.
+  Look for: "Total Incl. VAT", "Incl. VAT", "Grand Total", "Total Including VAT", "Amount incl".
+  Only set if a VAT line is explicitly present on the document (supplier is VAT-registered).
+  null if the supplier shows no VAT breakdown.
+
+"description": 1–3 sentence plain-English summary of the scope of work and/or materials quoted (e.g. "Electrical installation for new Crazy Store fitout at Midrand 2, including DB board, lighting, and power points."). null if content is unreadable.
+
+"valid_until": Quote expiry as ISO YYYY-MM-DD.
+  Look for: "Valid until / till", "Quote valid", "Validity", "Expiry", "Valid for X days/weeks" (add X to today).
+  SA dates appear as DD/MM/YYYY or "5 July 2026" — convert to YYYY-MM-DD.
+  null if not found.`
 
 /**
  * POST /api/parse-quote-pdf
@@ -66,9 +79,10 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({
-    amount:      typeof raw.amount === 'number' ? raw.amount : null,
-    description: typeof raw.description === 'string' ? raw.description : null,
-    valid_until: typeof raw.valid_until === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(raw.valid_until)
+    amount:          typeof raw.amount === 'number'          ? raw.amount          : null,
+    amount_incl_vat: typeof raw.amount_incl_vat === 'number' ? raw.amount_incl_vat : null,
+    description:     typeof raw.description === 'string'     ? raw.description     : null,
+    valid_until:     typeof raw.valid_until === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(raw.valid_until)
       ? raw.valid_until
       : null,
   } satisfies ParsedQuote)
@@ -94,6 +108,8 @@ async function extractFromPdf(file: File, today: string): Promise<Partial<Parsed
     body: JSON.stringify({
       model: 'llama-3.3-70b-versatile',
       response_format: { type: 'json_object' },
+      temperature: 0,
+      max_tokens: 256,
       messages: [
         { role: 'system', content: SYSTEM_PROMPT(today) },
         { role: 'user',   content: pdfText.slice(0, 8000) },
@@ -117,7 +133,9 @@ async function extractFromImage(file: File, today: string): Promise<Partial<Pars
     headers: { Authorization: `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'meta-llama/llama-4-scout-17b-16e-instruct',
-      // No response_format — vision models may not support json_object mode; parse robustly below
+      response_format: { type: 'json_object' },
+      temperature: 0,
+      max_tokens: 256,
       messages: [
         { role: 'system', content: SYSTEM_PROMPT(today) },
         {

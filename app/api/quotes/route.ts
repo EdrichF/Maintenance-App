@@ -17,15 +17,24 @@ export async function POST(request: Request) {
   if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const body = await request.json()
-  const { ticket_id, amount, description, valid_until, file_url } = body
+  const { ticket_id, amount, amount_incl_vat, description, valid_until, file_url } = body
 
   // valid_until may be null when admin explicitly selects N/A (no expiry)
+  // amount_incl_vat is null when supplier is not VAT-registered
 
   const adminClient = createAdminClient()
 
   const { data: quote, error } = await adminClient
     .from('quotes')
-    .insert({ ticket_id, admin_id: user.id, amount, description, valid_until, ...(file_url ? { file_url } : {}) })
+    .insert({
+      ticket_id,
+      admin_id: user.id,
+      amount,
+      ...(amount_incl_vat != null ? { amount_incl_vat } : {}),
+      description,
+      valid_until,
+      ...(file_url ? { file_url } : {}),
+    })
     .select()
     .single()
 

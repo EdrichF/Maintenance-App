@@ -35,6 +35,7 @@ export interface Quote {
   ticket_id: string
   admin_id: string
   amount: number
+  amount_incl_vat: number | null
   description: string
   valid_until: string | null
   file_url: string | null
