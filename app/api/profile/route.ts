@@ -1,6 +1,31 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
+/**
+ * Normalise a phone number to E.164 format (+27XXXXXXXXX) for SA numbers.
+ * Handles: "071 234 5678", "0712345678", "+27 71 234 5678", "27712345678", etc.
+ * Returns null if the value is empty/missing.
+ */
+function normalisePhone(raw: string | null | undefined): string | null {
+  if (!raw) return null
+  const digits = raw.replace(/\D/g, '') // strip everything except digits
+  if (!digits) return null
+  // South African local format: leading 0 → replace with country code 27
+  if (digits.startsWith('0') && digits.length === 10) {
+    return `+27${digits.slice(1)}`
+  }
+  // Already has country code without +
+  if (digits.startsWith('27') && digits.length === 11) {
+    return `+${digits}`
+  }
+  // Already E.164 (+ stripped earlier, re-add)
+  if (raw.trim().startsWith('+')) {
+    return `+${digits}`
+  }
+  // Fallback: store as-is with + prefix
+  return `+${digits}`
+}
+
 export async function GET() {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -27,7 +52,11 @@ export async function PATCH(request: Request) {
   const { full_name, phone, address, company_name, sub_store, branch_code, role } = body
 
   const updateData: Record<string, unknown> = {
-    full_name, phone, address, company_name, sub_store,
+    full_name,
+    phone: normalisePhone(phone),
+    address,
+    company_name,
+    sub_store,
   }
   // Allow role to be set on first signup (store_manager / regional_manager only — never admin)
   if (role === 'store_manager' || role === 'regional_manager') {
