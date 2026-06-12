@@ -8,8 +8,8 @@ import https from 'https';
 // ─── ENV ────────────────────────────────────────────────────────────────────
 const WA_TOKEN       = process.env.WHATSAPP_ACCESS_TOKEN!;
 const WA_PHONE_ID    = process.env.WHATSAPP_PHONE_NUMBER_ID!;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
-const GEMINI_BASE    = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+const GROQ_API_KEY  = process.env.GROQ_API_KEY!;
+const GROQ_BASE     = 'https://api.groq.com/openai/v1';
 const SUPABASE_URL   = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 
 const MIN_PHOTOS = 2;
@@ -101,49 +101,47 @@ Extract structured fields and return ONLY a valid JSON object with these exact k
 Priority guide: urgent = safety hazard or no service, high = major disruption, medium = moderate issue, low = minor/cosmetic.
 Input may be South African English or Afrikaans — handle both.`;
 
-/** Transcribe audio AND extract ticket fields in a single Gemini call */
+/** Transcribe audio using Groq Whisper, then extract ticket fields */
 async function transcribeAndExtract(arrayBuffer: ArrayBuffer, mimeType: string): Promise<ExtractedTicket> {
-  const base64Audio = Buffer.from(arrayBuffer).toString('base64');
+  const ext = mimeType.split('/')[1]?.split(';')[0] ?? 'ogg';
+  const form = new FormData();
+  form.append('file', new Blob([arrayBuffer], { type: mimeType }), `audio.${ext}`);
+  form.append('model', 'whisper-large-v3');
+  form.append('response_format', 'text');
+  // No language hint — Whisper auto-detects SA English/Afrikaans mix
 
-  const res = await fetch(`${GEMINI_BASE}?key=${GEMINI_API_KEY}`, {
+  const res = await fetch(`${GROQ_BASE}/audio/transcriptions`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{
-        parts: [
-          { inline_data: { mime_type: mimeType, data: base64Audio } },
-          { text: `${TICKET_EXTRACTION_PROMPT}\n\nTranscribe the audio and extract the ticket fields. Return ONLY the JSON object.` },
-        ],
-      }],
-      generationConfig: { response_mime_type: 'application/json' },
-    }),
+    headers: { Authorization: `Bearer ${GROQ_API_KEY}` },
+    body: form,
   });
+  if (!res.ok) throw new Error(`Groq transcription failed: ${await res.text()}`);
 
-  if (!res.ok) throw new Error(`Gemini audio extraction failed: ${await res.text()}`);
+  const transcript = (await res.text()).trim();
+  if (!transcript) throw new Error('Empty transcript');
 
-  const json = await res.json() as { candidates: Array<{ content: { parts: Array<{ text: string }> } }> };
-  const raw  = JSON.parse(json.candidates[0].content.parts[0].text) as Partial<ExtractedTicket>;
-
-  return sanitiseExtracted(raw);
+  return extractTicketFields(transcript);
 }
 
-/** Extract ticket fields from plain text using Gemini */
+/** Extract ticket fields from plain text using Groq LLaMA */
 async function extractTicketFields(text: string): Promise<ExtractedTicket> {
-  const res = await fetch(`${GEMINI_BASE}?key=${GEMINI_API_KEY}`, {
+  const res = await fetch(`${GROQ_BASE}/chat/completions`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { Authorization: `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      contents: [{
-        parts: [{ text: `${TICKET_EXTRACTION_PROMPT}\n\nInput: ${text}\n\nReturn ONLY the JSON object.` }],
-      }],
-      generationConfig: { response_mime_type: 'application/json' },
+      model: 'llama-3.3-70b-versatile',
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: TICKET_EXTRACTION_PROMPT },
+        { role: 'user', content: text },
+      ],
     }),
   });
 
-  if (!res.ok) throw new Error(`Gemini text extraction failed: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Groq extraction failed: ${await res.text()}`);
 
-  const json = await res.json() as { candidates: Array<{ content: { parts: Array<{ text: string }> } }> };
-  const raw  = JSON.parse(json.candidates[0].content.parts[0].text) as Partial<ExtractedTicket>;
+  const json = await res.json() as { choices: Array<{ message: { content: string } }> };
+  const raw  = JSON.parse(json.choices[0].message.content) as Partial<ExtractedTicket>;
 
   return sanitiseExtracted(raw, text);
 }
