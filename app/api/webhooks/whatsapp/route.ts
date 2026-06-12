@@ -244,12 +244,19 @@ async function handleWebhook(payload: WaPayload) {
 
     console.log(`[WhatsApp] Voice note received from ${from}, media: ${mediaId}`);
 
+    await sendWhatsAppReply(from, '🎙️ Voice note received! Processing your request, please hold on...');
+
     // 1. Download media
     const { arrayBuffer, mimeType } = await downloadMedia(mediaId);
 
     // 2. Transcribe
-    const transcript = await transcribe(arrayBuffer, mimeType);
+    const transcript = (await transcribe(arrayBuffer, mimeType)).trim();
     console.log(`[WhatsApp] Transcript: ${transcript}`);
+
+    if (!transcript) {
+      await sendWhatsAppReply(from, '⚠️ Could not understand the voice note. Please try again or send a text message.');
+      return;
+    }
 
     // 3. Extract ticket fields
     const { title, description, priority } = await extractTicketFields(transcript);
@@ -268,8 +275,14 @@ async function handleWebhook(payload: WaPayload) {
       console.warn(`[WhatsApp] No profile found for ${normalisedPhone}`);
       await sendWhatsAppReply(
         from,
-        '⚠️ Your number is not registered in ConnexServ. Please contact your administrator.'
+        '⚠️ Your number is not registered in Motiv. Please contact your administrator.'
       );
+      return;
+    }
+
+    if (senderProfile.role !== 'client' && senderProfile.role !== 'store_manager') {
+      console.warn(`[WhatsApp] Role ${senderProfile.role} not allowed to submit tickets via WhatsApp`);
+      await sendWhatsAppReply(from, '⚠️ Only store managers and clients can submit tickets via WhatsApp.');
       return;
     }
 
