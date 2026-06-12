@@ -52,7 +52,7 @@ function normalisePhone(from: string): string {
 async function downloadMedia(mediaId: string): Promise<{ arrayBuffer: ArrayBuffer; mimeType: string }> {
   // 1. Get the download URL
   const metaRes = await fetch(
-    `https://graph.facebook.com/v19.0/${mediaId}`,
+    `https://graph.facebook.com/v21.0/${mediaId}`,
     { headers: { Authorization: `Bearer ${WA_TOKEN}` } }
   );
   if (!metaRes.ok) throw new Error(`Meta media lookup failed: ${metaRes.status}`);
@@ -135,7 +135,7 @@ Priority guide: urgent = safety/no service, high = major disruption, medium = mo
 /** Send a WhatsApp text reply to a phone number */
 async function sendWhatsAppReply(to: string, text: string): Promise<void> {
   await fetch(
-    `https://graph.facebook.com/v19.0/${WA_PHONE_ID}/messages`,
+    `https://graph.facebook.com/v21.0/${WA_PHONE_ID}/messages`,
     {
       method: 'POST',
       headers: {
@@ -190,11 +190,12 @@ export async function GET(req: NextRequest) {
  * 8. Reply to sender with ticket ID + summary
  */
 export async function POST(req: NextRequest) {
-  // Always acknowledge immediately — Meta retries if we don't 200 fast
   const payload = await req.json() as WaPayload;
 
-  // Process asynchronously so we can return 200 right away
-  void handleWebhook(payload);
+  // Await the handler — Vercel serverless functions terminate after the
+  // response is sent, so fire-and-forget doesn't reliably complete.
+  // Meta waits up to 20s for a response, which is enough time for the full flow.
+  await handleWebhook(payload);
 
   return NextResponse.json({ status: 'ok' });
 }
