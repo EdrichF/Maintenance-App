@@ -47,7 +47,8 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
     setFile(f)
     console.log('[parse-quote-pdf] onDrop fired, file:', f.name, f.type)
 
-    if (f.type !== 'application/pdf') return
+    const parseable = f.type === 'application/pdf' || f.type.startsWith('image/')
+    if (!parseable) return
 
     setParsing(true)
     setAutofilled(false)
@@ -230,7 +231,7 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
                   <p className="text-sm text-gray-600 dark:text-gray-300">
                     Drag & drop a file, or <span className="text-brand-600 font-medium">browse</span>
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">PDF auto-fills fields below · Word, PNG, JPG also accepted · max 10 MB</p>
+                  <p className="text-xs text-gray-400 mt-1">PDF or photo auto-fills fields · Word also accepted · max 10 MB</p>
                 </>
               )}
             </div>
