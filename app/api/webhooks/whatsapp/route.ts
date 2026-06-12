@@ -48,8 +48,8 @@ function normalisePhone(from: string): string {
   return `+${digits}`;
 }
 
-/** Download a Meta media file as a Buffer */
-async function downloadMedia(mediaId: string): Promise<{ buffer: Buffer; mimeType: string }> {
+/** Download a Meta media file as an ArrayBuffer */
+async function downloadMedia(mediaId: string): Promise<{ arrayBuffer: ArrayBuffer; mimeType: string }> {
   // 1. Get the download URL
   const metaRes = await fetch(
     `https://graph.facebook.com/v19.0/${mediaId}`,
@@ -64,14 +64,14 @@ async function downloadMedia(mediaId: string): Promise<{ buffer: Buffer; mimeTyp
   });
   if (!fileRes.ok) throw new Error(`Media download failed: ${fileRes.status}`);
   const arrayBuffer = await fileRes.arrayBuffer();
-  return { buffer: Buffer.from(arrayBuffer), mimeType: mime_type };
+  return { arrayBuffer, mimeType: mime_type };
 }
 
 /** Transcribe audio using Groq Whisper */
-async function transcribe(buffer: Buffer, mimeType: string): Promise<string> {
+async function transcribe(arrayBuffer: ArrayBuffer, mimeType: string): Promise<string> {
   const ext = mimeType.split('/')[1]?.split(';')[0] ?? 'ogg';
   const form = new FormData();
-  form.append('file', new Blob([buffer], { type: mimeType }), `audio.${ext}`);
+  form.append('file', new Blob([arrayBuffer], { type: mimeType }), `audio.${ext}`);
   form.append('model', 'whisper-large-v3-turbo');
   form.append('response_format', 'text');
 
@@ -220,10 +220,10 @@ async function handleWebhook(payload: WaPayload) {
     console.log(`[WhatsApp] Voice note received from ${from}, media: ${mediaId}`);
 
     // 1. Download media
-    const { buffer, mimeType } = await downloadMedia(mediaId);
+    const { arrayBuffer, mimeType } = await downloadMedia(mediaId);
 
     // 2. Transcribe
-    const transcript = await transcribe(buffer, mimeType);
+    const transcript = await transcribe(arrayBuffer, mimeType);
     console.log(`[WhatsApp] Transcript: ${transcript}`);
 
     // 3. Extract ticket fields
