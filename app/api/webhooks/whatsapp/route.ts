@@ -6,11 +6,11 @@ import type { Priority } from '@/lib/types';
 import https from 'https';
 
 // ─── ENV ────────────────────────────────────────────────────────────────────
-const WA_TOKEN     = process.env.WHATSAPP_ACCESS_TOKEN!;
-const WA_PHONE_ID  = process.env.WHATSAPP_PHONE_NUMBER_ID!;
-const GROQ_API_KEY = process.env.GROQ_API_KEY!;
-const GROQ_BASE    = 'https://api.groq.com/openai/v1';
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const WA_TOKEN      = process.env.WHATSAPP_ACCESS_TOKEN!;
+const WA_PHONE_ID   = process.env.WHATSAPP_PHONE_NUMBER_ID!;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
+const GEMINI_BASE   = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+const SUPABASE_URL  = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 
 const MIN_PHOTOS = 2;
 const MAX_PHOTOS = 5;
@@ -88,57 +88,70 @@ async function downloadMedia(mediaId: string): Promise<{ arrayBuffer: ArrayBuffe
   return { arrayBuffer, mimeType: mime_type };
 }
 
-/** Transcribe audio using Groq Whisper */
-async function transcribe(arrayBuffer: ArrayBuffer, mimeType: string): Promise<string> {
-  const ext = mimeType.split('/')[1]?.split(';')[0] ?? 'ogg';
-  const form = new FormData();
-  form.append('file', new Blob([arrayBuffer], { type: mimeType }), `audio.${ext}`);
-  form.append('model', 'whisper-large-v3');
-  form.append('response_format', 'text');
-  // No language hint — Whisper auto-detects SA English/Afrikaans mix better than forced lang
-
-  const res = await fetch(`${GROQ_BASE}/audio/transcriptions`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${GROQ_API_KEY}` },
-    body: form,
-  });
-  if (!res.ok) throw new Error(`Groq transcription failed: ${await res.text()}`);
-  return res.text();
-}
-
-/** Use Groq LLM to extract structured ticket fields from a transcript */
-async function extractTicketFields(transcript: string): Promise<ExtractedTicket> {
-  const res = await fetch(`${GROQ_BASE}/chat/completions`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      response_format: { type: 'json_object' },
-      messages: [
-        {
-          role: 'system',
-          content: `You are a maintenance ticket assistant. Extract structured fields from a voice-note transcript.
-Return ONLY a JSON object with these exact keys:
-- "title": short one-line summary (max 80 chars)
+const TICKET_EXTRACTION_PROMPT = `You are a maintenance ticket assistant for a South African retail maintenance platform.
+Extract structured fields and return ONLY a valid JSON object with these exact keys:
+- "title": short one-line summary of the issue (max 80 chars)
 - "description": detailed description of the issue
 - "priority": one of "low", "medium", "high", "urgent"
 
-Priority guide: urgent = safety/no service, high = major disruption, medium = moderate issue, low = minor/cosmetic.`,
-        },
-        { role: 'user', content: transcript },
-      ],
+Priority guide: urgent = safety hazard or no service, high = major disruption, medium = moderate issue, low = minor/cosmetic.
+The input may be South African English or Afrikaans — handle both.`;
+
+/**
+ * Transcribe audio AND extract ticket fields in a single Gemini call.
+ * Saves one API round-trip vs separate Whisper + LLM calls.
+ */
+async function transcribeAndExtract(arrayBuffer: ArrayBuffer, mimeType: string): Promise<ExtractedTicket> {
+  const base64Audio = Buffer.from(arrayBuffer).toString('base64');
+
+  const res = await fetch(`${GEMINI_BASE}?key=${GEMINI_API_KEY}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{
+        parts: [
+          { inline_data: { mime_type: mimeType, data: base64Audio } },
+          { text: `${TICKET_EXTRACTION_PROMPT}\n\nTranscribe the audio and extract the ticket fields. Return ONLY the JSON object.` },
+        ],
+      }],
+      generationConfig: { response_mime_type: 'application/json' },
     }),
   });
 
-  if (!res.ok) throw new Error(`Groq extraction failed: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Gemini audio extraction failed: ${await res.text()}`);
 
-  const json = await res.json() as { choices: Array<{ message: { content: string } }> };
-  const raw  = JSON.parse(json.choices[0].message.content) as Partial<ExtractedTicket>;
+  const json = await res.json() as { candidates: Array<{ content: { parts: Array<{ text: string }> } }> };
+  const raw  = JSON.parse(json.candidates[0].content.parts[0].text) as Partial<ExtractedTicket>;
 
+  return sanitiseExtracted(raw);
+}
+
+/** Extract ticket fields from plain text using Gemini */
+async function extractTicketFields(text: string): Promise<ExtractedTicket> {
+  const res = await fetch(`${GEMINI_BASE}?key=${GEMINI_API_KEY}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{
+        parts: [{ text: `${TICKET_EXTRACTION_PROMPT}\n\nInput: ${text}\n\nReturn ONLY the JSON object.` }],
+      }],
+      generationConfig: { response_mime_type: 'application/json' },
+    }),
+  });
+
+  if (!res.ok) throw new Error(`Gemini text extraction failed: ${await res.text()}`);
+
+  const json = await res.json() as { candidates: Array<{ content: { parts: Array<{ text: string }> } }> };
+  const raw  = JSON.parse(json.candidates[0].content.parts[0].text) as Partial<ExtractedTicket>;
+
+  return sanitiseExtracted(raw, text);
+}
+
+function sanitiseExtracted(raw: Partial<ExtractedTicket>, fallbackDescription?: string): ExtractedTicket {
   const validPriorities: Priority[] = ['low', 'medium', 'high', 'urgent'];
   return {
     title:       raw.title ?? 'Maintenance request',
-    description: raw.description ?? transcript,
+    description: raw.description ?? fallbackDescription ?? 'No description provided',
     priority:    validPriorities.includes(raw.priority as Priority) ? (raw.priority as Priority) : 'medium',
   };
 }
@@ -348,7 +361,7 @@ async function handleNewTicket(
   message: WaMessage,
   adminClient: ReturnType<typeof createAdminClient>
 ) {
-  let transcript = '';
+  let extracted: ExtractedTicket;
 
   if (message.type === 'audio') {
     const mediaId = message.audio?.id;
@@ -358,21 +371,16 @@ async function handleNewTicket(
     await sendWhatsAppReply(from, '🎙️ Voice note received! Processing your request, please hold on...');
 
     const { arrayBuffer, mimeType } = await downloadMedia(mediaId);
-    transcript = (await transcribe(arrayBuffer, mimeType)).trim();
-    console.log(`[WhatsApp] Transcript: ${transcript}`);
-
-    if (!transcript) {
-      await sendWhatsAppReply(from, '⚠️ Could not understand the voice note. Please try again or send a text message.');
-      return;
-    }
+    extracted = await transcribeAndExtract(arrayBuffer, mimeType);
+    console.log(`[WhatsApp] Extracted:`, extracted);
   } else {
-    transcript = (message.text?.body ?? '').trim();
+    const transcript = (message.text?.body ?? '').trim();
     if (!transcript) return;
     await sendWhatsAppReply(from, '💬 Message received! Processing your request, please hold on...');
+    extracted = await extractTicketFields(transcript);
   }
 
-  // Extract ticket fields
-  const { title, description, priority } = await extractTicketFields(transcript);
+  const { title, description, priority } = extracted;
 
   // Look up sender profile
   const { data: senderProfile, error: profileError } = await adminClient
@@ -416,11 +424,12 @@ async function handleNewTicket(
   console.log(`[WhatsApp] Ticket created: ${ticket.id}`);
 
   // Create photo collection session
-  await adminClient.from('whatsapp_sessions').insert({
+  const { error: sessionError } = await adminClient.from('whatsapp_sessions').insert({
     phone:     normalisedPhone,
     ticket_id: ticket.id,
     status:    'awaiting_photos',
   });
+  if (sessionError) console.error('[WhatsApp] Session insert failed:', sessionError.message);
 
   const priorityEmoji: Record<Priority, string> = { low: '🟢', medium: '🟡', high: '🟠', urgent: '🔴' };
 
@@ -429,8 +438,7 @@ async function handleNewTicket(
     `✅ *Ticket drafted!*\n\n` +
     `*Title:* ${title}\n` +
     `*Priority:* ${priorityEmoji[priority]} ${priority.charAt(0).toUpperCase() + priority.slice(1)}\n\n` +
-    `📸 Please send at least *${MIN_PHOTOS} photos* of the issue (max ${MAX_PHOTOS}).\n\n` +
-    `Type *skip* to submit without photos.`
+    `📸 Please send at least *${MIN_PHOTOS} photos* of the issue (max ${MAX_PHOTOS}).`
   );
 }
 
