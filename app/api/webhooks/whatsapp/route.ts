@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { sendPushToMany, sendPushToUser } from '@/lib/push';
 import type { Priority } from '@/lib/types';
+import https from 'https';
 
 // ─── ENV ────────────────────────────────────────────────────────────────────
 const WA_TOKEN      = process.env.WHATSAPP_ACCESS_TOKEN!;
@@ -50,7 +51,7 @@ function normalisePhone(from: string): string {
 
 /** Download a Meta media file as an ArrayBuffer */
 async function downloadMedia(mediaId: string): Promise<{ arrayBuffer: ArrayBuffer; mimeType: string }> {
-  // 1. Get the download URL
+  // 1. Get the download URL from Graph API
   const metaRes = await fetch(
     `https://graph.facebook.com/v21.0/${mediaId}`,
     { headers: { Authorization: `Bearer ${WA_TOKEN}` } }
@@ -58,12 +59,28 @@ async function downloadMedia(mediaId: string): Promise<{ arrayBuffer: ArrayBuffe
   if (!metaRes.ok) throw new Error(`Meta media lookup failed: ${metaRes.status}`);
   const { url, mime_type } = await metaRes.json() as { url: string; mime_type: string };
 
-  // 2. Download the actual file
-  const fileRes = await fetch(url, {
-    headers: { Authorization: `Bearer ${WA_TOKEN}` },
+  // 2. Download via Node's https module — undici (native fetch) has a known
+  //    TLS socket issue with Meta's media CDN that causes "other side closed".
+  const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+    https.get(url, { headers: { Authorization: `Bearer ${WA_TOKEN}` } }, (res) => {
+      if (res.statusCode && res.statusCode >= 400) {
+        reject(new Error(`Media download failed: ${res.statusCode}`));
+        res.resume();
+        return;
+      }
+      const chunks: Uint8Array[] = [];
+      res.on('data', (chunk: Buffer) => chunks.push(new Uint8Array(chunk)));
+      res.on('end', () => {
+        const total  = chunks.reduce((n, c) => n + c.length, 0);
+        const merged = new Uint8Array(total);
+        let offset   = 0;
+        for (const chunk of chunks) { merged.set(chunk, offset); offset += chunk.length; }
+        resolve(merged.buffer);
+      });
+      res.on('error', reject);
+    }).on('error', reject);
   });
-  if (!fileRes.ok) throw new Error(`Media download failed: ${fileRes.status}`);
-  const arrayBuffer = await fileRes.arrayBuffer();
+
   return { arrayBuffer, mimeType: mime_type };
 }
 
@@ -202,15 +219,22 @@ export async function POST(req: NextRequest) {
 
 async function handleWebhook(payload: WaPayload) {
   try {
+    // DEBUG: log full raw payload so we can see exactly what Meta sends
+    console.log('[WhatsApp] Raw payload:', JSON.stringify(payload, null, 2));
+
     const change  = payload.entry?.[0]?.changes?.[0]?.value;
     const message = change?.messages?.[0];
 
-    if (!message) return; // Status update or other non-message event
+    if (!message) {
+      console.log('[WhatsApp] No message in payload (status update or other event)');
+      return;
+    }
+
+    console.log(`[WhatsApp] Message received — type: ${message.type}, from: ${message.from}`);
 
     const from = message.from; // e.g. "27831234567"
 
     if (message.type !== 'audio') {
-      // Only voice notes for now
       console.log(`[WhatsApp] Ignored message type: ${message.type}`);
       return;
     }
