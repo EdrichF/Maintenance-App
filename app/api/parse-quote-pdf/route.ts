@@ -47,10 +47,19 @@ export async function POST(req: NextRequest) {
 
   let raw: Partial<ParsedQuote>
 
-  if (isPdf) {
-    raw = await extractFromPdf(file, today)
-  } else {
-    raw = await extractFromImage(file, today)
+  try {
+    if (isPdf) {
+      raw = await extractFromPdf(file, today)
+    } else {
+      raw = await extractFromImage(file, today)
+    }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : ''
+    if (msg === 'SCANNED_PDF') {
+      return NextResponse.json({ error: 'SCANNED_PDF' }, { status: 422 })
+    }
+    console.error('[parse-quote-pdf] extraction error:', err)
+    return NextResponse.json({ error: 'AI extraction failed' }, { status: 502 })
   }
 
   return NextResponse.json({
@@ -74,7 +83,7 @@ async function extractFromPdf(file: File, today: string): Promise<Partial<Parsed
     throw new Error('Could not read PDF')
   }
 
-  if (!pdfText) throw new Error('PDF has no text layer — try uploading as image')
+  if (!pdfText) throw new Error('SCANNED_PDF')
 
   const res = await fetch(`${GROQ_BASE}/chat/completions`, {
     method: 'POST',

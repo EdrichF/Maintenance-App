@@ -9,6 +9,27 @@ import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { createClient } from '@/lib/supabase/client'
 
+/** Render first page of a PDF to a PNG blob using pdfjs-dist (browser only) */
+async function pdfFirstPageToBlob(file: File): Promise<Blob> {
+  const pdfjsLib = await import('pdfjs-dist')
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`
+
+  const arrayBuffer = await file.arrayBuffer()
+  const pdf         = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+  const page        = await pdf.getPage(1)
+  const viewport    = page.getViewport({ scale: 2 }) // scale 2 = higher res for better OCR
+
+  const canvas         = document.createElement('canvas')
+  canvas.width         = viewport.width
+  canvas.height        = viewport.height
+  const ctx            = canvas.getContext('2d')!
+  await page.render({ canvasContext: ctx, viewport }).promise
+
+  return new Promise((resolve, reject) =>
+    canvas.toBlob(b => b ? resolve(b) : reject(new Error('canvas toBlob failed')), 'image/png')
+  )
+}
+
 interface QuoteForm {
   amount:      number
   description: string
@@ -36,7 +57,7 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
   const [uploading,  setUploading]  = useState(false)
   const [parsing,     setParsing]     = useState(false)
   const [autofilled,  setAutofilled]  = useState(false)
-  const [parseError,  setParseError]  = useState(false)
+  const [parseError,  setParseError]  = useState<'scanned' | 'generic' | false>(false)
   const [validNA,     setValidNA]     = useState(false)   // user chose N/A for valid_until
 
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<QuoteForm>()
@@ -61,8 +82,35 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
       const res = await fetch('/api/parse-quote-pdf', { method: 'POST', body: fd })
 
       if (!res.ok) {
-        console.error('[parse-quote-pdf] API error:', res.status, await res.text())
-        setParseError(true)
+        const errBody = await res.json().catch(() => ({})) as { error?: string }
+        if (errBody.error === 'SCANNED_PDF') {
+          // Scanned PDF — render page 1 to image in browser, retry with vision model
+          console.log('[parse-quote-pdf] Scanned PDF detected, converting to image...')
+          try {
+            const imgBlob = await pdfFirstPageToBlob(f)
+            const fd2 = new FormData()
+            fd2.append('file', imgBlob, 'quote-page1.png')
+            const res2 = await fetch('/api/parse-quote-pdf', { method: 'POST', body: fd2 })
+            if (!res2.ok) {
+              setParseError('generic')
+              return
+            }
+            const data2 = await res2.json() as { amount: number | null; description: string | null; valid_until: string | null }
+            console.log('[parse-quote-pdf] Vision extracted:', data2)
+            if (data2.amount      !== null) setValue('amount',      data2.amount)
+            if (data2.description !== null) setValue('description', data2.description)
+            if (data2.valid_until !== null) { setValue('valid_until', data2.valid_until); setValidNA(false) }
+            else { setValue('valid_until', ''); setValidNA(false) }
+            if (data2.amount !== null || data2.description !== null) setAutofilled(true)
+            else setParseError('generic')
+          } catch (convErr) {
+            console.error('[parse-quote-pdf] PDF→image conversion failed:', convErr)
+            setParseError('scanned')
+          }
+        } else {
+          console.error('[parse-quote-pdf] API error:', res.status, errBody)
+          setParseError('generic')
+        }
         return
       }
       const data = await res.json() as {
@@ -84,11 +132,11 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
       if (data.amount !== null || data.description !== null) {
         setAutofilled(true)
       } else {
-        setParseError(true)
+        setParseError('generic')
       }
     } catch (err) {
       console.error('[parse-quote-pdf] fetch error:', err)
-      setParseError(true)
+      setParseError('generic')
     } finally {
       setParsing(false)
     }
@@ -252,7 +300,9 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
         {parseError && !parsing && (
           <div className="flex items-center gap-2 px-3 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/40 rounded-lg">
             <p className="text-xs text-yellow-700 dark:text-yellow-300">
-              ⚠️ Could not auto-fill fields from this PDF. Please fill in manually.
+              {parseError === 'scanned'
+                ? '⚠️ This PDF is scanned (no text layer). Take a screenshot of the quote and upload the image instead for auto-fill.'
+                : '⚠️ Could not auto-fill fields from this file. Please fill in manually.'}
             </p>
           </div>
         )}
