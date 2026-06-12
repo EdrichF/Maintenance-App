@@ -41,62 +41,56 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
 
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<QuoteForm>()
 
-  /** Parse PDF and auto-populate fields */
-  async function parsePdf(f: File) {
-    if (f.type !== 'application/pdf') return
-
-    setParsing(true)
-    setAutofilled(false)
-    setParseError(false)
-    try {
-      const fd = new FormData()
-      fd.append('file', f)
-      const res = await fetch('/api/parse-quote-pdf', { method: 'POST', body: fd })
-
-      if (!res.ok) {
-        console.error('[parse-quote-pdf] API error:', res.status, await res.text())
-        setParseError(true)
-        return
-      }
-
-      const data = await res.json() as {
-        amount:      number | null
-        description: string | null
-        valid_until: string | null
-      }
-
-      console.log('[parse-quote-pdf] Extracted:', data)
-
-      if (data.amount      !== null) setValue('amount',      data.amount)
-      if (data.description !== null) setValue('description', data.description)
-      if (data.valid_until !== null) {
-        setValue('valid_until', data.valid_until)
-        setValidNA(false)
-      } else {
-        setValue('valid_until', '')
-        setValidNA(false)
-      }
-
-      if (data.amount !== null || data.description !== null) {
-        setAutofilled(true)
-      } else {
-        setParseError(true) // PDF parsed but nothing found
-      }
-    } catch (err) {
-      console.error('[parse-quote-pdf] fetch error:', err)
-      setParseError(true)
-    } finally {
-      setParsing(false)
-    }
-  }
-
   const onDrop = useCallback((accepted: File[]) => {
     const f = accepted[0]
     if (!f) return
     setFile(f)
-    void parsePdf(f)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+
+    if (f.type !== 'application/pdf') return
+
+    // Parse inline — avoids stale closure issues with separate parsePdf function
+    setParsing(true)
+    setAutofilled(false)
+    setParseError(false)
+
+    const fd = new FormData()
+    fd.append('file', f)
+
+    fetch('/api/parse-quote-pdf', { method: 'POST', body: fd })
+      .then(async (res) => {
+        if (!res.ok) {
+          console.error('[parse-quote-pdf] API error:', res.status, await res.text())
+          setParseError(true)
+          return
+        }
+        const data = await res.json() as {
+          amount:      number | null
+          description: string | null
+          valid_until: string | null
+        }
+        console.log('[parse-quote-pdf] Extracted:', data)
+
+        if (data.amount      !== null) setValue('amount',      data.amount)
+        if (data.description !== null) setValue('description', data.description)
+        if (data.valid_until !== null) {
+          setValue('valid_until', data.valid_until)
+          setValidNA(false)
+        } else {
+          setValue('valid_until', '')
+          setValidNA(false)
+        }
+        if (data.amount !== null || data.description !== null) {
+          setAutofilled(true)
+        } else {
+          setParseError(true)
+        }
+      })
+      .catch((err) => {
+        console.error('[parse-quote-pdf] fetch error:', err)
+        setParseError(true)
+      })
+      .finally(() => setParsing(false))
+  }, [setValue, setParsing, setAutofilled, setParseError, setValidNA, setFile])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
