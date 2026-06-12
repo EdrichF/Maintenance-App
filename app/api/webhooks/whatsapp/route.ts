@@ -89,7 +89,7 @@ async function transcribe(arrayBuffer: ArrayBuffer, mimeType: string): Promise<s
   const ext = mimeType.split('/')[1]?.split(';')[0] ?? 'ogg';
   const form = new FormData();
   form.append('file', new Blob([arrayBuffer], { type: mimeType }), `audio.${ext}`);
-  form.append('model', 'whisper-large-v3-turbo');
+  form.append('model', 'whisper-large-v3');
   form.append('response_format', 'text');
 
   const res = await fetch(`${GROQ_BASE}/audio/transcriptions`, {
@@ -113,7 +113,7 @@ async function extractTicketFields(transcript: string): Promise<ExtractedTicket>
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'llama-3.1-8b-instant',
+      model: 'llama-3.3-70b-versatile',
       response_format: { type: 'json_object' },
       messages: [
         {
@@ -265,11 +265,13 @@ async function handleWebhook(payload: WaPayload) {
     const adminClient = createAdminClient();
     const normalisedPhone = normalisePhone(from);
 
-    const { data: senderProfile } = await adminClient
+    const { data: senderProfile, error: profileError } = await adminClient
       .from('profiles')
       .select('id, full_name, company_name, sub_store, regional_manager_id, role')
       .eq('phone', normalisedPhone)
       .single();
+
+    console.log(`[WhatsApp] Profile lookup — searching for phone: "${normalisedPhone}", found: ${senderProfile ? senderProfile.full_name : 'none'}, error: ${profileError?.message ?? 'none'}`);
 
     if (!senderProfile) {
       console.warn(`[WhatsApp] No profile found for ${normalisedPhone}`);
