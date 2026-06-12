@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-// pdf-parse has no default ESM export — use require
-const pdfParse = require('pdf-parse') as (buf: Buffer) => Promise<{ text: string }> // eslint-disable-line
+// Use the lib directly — avoids pdf-parse loading test files on import (Next.js serverless bug)
+const pdfParse = require('pdf-parse/lib/pdf-parse.js') as (buf: Buffer) => Promise<{ text: string }> // eslint-disable-line
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY!
 const GROQ_BASE    = 'https://api.groq.com/openai/v1'

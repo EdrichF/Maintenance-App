@@ -34,9 +34,10 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
   const [error,      setError]      = useState('')
   const [file,       setFile]       = useState<File | null>(null)
   const [uploading,  setUploading]  = useState(false)
-  const [parsing,    setParsing]    = useState(false)
-  const [autofilled, setAutofilled] = useState(false)
-  const [validNA,    setValidNA]    = useState(false)   // user chose N/A for valid_until
+  const [parsing,     setParsing]     = useState(false)
+  const [autofilled,  setAutofilled]  = useState(false)
+  const [parseError,  setParseError]  = useState(false)
+  const [validNA,     setValidNA]     = useState(false)   // user chose N/A for valid_until
 
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<QuoteForm>()
 
@@ -46,11 +47,17 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
 
     setParsing(true)
     setAutofilled(false)
+    setParseError(false)
     try {
       const fd = new FormData()
       fd.append('file', f)
       const res = await fetch('/api/parse-quote-pdf', { method: 'POST', body: fd })
-      if (!res.ok) return
+
+      if (!res.ok) {
+        console.error('[parse-quote-pdf] API error:', res.status, await res.text())
+        setParseError(true)
+        return
+      }
 
       const data = await res.json() as {
         amount:      number | null
@@ -58,20 +65,26 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
         valid_until: string | null
       }
 
+      console.log('[parse-quote-pdf] Extracted:', data)
+
       if (data.amount      !== null) setValue('amount',      data.amount)
       if (data.description !== null) setValue('description', data.description)
       if (data.valid_until !== null) {
         setValue('valid_until', data.valid_until)
         setValidNA(false)
       } else {
-        // valid_until not found — clear field, let user pick N/A or a preset
         setValue('valid_until', '')
         setValidNA(false)
       }
 
-      if (data.amount !== null || data.description !== null) setAutofilled(true)
-    } catch {
-      // silent — user can fill manually
+      if (data.amount !== null || data.description !== null) {
+        setAutofilled(true)
+      } else {
+        setParseError(true) // PDF parsed but nothing found
+      }
+    } catch (err) {
+      console.error('[parse-quote-pdf] fetch error:', err)
+      setParseError(true)
     } finally {
       setParsing(false)
     }
