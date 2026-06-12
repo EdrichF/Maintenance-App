@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import pdfParse from 'pdf-parse'
+// pdf-parse has no default ESM export — use require
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const pdfParse = require('pdf-parse') as (buf: Buffer) => Promise<{ text: string }>
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY!
 const GROQ_BASE    = 'https://api.groq.com/openai/v1'
