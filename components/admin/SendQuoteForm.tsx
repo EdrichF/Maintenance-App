@@ -23,7 +23,8 @@ async function pdfFirstPageToBlob(file: File): Promise<Blob> {
   canvas.width         = viewport.width
   canvas.height        = viewport.height
   const ctx            = canvas.getContext('2d')!
-  await page.render({ canvasContext: ctx as unknown as CanvasRenderingContext2D, viewport, canvas }).promise
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await page.render({ canvasContext: ctx as any, viewport }).promise
 
   return new Promise((resolve, reject) =>
     canvas.toBlob(b => b ? resolve(b) : reject(new Error('canvas toBlob failed')), 'image/png')
@@ -301,7 +302,7 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
           <div className="flex items-center gap-2 px-3 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/40 rounded-lg">
             <p className="text-xs text-yellow-700 dark:text-yellow-300">
               {parseError === 'scanned'
-                ? '⚠️ This PDF is scanned (no text layer). Take a screenshot of the quote and upload the image instead for auto-fill.'
+                ? '⚠️ Could not read this PDF automatically. Please fill in manually.'
                 : '⚠️ Could not auto-fill fields from this file. Please fill in manually.'}
             </p>
           </div>
