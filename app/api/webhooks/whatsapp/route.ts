@@ -235,28 +235,39 @@ async function handleWebhook(payload: WaPayload) {
 
     const from = message.from; // e.g. "27831234567"
 
-    if (message.type !== 'audio') {
+    if (message.type !== 'audio' && message.type !== 'text') {
       console.log(`[WhatsApp] Ignored message type: ${message.type}`);
       return;
     }
 
-    const mediaId = message.audio?.id;
-    if (!mediaId) return;
+    let transcript = '';
 
-    console.log(`[WhatsApp] Voice note received from ${from}, media: ${mediaId}`);
+    if (message.type === 'audio') {
+      const mediaId = message.audio?.id;
+      if (!mediaId) return;
 
-    await sendWhatsAppReply(from, '🎙️ Voice note received! Processing your request, please hold on...');
+      console.log(`[WhatsApp] Voice note received from ${from}, media: ${mediaId}`);
+      await sendWhatsAppReply(from, '🎙️ Voice note received! Processing your request, please hold on...');
 
-    // 1. Download media
-    const { arrayBuffer, mimeType } = await downloadMedia(mediaId);
+      // 1. Download media
+      const { arrayBuffer, mimeType } = await downloadMedia(mediaId);
 
-    // 2. Transcribe
-    const transcript = (await transcribe(arrayBuffer, mimeType)).trim();
-    console.log(`[WhatsApp] Transcript: ${transcript}`);
+      // 2. Transcribe
+      transcript = (await transcribe(arrayBuffer, mimeType)).trim();
+      console.log(`[WhatsApp] Transcript: ${transcript}`);
 
-    if (!transcript) {
-      await sendWhatsAppReply(from, '⚠️ Could not understand the voice note. Please try again or send a text message.');
-      return;
+      if (!transcript) {
+        await sendWhatsAppReply(from, '⚠️ Could not understand the voice note. Please try again or send a text message.');
+        return;
+      }
+    } else {
+      // Text message — use directly
+      transcript = (message.text?.body ?? '').trim();
+      console.log(`[WhatsApp] Text message received from ${from}: ${transcript}`);
+
+      if (!transcript) return;
+
+      await sendWhatsAppReply(from, '💬 Message received! Processing your request, please hold on...');
     }
 
     // 3. Extract ticket fields
