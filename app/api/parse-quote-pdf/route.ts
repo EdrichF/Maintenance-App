@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-// Use the lib directly — avoids pdf-parse loading test files on import (Next.js serverless bug)
-const pdfParse = require('pdf-parse/lib/pdf-parse.js') as (buf: Buffer) => Promise<{ text: string }> // eslint-disable-line
+import { extractText } from 'unpdf'
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY!
 const GROQ_BASE    = 'https://api.groq.com/openai/v1'
@@ -31,12 +30,13 @@ export async function POST(req: NextRequest) {
   }
 
   // Extract text from PDF
-  const buffer = Buffer.from(await file.arrayBuffer())
   let pdfText = ''
   try {
-    const parsed = await pdfParse(buffer)
-    pdfText = parsed.text.trim()
-  } catch {
+    const buffer = new Uint8Array(await file.arrayBuffer())
+    const { text } = await extractText(buffer, { mergePages: true })
+    pdfText = text.trim()
+  } catch (err) {
+    console.error('[parse-quote-pdf] extractText error:', err)
     return NextResponse.json({ error: 'Could not read PDF' }, { status: 422 })
   }
 

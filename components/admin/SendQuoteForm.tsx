@@ -211,7 +211,7 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
               )}
               <button
                 type="button"
-                onClick={() => { setFile(null); setAutofilled(false); setValidNA(false) }}
+                onClick={() => { setFile(null); setAutofilled(false); setValidNA(false); setParseError(false) }}
                 className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors"
               >
                 <X size={16} />
@@ -248,6 +248,15 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
             <Sparkles size={14} className="text-brand-600 dark:text-brand-400 shrink-0" />
             <p className="text-xs text-brand-700 dark:text-brand-300">
               Fields auto-filled from PDF — please review and adjust if needed.
+            </p>
+          </div>
+        )}
+
+        {/* Parse error banner */}
+        {parseError && !parsing && (
+          <div className="flex items-center gap-2 px-3 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/40 rounded-lg">
+            <p className="text-xs text-yellow-700 dark:text-yellow-300">
+              ⚠️ Could not auto-fill fields from this PDF. Please fill in manually.
             </p>
           </div>
         )}

@@ -14,16 +14,15 @@
     "@capacitor/core": "^8.4.0",
     "@supabase/ssr": "^0.5.1",
     "@supabase/supabase-js": "^2.45.0",
-    "@types/pdf-parse": "^1.1.5",
     "clsx": "^2.1.1",
     "lucide-react": "^0.408.0",
     "next": "14.2.5",
-    "pdf-parse": "^2.4.5",
     "react": "^18",
     "react-dom": "^18",
     "react-dropzone": "^14.2.3",
     "react-hook-form": "^7.52.1",
     "tailwind-merge": "^2.4.0",
+    "unpdf": "^1.6.2",
     "web-push": "^3.6.7"
   },
   "devDependencies": {
