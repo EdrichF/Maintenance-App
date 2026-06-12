@@ -4,13 +4,13 @@ import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { useDropzone } from 'react-dropzone'
-import { UploadCloud, X, FileText, Loader2, Calendar } from 'lucide-react'
+import { UploadCloud, X, FileText, Loader2, Calendar, Sparkles } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { createClient } from '@/lib/supabase/client'
 
 interface QuoteForm {
-  amount: number
+  amount:      number
   description: string
   valid_until: string
 }
@@ -29,16 +29,60 @@ const PRESETS = [
 
 export function SendQuoteForm({ ticketId }: { ticketId: string }) {
   const router = useRouter()
-  const [open,      setOpen]      = useState(false)
-  const [loading,   setLoading]   = useState(false)
-  const [error,     setError]     = useState('')
-  const [file,      setFile]      = useState<File | null>(null)
-  const [uploading, setUploading] = useState(false)
+  const [open,       setOpen]       = useState(false)
+  const [loading,    setLoading]    = useState(false)
+  const [error,      setError]      = useState('')
+  const [file,       setFile]       = useState<File | null>(null)
+  const [uploading,  setUploading]  = useState(false)
+  const [parsing,    setParsing]    = useState(false)
+  const [autofilled, setAutofilled] = useState(false)
+  const [validNA,    setValidNA]    = useState(false)   // user chose N/A for valid_until
 
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<QuoteForm>()
 
+  /** Parse PDF and auto-populate fields */
+  async function parsePdf(f: File) {
+    if (f.type !== 'application/pdf') return
+
+    setParsing(true)
+    setAutofilled(false)
+    try {
+      const fd = new FormData()
+      fd.append('file', f)
+      const res = await fetch('/api/parse-quote-pdf', { method: 'POST', body: fd })
+      if (!res.ok) return
+
+      const data = await res.json() as {
+        amount:      number | null
+        description: string | null
+        valid_until: string | null
+      }
+
+      if (data.amount      !== null) setValue('amount',      data.amount)
+      if (data.description !== null) setValue('description', data.description)
+      if (data.valid_until !== null) {
+        setValue('valid_until', data.valid_until)
+        setValidNA(false)
+      } else {
+        // valid_until not found — clear field, let user pick N/A or a preset
+        setValue('valid_until', '')
+        setValidNA(false)
+      }
+
+      if (data.amount !== null || data.description !== null) setAutofilled(true)
+    } catch {
+      // silent — user can fill manually
+    } finally {
+      setParsing(false)
+    }
+  }
+
   const onDrop = useCallback((accepted: File[]) => {
-    if (accepted[0]) setFile(accepted[0])
+    const f = accepted[0]
+    if (!f) return
+    setFile(f)
+    void parsePdf(f)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -53,19 +97,20 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
     },
   })
 
-  async function uploadFile(file: File): Promise<string | null> {
+  async function uploadFile(f: File): Promise<string | null> {
     const supabase = createClient()
-    const ext  = file.name.split('.').pop()
+    const ext  = f.name.split('.').pop()
     const path = `${ticketId}/${Date.now()}.${ext}`
-    const { error } = await supabase.storage.from('quote-attachments').upload(path, file, { upsert: true })
+    const { error } = await supabase.storage.from('quote-attachments').upload(path, f, { upsert: true })
     if (error) return null
     const { data } = supabase.storage.from('quote-attachments').getPublicUrl(path)
     return data.publicUrl
   }
 
   async function onSubmit(values: QuoteForm) {
-    if (!values.valid_until) {
-      setError('Please select a Valid Until date. All quotes must have an expiry.')
+    // valid_until is required unless user explicitly chose N/A
+    if (!validNA && !values.valid_until) {
+      setError('Please select a Valid Until date or choose N/A.')
       return
     }
     if (!file) {
@@ -75,16 +120,13 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
     setLoading(true)
     setError('')
 
-    let fileUrl: string | null = null
-    if (file) {
-      setUploading(true)
-      fileUrl = await uploadFile(file)
-      setUploading(false)
-      if (!fileUrl) {
-        setError('File upload failed. Check the quote-attachments storage bucket exists.')
-        setLoading(false)
-        return
-      }
+    setUploading(true)
+    const fileUrl = await uploadFile(file)
+    setUploading(false)
+    if (!fileUrl) {
+      setError('File upload failed. Check the quote-attachments storage bucket exists.')
+      setLoading(false)
+      return
     }
 
     const res = await fetch('/api/quotes', {
@@ -92,9 +134,10 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...values,
-        ticket_id: ticketId,
-        amount: Number(values.amount),
-        file_url: fileUrl,
+        ticket_id:   ticketId,
+        amount:      Number(values.amount),
+        file_url:    fileUrl,
+        valid_until: validNA ? null : values.valid_until,
       }),
     })
 
@@ -108,8 +151,18 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
     reset()
     setFile(null)
     setOpen(false)
+    setAutofilled(false)
+    setValidNA(false)
     router.refresh()
     setLoading(false)
+  }
+
+  function handleClose() {
+    setOpen(false)
+    setFile(null)
+    setAutofilled(false)
+    setValidNA(false)
+    reset()
   }
 
   if (!open) {
@@ -125,79 +178,29 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
       <h3 className="font-semibold text-gray-900 dark:text-white">Send Quote</h3>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <Input
-          id="amount"
-          type="number"
-          step="0.01"
-          label="Amount (R)"
-          placeholder="1500.00"
-          error={errors.amount?.message}
-          {...register('amount', { required: 'Amount is required', min: { value: 1, message: 'Must be > 0' } })}
-        />
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
-          <textarea
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
-            rows={3}
-            placeholder="Describe what the quote covers..."
-            {...register('description', { required: 'Description is required' })}
-          />
-          {errors.description && <p className="mt-1 text-xs text-red-600">{errors.description.message}</p>}
-        </div>
-
-        {/* Valid Until — preset buttons (required) */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-            Valid Until <span className="text-red-500">*</span>
-          </label>
-          <div className="flex flex-wrap gap-2 mb-2">
-            {PRESETS.map(p => {
-              const val = addDays(p.days)
-              const isActive = watch('valid_until') === val
-              return (
-                <button
-                  key={p.label}
-                  type="button"
-                  onClick={() => setValue('valid_until', val)}
-                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-                    isActive
-                      ? 'bg-brand-600 text-white border-brand-600'
-                      : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-brand-400 dark:hover:border-brand-500'
-                  }`}
-                >
-                  <Calendar size={11} />
-                  {p.label}
-                </button>
-              )
-            })}
-          </div>
-          {watch('valid_until') ? (
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              Valid until:{' '}
-              <span className="font-medium text-gray-700 dark:text-gray-200">
-                {new Date(watch('valid_until') + 'T00:00:00').toLocaleDateString('en-ZA', {
-                  day: 'numeric', month: 'long', year: 'numeric',
-                })}
-              </span>
-            </p>
-          ) : (
-            <p className="text-xs text-red-500 mt-2">Required — please select an expiry date above.</p>
-          )}
-          <input type="hidden" {...register('valid_until')} />
-        </div>
-
-        {/* File upload */}
+        {/* File upload — first so PDF parse runs before user edits fields */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Attachment <span className="text-red-500">*</span> <span className="text-gray-400 font-normal">(PDF, Word, or image, max 10 MB)</span>
+            Attachment <span className="text-red-500">*</span>{' '}
+            <span className="text-gray-400 font-normal">(PDF, Word, or image, max 10 MB)</span>
           </label>
           {file ? (
             <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
               <FileText size={18} className="text-brand-600 shrink-0" />
               <span className="text-sm text-gray-700 dark:text-gray-200 truncate flex-1">{file.name}</span>
-              <span className="text-xs text-gray-400 shrink-0">{(file.size / 1024).toFixed(0)} KB</span>
-              <button type="button" onClick={() => setFile(null)} className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors">
+              {parsing ? (
+                <span className="flex items-center gap-1 text-xs text-brand-600 shrink-0">
+                  <Loader2 size={12} className="animate-spin" /> Reading PDF…
+                </span>
+              ) : (
+                <span className="text-xs text-gray-400 shrink-0">{(file.size / 1024).toFixed(0)} KB</span>
+              )}
+              <button
+                type="button"
+                onClick={() => { setFile(null); setAutofilled(false); setValidNA(false) }}
+                className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors"
+              >
                 <X size={16} />
               </button>
             </div>
@@ -219,11 +222,100 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
                   <p className="text-sm text-gray-600 dark:text-gray-300">
                     Drag & drop a file, or <span className="text-brand-600 font-medium">browse</span>
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">PDF, Word, PNG, JPG up to 10 MB</p>
+                  <p className="text-xs text-gray-400 mt-1">PDF auto-fills fields below · Word, PNG, JPG also accepted · max 10 MB</p>
                 </>
               )}
             </div>
           )}
+        </div>
+
+        {/* Auto-fill banner */}
+        {autofilled && !parsing && (
+          <div className="flex items-center gap-2 px-3 py-2 bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800/40 rounded-lg">
+            <Sparkles size={14} className="text-brand-600 dark:text-brand-400 shrink-0" />
+            <p className="text-xs text-brand-700 dark:text-brand-300">
+              Fields auto-filled from PDF — please review and adjust if needed.
+            </p>
+          </div>
+        )}
+
+        <Input
+          id="amount"
+          type="number"
+          step="0.01"
+          label="Amount (R)"
+          placeholder="1500.00"
+          error={errors.amount?.message}
+          {...register('amount', { required: 'Amount is required', min: { value: 1, message: 'Must be > 0' } })}
+        />
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+          <textarea
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+            rows={3}
+            placeholder="Describe what the quote covers..."
+            {...register('description', { required: 'Description is required' })}
+          />
+          {errors.description && <p className="mt-1 text-xs text-red-600">{errors.description.message}</p>}
+        </div>
+
+        {/* Valid Until */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            Valid Until <span className="text-red-500">*</span>
+          </label>
+          <div className="flex flex-wrap gap-2 mb-2">
+            {PRESETS.map(p => {
+              const val     = addDays(p.days)
+              const isActive = !validNA && watch('valid_until') === val
+              return (
+                <button
+                  key={p.label}
+                  type="button"
+                  onClick={() => { setValue('valid_until', val); setValidNA(false) }}
+                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                    isActive
+                      ? 'bg-brand-600 text-white border-brand-600'
+                      : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-brand-400 dark:hover:border-brand-500'
+                  }`}
+                >
+                  <Calendar size={11} />
+                  {p.label}
+                </button>
+              )
+            })}
+
+            {/* N/A option */}
+            <button
+              type="button"
+              onClick={() => { setValidNA(true); setValue('valid_until', '') }}
+              className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                validNA
+                  ? 'bg-gray-600 text-white border-gray-600'
+                  : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400'
+              }`}
+            >
+              N/A
+            </button>
+          </div>
+
+          {validNA ? (
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">No expiry date — quote has no valid-until.</p>
+          ) : watch('valid_until') ? (
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              Valid until:{' '}
+              <span className="font-medium text-gray-700 dark:text-gray-200">
+                {new Date(watch('valid_until') + 'T00:00:00').toLocaleDateString('en-ZA', {
+                  day: 'numeric', month: 'long', year: 'numeric',
+                })}
+              </span>
+            </p>
+          ) : (
+            <p className="text-xs text-red-500 mt-2">Required — select an expiry date or choose N/A.</p>
+          )}
+
+          <input type="hidden" {...register('valid_until')} />
         </div>
 
         {error && (
@@ -233,12 +325,12 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
         )}
 
         <div className="flex gap-2">
-          <Button type="submit" loading={loading} className="flex-1" disabled={uploading}>
+          <Button type="submit" loading={loading} className="flex-1" disabled={uploading || parsing}>
             {uploading ? (
               <><Loader2 size={14} className="animate-spin mr-1.5" /> Uploading…</>
             ) : 'Send Quote'}
           </Button>
-          <Button type="button" variant="secondary" onClick={() => { setOpen(false); setFile(null) }} className="flex-1">
+          <Button type="button" variant="secondary" onClick={handleClose} className="flex-1">
             Cancel
           </Button>
         </div>

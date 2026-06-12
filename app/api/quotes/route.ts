@@ -19,12 +19,7 @@ export async function POST(request: Request) {
   const body = await request.json()
   const { ticket_id, amount, description, valid_until, file_url } = body
 
-  if (!valid_until) {
-    return NextResponse.json(
-      { error: 'Valid Until is required — all quotes must have an expiry date.' },
-      { status: 400 }
-    )
-  }
+  // valid_until may be null when admin explicitly selects N/A (no expiry)
 
   const adminClient = createAdminClient()
 
