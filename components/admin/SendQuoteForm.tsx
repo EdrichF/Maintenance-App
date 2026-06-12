@@ -23,7 +23,7 @@ async function pdfFirstPageToBlob(file: File): Promise<Blob> {
   canvas.width         = viewport.width
   canvas.height        = viewport.height
   const ctx            = canvas.getContext('2d')!
-  await page.render({ canvasContext: ctx as any, viewport }).promise // eslint-disable-line
+  await page.render({ canvasContext: ctx as any, viewport, canvas } as any).promise
 
   return new Promise((resolve, reject) =>
     canvas.toBlob(b => b ? resolve(b) : reject(new Error('canvas toBlob failed')), 'image/png')
