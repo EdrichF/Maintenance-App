@@ -91,7 +91,7 @@ async function transcribe(arrayBuffer: ArrayBuffer, mimeType: string): Promise<s
   form.append('file', new Blob([arrayBuffer], { type: mimeType }), `audio.${ext}`);
   form.append('model', 'whisper-large-v3');
   form.append('response_format', 'text');
-  form.append('language', 'en');
+  // No language hint — Whisper auto-detects SA English/Afrikaans mix better than forced lang
 
   const res = await fetch(`${GROQ_BASE}/audio/transcriptions`, {
     method: 'POST',
