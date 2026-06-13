@@ -23,7 +23,7 @@ export const PRIORITY_COLORS: Record<Priority, string> = {
 export const STATUS_LABELS: Record<TicketStatus, string> = {
   open:        'Open Tickets',
   quoted:      'Quote Sent',
-  accepted:    'Accepted',
+  accepted:    'Quote Accepted',
   in_progress: 'In Progress',
   completed:   'Completed',
   cancelled:   'Cancelled',
