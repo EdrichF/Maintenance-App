@@ -120,7 +120,7 @@ export function QuoteApprovalCard({ quote, ticketTitle, ticketId, contractor, ra
       )}
       {quote.file_url && (
         <a href={quote.file_url} target="_blank" rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs text-brand-600 hover:underline">
+          className="inline-flex items-center gap-1.5 text-xs text-brand-600 dark:text-brand-400 hover:underline">
           <FileText size={13} /> View attachment
         </a>
       )}

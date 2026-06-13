@@ -79,6 +79,15 @@ interface QuoteForm {
   valid_until:     string
 }
 
+export interface ExistingQuote {
+  id:              string
+  amount:          number
+  amount_incl_vat: number | null
+  description:     string
+  valid_until:     string | null
+  file_url:        string | null
+}
+
 function addDays(days: number): string {
   const d = new Date()
   d.setDate(d.getDate() + days)
@@ -91,33 +100,55 @@ const PRESETS = [
   { label: '1 month', days: 30 },
 ] as const
 
-export function SendQuoteForm({ ticketId, variant = 'quote' }: { ticketId: string; variant?: 'quote' | 'variation' }) {
+export function SendQuoteForm({
+  ticketId,
+  variant = 'quote',
+  existingQuote = null,
+}: {
+  ticketId: string
+  variant?: 'quote' | 'variation'
+  existingQuote?: ExistingQuote | null
+}) {
   const isVariation = variant === 'variation'
+  const isEdit      = !!existingQuote
   const router = useRouter()
   const [open,       setOpen]       = useState(false)
   const [loading,    setLoading]    = useState(false)
   const [error,      setError]      = useState('')
   const [file,       setFile]       = useState<File | null>(null)
+  const [existingFileUrl, setExistingFileUrl] = useState<string | null>(existingQuote?.file_url ?? null)
   const [uploading,  setUploading]  = useState(false)
   const [parsing,     setParsing]     = useState(false)
   const [autofilled,  setAutofilled]  = useState(false)
   const [parseError,  setParseError]  = useState<'scanned' | 'generic' | false>(false)
   const [needAmount,  setNeedAmount]  = useState(false)   // parsed ok but amount couldn't be read confidently
-  const [validNA,     setValidNA]     = useState(false)   // user chose N/A for valid_until
+  const [validNA,     setValidNA]     = useState(isEdit ? existingQuote!.valid_until === null : false)
 
-  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<QuoteForm>()
+  const { register, handleSubmit, reset, watch, setValue, getValues, formState: { errors } } = useForm<QuoteForm>({
+    defaultValues: existingQuote
+      ? {
+          amount:          existingQuote.amount,
+          amount_incl_vat: existingQuote.amount_incl_vat ?? '',
+          description:     existingQuote.description,
+          valid_until:     existingQuote.valid_until ?? '',
+        }
+      : undefined,
+  })
 
-  /** Apply a parse result to the form. Returns true if anything was filled. */
+  /**
+   * Apply a parse result to the form. NEVER overwrites a field the supplier has
+   * already filled — only populates fields that are still empty. Returns true if
+   * anything was filled.
+   */
   function applyParsed(data: ParsedResult): boolean {
-    if (data.amount          !== null) setValue('amount',          data.amount)
-    if (data.amount_incl_vat !== null) setValue('amount_incl_vat', data.amount_incl_vat)
-    if (data.description     !== null) setValue('description',     data.description)
-    if (data.valid_until     !== null) { setValue('valid_until', data.valid_until); setValidNA(false) }
-    else                               { setValue('valid_until', ''); setValidNA(false) }
+    if (data.amount          !== null && !getValues('amount'))            setValue('amount',          data.amount)
+    if (data.amount_incl_vat !== null && !getValues('amount_incl_vat'))   setValue('amount_incl_vat', data.amount_incl_vat)
+    if (data.description     !== null && !getValues('description')?.trim()) setValue('description',   data.description)
+    if (data.valid_until     !== null && !validNA && !getValues('valid_until')) setValue('valid_until', data.valid_until)
 
     const filledSomething = data.amount !== null || data.description !== null || data.valid_until !== null
-    // Precision mode: if we filled context but couldn't read the amount, flag it for manual entry.
-    setNeedAmount(filledSomething && data.amount === null)
+    // Precision mode: if context was read but the amount field is still empty, prompt manual entry.
+    setNeedAmount(filledSomething && !getValues('amount'))
     return filledSomething
   }
 
@@ -125,9 +156,8 @@ export function SendQuoteForm({ ticketId, variant = 'quote' }: { ticketId: strin
     const f = accepted[0]
     if (!f) return
     setFile(f)
-    // Clear stale values from any previous parse so they don't bleed through
-    reset()
-    setValidNA(false)
+    // NOTE: we intentionally do NOT reset the form here — anything the supplier
+    // already typed is preserved; parsing only fills still-empty fields.
     setAutofilled(false)
     setParseError(false)
     setNeedAmount(false)
@@ -214,24 +244,27 @@ export function SendQuoteForm({ ticketId, variant = 'quote' }: { ticketId: strin
       setError('Please select a Valid Until date or choose N/A.')
       return
     }
-    if (!file) {
-      setError('Please attach the quote document (PDF, Word, or image) before submitting.')
+    if (!file && !existingFileUrl) {
+      setError('Please attach the quote document (PDF, Excel, image or Word) before submitting.')
       return
     }
     setLoading(true)
     setError('')
 
-    setUploading(true)
-    const fileUrl = await uploadFile(file)
-    setUploading(false)
-    if (!fileUrl) {
-      setError('File upload failed. Check the quote-attachments storage bucket exists.')
-      setLoading(false)
-      return
+    let fileUrl = existingFileUrl
+    if (file) {
+      setUploading(true)
+      fileUrl = await uploadFile(file)
+      setUploading(false)
+      if (!fileUrl) {
+        setError('File upload failed. Check the quote-attachments storage bucket exists.')
+        setLoading(false)
+        return
+      }
     }
 
-    const res = await fetch('/api/quotes', {
-      method: 'POST',
+    const res = await fetch(isEdit ? `/api/quotes/${existingQuote!.id}` : '/api/quotes', {
+      method: isEdit ? 'PATCH' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...values,
@@ -246,7 +279,7 @@ export function SendQuoteForm({ ticketId, variant = 'quote' }: { ticketId: strin
 
     if (!res.ok) {
       const data = await res.json()
-      setError(data.error || 'Failed to send quote')
+      setError(data.error || (isEdit ? 'Failed to update quote' : 'Failed to send quote'))
       setLoading(false)
       return
     }
@@ -273,7 +306,7 @@ export function SendQuoteForm({ ticketId, variant = 'quote' }: { ticketId: strin
   if (!open) {
     return (
       <Button onClick={() => setOpen(true)} variant={isVariation ? 'secondary' : 'primary'} className="w-full">
-        {isVariation ? 'Raise Variation Order' : 'Send Quote to Client'}
+        {isEdit ? 'Edit Quote' : isVariation ? 'Raise Variation Order' : 'Send Quote to Client'}
       </Button>
     )
   }
@@ -281,13 +314,20 @@ export function SendQuoteForm({ ticketId, variant = 'quote' }: { ticketId: strin
   return (
     <div className="bg-slate-50 dark:bg-gray-800 border border-brand-200 dark:border-gray-700 rounded-xl p-5 space-y-4">
       <h3 className="font-semibold text-gray-900 dark:text-white">
-        {isVariation ? 'Raise Variation Order' : 'Send Quote'}
+        {isEdit ? 'Edit Quote' : isVariation ? 'Raise Variation Order' : 'Send Quote'}
       </h3>
       {isVariation && (
         <p className="text-xs text-gray-500 dark:text-gray-400">
           For extra materials or work needed to complete the job. This is sent to the regional manager for approval before work continues.
         </p>
       )}
+
+      {/* Supplier responsibility disclaimer */}
+      <div className="px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 rounded-lg">
+        <p className="text-xs text-amber-700 dark:text-amber-300">
+          ⚠ It is your responsibility to verify all amounts and details are correct before submitting — whether auto-filled from the document or entered manually.
+        </p>
+      </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
@@ -317,6 +357,13 @@ export function SendQuoteForm({ ticketId, variant = 'quote' }: { ticketId: strin
               </button>
             </div>
           ) : (
+            <>
+            {existingFileUrl && (
+              <a href={existingFileUrl} target="_blank" rel="noopener noreferrer"
+                className="mb-2 inline-flex items-center gap-1.5 text-xs text-brand-600 dark:text-brand-400 hover:underline">
+                <FileText size={13} /> View current attachment — drop a new file below to replace
+              </a>
+            )}
             <div
               {...getRootProps()}
               className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
@@ -338,6 +385,7 @@ export function SendQuoteForm({ ticketId, variant = 'quote' }: { ticketId: strin
                 </>
               )}
             </div>
+            </>
           )}
         </div>
 
@@ -477,7 +525,7 @@ export function SendQuoteForm({ ticketId, variant = 'quote' }: { ticketId: strin
           <Button type="submit" loading={loading} className="flex-1" disabled={uploading || parsing}>
             {uploading ? (
               <><Loader2 size={14} className="animate-spin mr-1.5" /> Uploading…</>
-            ) : isVariation ? 'Submit Variation Order' : 'Send Quote'}
+            ) : isEdit ? 'Update Quote' : isVariation ? 'Submit Variation Order' : 'Send Quote'}
           </Button>
           <Button type="button" variant="secondary" onClick={handleClose} className="flex-1">
             Cancel

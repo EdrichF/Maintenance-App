@@ -210,6 +210,11 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-3">
                     <div>
+                      {q.type === 'variation' && (
+                        <span className="inline-block mb-1 text-[10px] font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5 rounded">
+                          Variation Order
+                        </span>
+                      )}
                       <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(q.amount)}</p>
                       <p className="text-xs text-gray-400 mt-0.5">{formatDateTime(q.created_at)}</p>
                       {contractor && (

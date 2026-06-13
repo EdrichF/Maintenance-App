@@ -28,6 +28,18 @@ export async function POST(request: Request) {
 
   const adminClient = createAdminClient()
 
+  // Enforce a single main quote per ticket. Variation orders are exempt.
+  if (!isVariation) {
+    const { data: existing } = await adminClient
+      .from('quotes').select('id').eq('ticket_id', ticket_id).eq('type', 'quote').limit(1)
+    if (existing && existing.length > 0) {
+      return NextResponse.json(
+        { error: 'A quote already exists for this ticket. Edit the existing quote instead.' },
+        { status: 409 },
+      )
+    }
+  }
+
   const { data: quote, error } = await adminClient
     .from('quotes')
     .insert({

@@ -49,6 +49,12 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
   const canRaiseVariation = ['accepted', 'in_progress', 'snag_in_progress'].includes(ticketStatus)
   const variationPending  = ticketStatus === 'variation_pending'
 
+  // Single main quote per ticket. The send/edit form is only available before work
+  // starts; once in-progress (or beyond) it's removed.
+  const mainQuote = (quotes ?? []).find((q: any) => q.type === 'quote') ?? null
+  const quoteFormHidden = ['in_progress', 'variation_pending', 'pending_sign_off', 'completed', 'cancelled', 'snag', 'snag_in_progress'].includes(ticketStatus)
+  const quoteEditable   = !!mainQuote && ['pending', 'declined'].includes((mainQuote as any).status)
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
@@ -233,8 +239,26 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
         </div>
       )}
 
-      {/* Send new quote */}
-      <SendQuoteForm ticketId={params.id} />
+      {/* Send / edit the single main quote — hidden once work is in-progress */}
+      {!quoteFormHidden && !mainQuote && <SendQuoteForm ticketId={params.id} />}
+      {!quoteFormHidden && mainQuote && quoteEditable && (
+        <SendQuoteForm
+          ticketId={params.id}
+          existingQuote={{
+            id:              (mainQuote as any).id,
+            amount:          (mainQuote as any).amount,
+            amount_incl_vat: (mainQuote as any).amount_incl_vat ?? null,
+            description:     (mainQuote as any).description,
+            valid_until:     (mainQuote as any).valid_until ?? null,
+            file_url:        (mainQuote as any).file_url ?? null,
+          }}
+        />
+      )}
+      {!quoteFormHidden && mainQuote && !quoteEditable && (
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/40 rounded-xl px-4 py-3 text-sm text-green-700 dark:text-green-300">
+          Quote approved — it&apos;s now locked. Mark the job In Progress to begin work.
+        </div>
+      )}
 
       {/* Variation order — raised mid-job for extra materials/work */}
       {variationPending && (

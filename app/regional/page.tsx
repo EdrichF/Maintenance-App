@@ -7,7 +7,7 @@ import { RecentTicketsStack } from '@/components/regional/RecentTicketsStack'
 import {
   Building2, ShieldAlert, ReceiptText,
   TrendingUp, CheckCircle2, Zap, ClipboardList,
-  Wrench, BadgeCheck, Banknote, Clock4,
+  Wrench, BadgeCheck, Banknote, Clock4, Layers,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import {
@@ -34,7 +34,7 @@ export default async function RegionalDashboard() {
         id, full_name, company_name, sub_store, email, phone, address,
         tickets(
           id, title, status, priority, created_at, updated_at,
-          quotes(status, amount, created_at)
+          quotes(status, amount, created_at, type)
         )
       `)
       .eq('regional_manager_id', user.id)
@@ -66,7 +66,8 @@ export default async function RegionalDashboard() {
     totalStores:     storeList.length,
     openTickets:     openActiveTickets,
     urgentTickets:   allTickets.filter((t: any) => t.priority === 'urgent' && !['completed','cancelled','declined'].includes(t.status)).length,
-    pendingQuotes:   allQuotes.filter((q: any) => q.status === 'pending').length,
+    pendingQuotes:     allQuotes.filter((q: any) => q.status === 'pending' && q.type !== 'variation').length,
+    pendingVariations: allQuotes.filter((q: any) => q.status === 'pending' && q.type === 'variation').length,
     completedThisMonth: allTickets.filter((t: any) => {
       if (t.status !== 'completed') return false
       const d = new Date(t.updated_at)
@@ -149,7 +150,8 @@ export default async function RegionalDashboard() {
           { label: 'Stores',           value: stats.totalStores,                     icon: Building2,     accent: 'border-l-brand-500',   iconCls: 'text-brand-600 dark:text-brand-400',   href: '/regional/stores' },
           { label: 'Open Tickets',     value: stats.openTickets,                     icon: ClipboardList, accent: 'border-l-blue-500',    iconCls: 'text-blue-600 dark:text-blue-400',     href: '/regional/tickets' },
           { label: 'Urgent',           value: stats.urgentTickets,                   icon: ShieldAlert,   accent: 'border-l-red-500',     iconCls: 'text-red-600 dark:text-red-400',       href: '/regional/tickets?status=open' },
-          { label: 'Pending Quotes',   value: stats.pendingQuotes,                   icon: ReceiptText,   accent: 'border-l-yellow-500',  iconCls: 'text-yellow-600 dark:text-yellow-400', href: '/regional/tickets?status=quoted' },
+          { label: 'Quotes Pending\nApproval', value: stats.pendingQuotes,           icon: ReceiptText,   accent: 'border-l-yellow-500',  iconCls: 'text-yellow-600 dark:text-yellow-400', href: '/regional/tickets?status=quoted' },
+          { label: 'Variations\nPending', value: stats.pendingVariations,            icon: Layers,        accent: 'border-l-indigo-500',  iconCls: 'text-indigo-600 dark:text-indigo-400', href: '/regional/tickets?status=variation_pending' },
           { label: 'Snag',             value: snagTickets,                           icon: Wrench,        accent: 'border-l-amber-500',   iconCls: 'text-amber-600 dark:text-amber-400',   href: '/regional/snag' },
           { label: 'Pending\nSign-off', value: pendingSignOffTickets,                 icon: BadgeCheck,    accent: 'border-l-orange-500',  iconCls: 'text-orange-600 dark:text-orange-400', href: '/regional/signoff' },
           { label: 'Done This Month',  value: stats.completedThisMonth,              icon: CheckCircle2,  accent: 'border-l-green-500',   iconCls: 'text-green-600 dark:text-green-400',   href: '/regional/tickets?status=completed' },

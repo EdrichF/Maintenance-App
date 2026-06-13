@@ -65,7 +65,7 @@ export function QuoteCard({ quote, ticketId }: QuoteCardProps) {
           href={(quote as any).file_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 text-sm text-brand-600 hover:underline"
+          className="inline-flex items-center gap-2 text-sm text-brand-600 dark:text-brand-400 hover:underline"
         >
           <FileText size={15} /> View attachment
         </a>
