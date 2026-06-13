@@ -225,7 +225,7 @@ async function notifyAndRevalidate(
   senderProfile: { id: string; company_name: string | null; sub_store: string | null; regional_manager_id: string | null }
 ): Promise<void> {
   const adminClient = createAdminClient();
-  const { data: adminProfiles } = await adminClient.from('profiles').select('id').eq('role', 'admin');
+  const { data: adminProfiles } = await adminClient.from('profiles').select('id').eq('role', 'contractor');
 
   await Promise.all([
     adminProfiles?.length
@@ -235,7 +235,7 @@ async function notifyAndRevalidate(
             type:    'new_ticket',
             title:   'New Maintenance Ticket',
             message: `A new ${priority} priority ticket has been submitted: "${title}"`,
-            link:    `/admin/tickets/${ticketId}`,
+            link:    `/contractor/tickets/${ticketId}`,
           }))
         )
       : Promise.resolve(),
@@ -253,7 +253,7 @@ async function notifyAndRevalidate(
   if (adminProfiles?.length) {
     void sendPushToMany(
       adminProfiles.map((a: { id: string }) => a.id),
-      { title: 'New Maintenance Ticket', body: `A new ${priority} ticket: "${title}"`, url: `/admin/tickets/${ticketId}` }
+      { title: 'New Maintenance Ticket', body: `A new ${priority} ticket: "${title}"`, url: `/contractor/tickets/${ticketId}` }
     );
   }
   if (senderProfile.regional_manager_id) {
@@ -265,7 +265,7 @@ async function notifyAndRevalidate(
   }
 
   revalidatePath('/client');
-  revalidatePath('/admin');
+  revalidatePath('/contractor');
   revalidatePath('/regional');
 }
 

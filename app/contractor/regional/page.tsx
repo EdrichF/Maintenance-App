@@ -77,7 +77,7 @@ export default async function AdminRegionalPage({
           {filtered.map(rm => {
             const count = branchCounts[rm.id] ?? 0
             return (
-              <Link key={rm.id} href={`/admin/regional/${rm.id}`}>
+              <Link key={rm.id} href={`/contractor/regional/${rm.id}`}>
                 <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-l-4 border-l-brand-500 rounded-xl px-5 py-4 hover:border-brand-400 dark:hover:border-gray-400 transition-colors flex items-center gap-4">
                   {/* Avatar */}
                   <div className="w-10 h-10 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center shrink-0">

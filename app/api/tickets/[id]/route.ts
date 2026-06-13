@@ -16,7 +16,7 @@ export async function PATCH(
   const body = await request.json()
 
   // Admin updating status only
-  if (profile?.role === 'admin') {
+  if (profile?.role === 'contractor') {
     const { status } = body
     if (!['in_progress', 'completed', 'pending_sign_off', 'snag', 'snag_in_progress', 'cancelled'].includes(status)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
@@ -24,9 +24,9 @@ export async function PATCH(
     const { data, error } = await adminClient
       .from('tickets').update({ status }).eq('id', params.id).select().single()
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-    revalidatePath('/admin/tickets')
-    revalidatePath(`/admin/tickets/${params.id}`)
-    revalidatePath('/admin')
+    revalidatePath('/contractor/tickets')
+    revalidatePath(`/contractor/tickets/${params.id}`)
+    revalidatePath('/contractor')
     return NextResponse.json({ ticket: data })
   }
 

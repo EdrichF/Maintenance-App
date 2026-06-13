@@ -95,7 +95,7 @@ export default function NewSupplierPage() {
     const json = await res.json()
     setSaving(false)
     if (!res.ok) { setManualError(json.error ?? 'Failed to save'); return }
-    router.push(`/admin/suppliers/${json.supplier.id}`)
+    router.push(`/contractor/suppliers/${json.supplier.id}`)
   }
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -364,7 +364,7 @@ export default function NewSupplierPage() {
                 {uploadResult.inserted} supplier{uploadResult.inserted !== 1 ? 's' : ''} imported successfully
               </p>
               <button
-                onClick={() => router.push('/admin/suppliers')}
+                onClick={() => router.push('/contractor/suppliers')}
                 className="text-sm text-brand-600 dark:text-brand-400 hover:underline"
               >
                 View all suppliers →

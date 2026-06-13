@@ -24,13 +24,15 @@ Migrations live in `supabase/migrations/` but are **not** applied via Supabase C
 
 ### Roles & route protection
 
-Four roles drive everything: `client` / `store_manager` (treated identically — see `isStoreManager()` in `lib/types.ts`), `regional_manager`, and `admin` (the contractor side). `middleware.ts` is the single gate for route access:
+Four roles drive everything: `client` / `store_manager` (treated identically — see `isStoreManager()` in `lib/types.ts`), `regional_manager`, and `contractor` (the contractor side; this role was formerly named `admin`). `middleware.ts` is the single gate for route access:
 
 - `/client/*` → `client` or `store_manager`
 - `/regional/*` → `regional_manager`
-- `/admin/*` → `admin`
+- `/contractor/*` → `contractor`
 - `/settings*` → any authenticated user
-- Logged-in users hitting `/auth/login` or `/auth/signup` are redirected to their role's home (`/client`, `/admin`, or `/regional`)
+- Logged-in users hitting `/auth/login` or `/auth/signup` are redirected to their role's home (`/client`, `/contractor`, or `/regional`)
+
+> Note: the service-role Supabase client is still `createAdminClient()`/`adminClient` — that's infrastructure (RLS bypass), unrelated to the `contractor` role. The DB FK columns `quotes.admin_id` / `completions.admin_id` keep their names too and reference the contractor.
 
 Each role has its own top-level `app/<role>/layout.tsx` defining nav links (`Navbar` + `BottomNav` + `SwipeNav`) and which Supabase tables `RealtimeRefresh` subscribes to for that section.
 

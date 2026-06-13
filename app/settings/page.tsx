@@ -19,7 +19,7 @@ interface ProfileForm {
 }
 
 const ROLE_LABELS: Record<string, string> = {
-  admin:            'Administrator',
+  contractor:       'Contractor',
   regional_manager: 'Regional Manager',
   store_manager:    'Store Manager',
   client:           'Store Manager',

@@ -45,7 +45,7 @@ export function SupplierEditForm({ supplier }: { supplier: Supplier }) {
     const json = await res.json()
     setSaving(false)
     if (!res.ok) { setError(json.error ?? 'Failed to save'); return }
-    router.push(`/admin/suppliers/${supplier.id}`)
+    router.push(`/contractor/suppliers/${supplier.id}`)
     router.refresh()
   }
 

@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (profile?.role !== 'contractor') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   if (!rateLimit(`suppliers-bulk:${user.id}`, 5, 60_000))
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 })

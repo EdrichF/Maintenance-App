@@ -1,7 +1,8 @@
-export type Priority = 'low' | 'medium' | 'high' | 'urgent'
-export type TicketStatus = 'open' | 'quoted' | 'accepted' | 'in_progress' | 'completed' | 'cancelled' | 'declined' | 'pending_sign_off' | 'snag' | 'snag_in_progress'
+﻿export type Priority = 'low' | 'medium' | 'high' | 'urgent'
+export type TicketStatus = 'open' | 'quoted' | 'accepted' | 'in_progress' | 'completed' | 'cancelled' | 'declined' | 'pending_sign_off' | 'snag' | 'snag_in_progress' | 'variation_pending'
 export type QuoteStatus = 'pending' | 'accepted' | 'declined'
-export type UserRole = 'client' | 'store_manager' | 'regional_manager' | 'admin'
+export type QuoteType = 'quote' | 'variation'
+export type UserRole = 'client' | 'store_manager' | 'regional_manager' | 'contractor'
 
 export interface Profile {
   id: string
@@ -34,12 +35,14 @@ export interface Quote {
   id: string
   ticket_id: string
   admin_id: string
+  type: QuoteType
   amount: number
   amount_incl_vat: number | null
   description: string
   valid_until: string | null
   file_url: string | null
   status: QuoteStatus
+  decline_reason?: string | null
   created_at: string
   tickets?: Ticket
   profiles?: Profile

@@ -23,7 +23,7 @@ const STATUS_STEPS = [
 ]
 
 // Statuses where the linear progress tracker does not apply
-const OFFTRACK_STATUSES = ['completed', 'cancelled', 'declined', 'pending_sign_off', 'snag', 'snag_in_progress']
+const OFFTRACK_STATUSES = ['completed', 'cancelled', 'declined', 'pending_sign_off', 'snag', 'snag_in_progress', 'variation_pending']
 
 export default async function ClientTicketDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient()
@@ -138,6 +138,16 @@ export default async function ClientTicketDetailPage({ params }: { params: { id:
           <div>
             <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Work in progress</p>
             <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">The maintenance team is currently working on your ticket.</p>
+          </div>
+        </div>
+      )}
+
+      {t.status === 'variation_pending' && (
+        <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl p-4 flex items-center gap-3">
+          <Clock size={18} className="text-amber-500 shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Work in progress</p>
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">An update to the scope of work is being reviewed by the regional manager. Work will continue shortly.</p>
           </div>
         </div>
       )}

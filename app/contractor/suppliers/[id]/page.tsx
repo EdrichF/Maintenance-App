@@ -57,7 +57,7 @@ export default async function SupplierDetailPage({ params }: { params: { id: str
             </span>
           )}
         </div>
-        <Link href={`/admin/suppliers/${supplier.id}/edit`}
+        <Link href={`/contractor/suppliers/${supplier.id}/edit`}
           className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 rounded-xl transition-colors">
           <Pencil size={13} /> Edit
         </Link>

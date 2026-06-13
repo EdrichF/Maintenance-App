@@ -73,7 +73,7 @@ export default async function SuppliersPage({
             {allSuppliers.length} supplier{allSuppliers.length !== 1 ? 's' : ''} · {qualified} qualified
           </p>
         </div>
-        <Link href="/admin/suppliers/new">
+        <Link href="/contractor/suppliers/new">
           <div className="flex items-center gap-1.5 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-3 py-2 rounded-xl transition-colors">
             <Plus size={15} /> Add Supplier
           </div>
@@ -90,7 +90,7 @@ export default async function SuppliersPage({
         <div className="bg-slate-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 text-center space-y-3">
           <Truck size={32} className="mx-auto text-gray-300 dark:text-gray-600" />
           <p className="text-sm text-gray-400">No suppliers yet.</p>
-          <Link href="/admin/suppliers/new">
+          <Link href="/contractor/suppliers/new">
             <span className="text-sm text-brand-600 dark:text-brand-400 hover:underline">Add your first supplier</span>
           </Link>
         </div>
@@ -102,7 +102,7 @@ export default async function SuppliersPage({
       ) : (
         <div className="space-y-2">
           {filtered.map(supplier => (
-            <Link key={supplier.id} href={`/admin/suppliers/${supplier.id}`}>
+            <Link key={supplier.id} href={`/contractor/suppliers/${supplier.id}`}>
               <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-400 dark:hover:border-gray-500 transition-colors">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">

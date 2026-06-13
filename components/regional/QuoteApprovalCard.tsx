@@ -91,7 +91,15 @@ export function QuoteApprovalCard({ quote, ticketTitle, ticketId, contractor, ra
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{ticketTitle}</p>
+          {quote.type === 'variation' && (
+            <span className="inline-block my-1 text-[10px] font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5 rounded">
+              Variation Order
+            </span>
+          )}
           <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(quote.amount)}</p>
+          {quote.amount_incl_vat != null && (
+            <p className="text-xs text-gray-400">Incl. VAT: {formatCurrency(quote.amount_incl_vat)}</p>
+          )}
           <p className="text-xs text-gray-400 mt-0.5">{formatDateTime(quote.created_at)}</p>
         </div>
         <span className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full ${statusColors[quote.status] ?? ''}`}>

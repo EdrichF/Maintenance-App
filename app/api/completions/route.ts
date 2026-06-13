@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-  if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (profile?.role !== 'contractor') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const body = await request.json()
   const { ticket_id, coc_url, poc_urls, notes } = body
@@ -78,9 +78,9 @@ export async function POST(request: Request) {
     })
   }
 
-  revalidatePath('/admin/tickets/' + ticket_id)
-  revalidatePath('/admin/tickets')
-  revalidatePath('/admin')
+  revalidatePath('/contractor/tickets/' + ticket_id)
+  revalidatePath('/contractor/tickets')
+  revalidatePath('/contractor')
 
   return NextResponse.json({ completion }, { status: 201 })
 }

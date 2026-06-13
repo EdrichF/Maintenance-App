@@ -35,7 +35,7 @@ export default async function AdminReviewsPage() {
       .eq('contractor_id', user.id)
       .order('created_at', { ascending: false }),
   ])
-  if (profile?.role !== 'admin') redirect('/auth/login')
+  if (profile?.role !== 'contractor') redirect('/auth/login')
 
   const reviews = (ratings ?? []) as any[]
   const avgRating = reviews.length > 0

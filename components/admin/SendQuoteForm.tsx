@@ -91,7 +91,8 @@ const PRESETS = [
   { label: '1 month', days: 30 },
 ] as const
 
-export function SendQuoteForm({ ticketId }: { ticketId: string }) {
+export function SendQuoteForm({ ticketId, variant = 'quote' }: { ticketId: string; variant?: 'quote' | 'variation' }) {
+  const isVariation = variant === 'variation'
   const router = useRouter()
   const [open,       setOpen]       = useState(false)
   const [loading,    setLoading]    = useState(false)
@@ -235,6 +236,7 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
       body: JSON.stringify({
         ...values,
         ticket_id:       ticketId,
+        type:            variant,
         amount:          Number(values.amount),
         amount_incl_vat: values.amount_incl_vat !== '' ? Number(values.amount_incl_vat) : null,
         file_url:        fileUrl,
@@ -270,15 +272,22 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
 
   if (!open) {
     return (
-      <Button onClick={() => setOpen(true)} variant="primary" className="w-full">
-        Send Quote to Client
+      <Button onClick={() => setOpen(true)} variant={isVariation ? 'secondary' : 'primary'} className="w-full">
+        {isVariation ? 'Raise Variation Order' : 'Send Quote to Client'}
       </Button>
     )
   }
 
   return (
     <div className="bg-slate-50 dark:bg-gray-800 border border-brand-200 dark:border-gray-700 rounded-xl p-5 space-y-4">
-      <h3 className="font-semibold text-gray-900 dark:text-white">Send Quote</h3>
+      <h3 className="font-semibold text-gray-900 dark:text-white">
+        {isVariation ? 'Raise Variation Order' : 'Send Quote'}
+      </h3>
+      {isVariation && (
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          For extra materials or work needed to complete the job. This is sent to the regional manager for approval before work continues.
+        </p>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
@@ -468,7 +477,7 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
           <Button type="submit" loading={loading} className="flex-1" disabled={uploading || parsing}>
             {uploading ? (
               <><Loader2 size={14} className="animate-spin mr-1.5" /> Uploading…</>
-            ) : 'Send Quote'}
+            ) : isVariation ? 'Submit Variation Order' : 'Send Quote'}
           </Button>
           <Button type="button" variant="secondary" onClick={handleClose} className="flex-1">
             Cancel

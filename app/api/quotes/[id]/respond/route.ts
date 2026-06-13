@@ -17,7 +17,7 @@ export async function PATCH(
   const role = profile?.role ?? ''
   const isStoreManager = role === 'store_manager' || role === 'client'
   const isRM            = role === 'regional_manager'
-  const isAdmin         = role === 'admin'
+  const isAdmin         = role === 'contractor'
 
   if (!isStoreManager && !isRM && !isAdmin) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -38,13 +38,19 @@ export async function PATCH(
 
   const { data: quote } = await adminClient
     .from('quotes')
-    .select('ticket_id, amount, tickets(client_id, title)')
+    .select('ticket_id, amount, type, tickets(client_id, title)')
     .eq('id', params.id)
     .single()
 
   if (!quote) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
+  const isVariation = (quote as any).type === 'variation'
   const ticket = quote.tickets as any
+
+  // Variation orders are approved by the regional manager only — never the client/store.
+  if (isVariation && !isRM && !isAdmin) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
 
   if (isStoreManager && ticket?.client_id !== user.id) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -57,24 +63,32 @@ export async function PATCH(
     quoteUpdate.decline_reason = null
   }
 
-  const ticketStatus = status === 'accepted' ? 'accepted'
+  // Variation: approve OR decline returns the job to in-progress (work proceeds on
+  // the original scope); a revert re-parks it as variation_pending.
+  const ticketStatus = isVariation
+    ? (status === 'pending' ? 'variation_pending' : 'in_progress')
+    : status === 'accepted' ? 'accepted'
     : status === 'pending'  ? 'quoted'
     : isRM                  ? 'declined'
     : 'open'
 
   const reasonNote = decline_reason ? ` Reason: "${decline_reason}".` : ''
-  const actorLabel = isRM ? 'Regional manager' : isStoreManager ? 'Store manager' : 'Admin'
+  const actorLabel = isRM ? 'Regional manager' : isStoreManager ? 'Store manager' : 'contractor'
+  const noun       = isVariation ? 'variation order' : 'quote'
 
   // Update quote + ticket status + fetch admins in parallel
   const [, , { data: admins }] = await Promise.all([
     adminClient.from('quotes').update(quoteUpdate).eq('id', params.id),
     adminClient.from('tickets').update({ status: ticketStatus }).eq('id', quote.ticket_id),
-    adminClient.from('profiles').select('id').eq('role', 'admin'),
+    adminClient.from('profiles').select('id').eq('role', 'contractor'),
   ])
 
-  // Fire all notifications in parallel
+  const titleNoun = isVariation ? 'Variation Order' : 'Quote'
+
+  // Fire all notifications in parallel.
+  // Client is notified for normal quotes only — variations are an RM↔contractor matter.
   await Promise.all([
-    ticket?.client_id && !isStoreManager
+    ticket?.client_id && !isStoreManager && !isVariation
       ? adminClient.from('notifications').insert({
           user_id: ticket.client_id,
           type:    status === 'accepted' ? 'quote_accepted' : 'quote_declined',
@@ -90,18 +104,18 @@ export async function PATCH(
           admins.map((a: any) => ({
             user_id: a.id,
             type:    status === 'accepted' ? 'quote_accepted' : 'quote_declined',
-            title:   status === 'accepted' ? 'Quote Accepted' : 'Quote Declined',
+            title:   status === 'accepted' ? `${titleNoun} Accepted` : `${titleNoun} Declined`,
             message: status === 'accepted'
-              ? `${actorLabel} accepted the quote of R${quote.amount} for "${ticket?.title}".`
-              : `${actorLabel} declined the quote of R${quote.amount} for "${ticket?.title}".${reasonNote}`,
-            link: `/admin/tickets/${quote.ticket_id}`,
+              ? `${actorLabel} accepted the ${noun} of R${quote.amount} for "${ticket?.title}".`
+              : `${actorLabel} declined the ${noun} of R${quote.amount} for "${ticket?.title}".${reasonNote}`,
+            link: `/contractor/tickets/${quote.ticket_id}`,
           }))
         )
       : Promise.resolve(),
   ])
 
   // Fire push — non-blocking
-  if (ticket?.client_id && !isStoreManager) {
+  if (ticket?.client_id && !isStoreManager && !isVariation) {
     void sendPushToUser(ticket.client_id, {
       title: status === 'accepted' ? 'Quote Approved' : 'Quote Declined',
       body: status === 'accepted'
@@ -112,14 +126,14 @@ export async function PATCH(
   }
   if (admins?.length) {
     void sendPushToMany(admins.map((a: any) => a.id), {
-      title: status === 'accepted' ? 'Quote Accepted' : 'Quote Declined',
-      body: `${actorLabel} ${status === 'accepted' ? 'accepted' : 'declined'} the quote for "${ticket?.title}".`,
-      url: `/admin/tickets/${quote.ticket_id}`,
+      title: status === 'accepted' ? `${titleNoun} Accepted` : `${titleNoun} Declined`,
+      body: `${actorLabel} ${status === 'accepted' ? 'accepted' : 'declined'} the ${noun} for "${ticket?.title}".`,
+      url: `/contractor/tickets/${quote.ticket_id}`,
     })
   }
 
-  revalidatePath('/admin/tickets')
-  revalidatePath(`/admin/tickets/${quote.ticket_id}`)
-  revalidatePath('/admin')
+  revalidatePath('/contractor/tickets')
+  revalidatePath(`/contractor/tickets/${quote.ticket_id}`)
+  revalidatePath('/contractor')
   return NextResponse.json({ success: true })
 }

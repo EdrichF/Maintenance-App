@@ -42,7 +42,7 @@ export default async function ContractorProfilePage({ params }: { params: { id: 
 
   if (rmProfile?.role !== 'regional_manager') redirect('/auth/login')
 
-  if (!contractor || contractor.role !== 'admin') notFound()
+  if (!contractor || contractor.role !== 'contractor') notFound()
 
   const reviews   = (ratings ?? []) as any[]
   const avgRating = reviews.length > 0

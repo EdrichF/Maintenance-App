@@ -45,6 +45,9 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
   const ticketStatus = (ticket as Ticket).status
   const canUpdateStatus = (hasAcceptedQuote || ['accepted', 'in_progress', 'snag', 'snag_in_progress'].includes(ticketStatus))
     && !['pending_sign_off', 'completed', 'cancelled'].includes(ticketStatus)
+  // A variation order can be raised once work is underway (extra materials/work mid-job)
+  const canRaiseVariation = ['accepted', 'in_progress', 'snag_in_progress'].includes(ticketStatus)
+  const variationPending  = ticketStatus === 'variation_pending'
 
   return (
     <div className="space-y-4">
@@ -126,16 +129,24 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
         </div>
       ) : null}
 
-      {/* Quotes sent */}
+      {/* Quotes & variation orders */}
       {(quotes?.length ?? 0) > 0 && (
         <div>
-          <p className="font-semibold text-gray-900 dark:text-white mb-2">Quotes Sent</p>
+          <p className="font-semibold text-gray-900 dark:text-white mb-2">Quotes &amp; Variation Orders</p>
           <div className="space-y-2">
             {(quotes as Quote[]).map(q => (
               <div key={q.id} className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-1.5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
+                    {q.type === 'variation' && (
+                      <span className="inline-block mb-1 text-[10px] font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5 rounded">
+                        Variation Order
+                      </span>
+                    )}
                     <p className="text-lg font-bold dark:text-white">{formatCurrency(q.amount)}</p>
+                    {q.amount_incl_vat != null && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Incl. VAT: {formatCurrency(q.amount_incl_vat)}</p>
+                    )}
                     <p className="text-xs text-gray-400 mt-0.5">Sent: {formatDateTime(q.created_at)}</p>
                   </div>
                   <Badge className={
@@ -224,6 +235,14 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
 
       {/* Send new quote */}
       <SendQuoteForm ticketId={params.id} />
+
+      {/* Variation order — raised mid-job for extra materials/work */}
+      {variationPending && (
+        <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800/40 rounded-xl px-4 py-3 text-sm text-indigo-700 dark:text-indigo-300">
+          A variation order is awaiting regional manager approval. Work will continue once it&apos;s reviewed.
+        </div>
+      )}
+      {canRaiseVariation && <SendQuoteForm ticketId={params.id} variant="variation" />}
     </div>
   )
 }

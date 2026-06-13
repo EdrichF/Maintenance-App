@@ -7,12 +7,12 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-type NavRole = 'client' | 'admin' | 'regional'
+type NavRole = 'client' | 'contractor' | 'regional'
 
 const BASE: Record<NavRole, string> = {
-  admin:    '/admin',
-  regional: '/regional',
-  client:   '/client',
+  contractor: '/contractor',
+  regional:   '/regional',
+  client:     '/client',
 }
 
 export function Navbar({ role }: { role: NavRole }) {

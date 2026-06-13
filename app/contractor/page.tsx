@@ -83,7 +83,7 @@ export default async function AdminDashboard() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{companyName}</h1>
-        <Link href="/admin/reviews">
+        <Link href="/contractor/reviews">
           {avgRating !== null ? (
             <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 rounded-xl px-4 py-2 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors">
               <Star size={16} className="fill-amber-400 text-amber-400 shrink-0" />
@@ -103,14 +103,14 @@ export default async function AdminDashboard() {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {/* Numeric cards */}
         {[
-          { label: 'Total Tickets',    value: total,                     icon: Hash,          accent: 'border-l-gray-400',   iconCls: 'text-gray-500 dark:text-gray-400',   href: '/admin/tickets' },
-          { label: 'Open Tickets',     value: openCount + declinedCount, icon: ClipboardList, accent: 'border-l-blue-500',   iconCls: 'text-blue-600 dark:text-blue-400',   href: '/admin/tickets?status=open' },
-          { label: 'Urgent',           value: urgentCount,               icon: ShieldAlert,   accent: 'border-l-red-500',    iconCls: 'text-red-600 dark:text-red-400',     href: '/admin/tickets?status=open' },
-          { label: 'Quoted',           value: quotedCount,               icon: ReceiptText,   accent: 'border-l-purple-500', iconCls: 'text-purple-600 dark:text-purple-400', href: '/admin/tickets?status=quoted' },
-          { label: 'In Progress',      value: progressCount,             icon: Wrench,        accent: 'border-l-amber-500',  iconCls: 'text-amber-600 dark:text-amber-400', href: '/admin/tickets?status=in_progress' },
-          { label: 'Pending\nSign-off', value: signOffCount,              icon: BadgeCheck,    accent: 'border-l-orange-500', iconCls: 'text-orange-600 dark:text-orange-400', href: '/admin/tickets?status=pending_sign_off' },
-          { label: 'Snag',             value: snagCount,                 icon: ShieldAlert,   accent: 'border-l-rose-500',   iconCls: 'text-rose-600 dark:text-rose-400',   href: '/admin/snag' },
-          { label: 'Completed',        value: completedCount,            icon: CheckCircle2,  accent: 'border-l-green-500',  iconCls: 'text-green-600 dark:text-green-400', href: '/admin/tickets?status=completed' },
+          { label: 'Total Tickets',    value: total,                     icon: Hash,          accent: 'border-l-gray-400',   iconCls: 'text-gray-500 dark:text-gray-400',   href: '/contractor/tickets' },
+          { label: 'Open Tickets',     value: openCount + declinedCount, icon: ClipboardList, accent: 'border-l-blue-500',   iconCls: 'text-blue-600 dark:text-blue-400',   href: '/contractor/tickets?status=open' },
+          { label: 'Urgent',           value: urgentCount,               icon: ShieldAlert,   accent: 'border-l-red-500',    iconCls: 'text-red-600 dark:text-red-400',     href: '/contractor/tickets?status=open' },
+          { label: 'Quoted',           value: quotedCount,               icon: ReceiptText,   accent: 'border-l-purple-500', iconCls: 'text-purple-600 dark:text-purple-400', href: '/contractor/tickets?status=quoted' },
+          { label: 'In Progress',      value: progressCount,             icon: Wrench,        accent: 'border-l-amber-500',  iconCls: 'text-amber-600 dark:text-amber-400', href: '/contractor/tickets?status=in_progress' },
+          { label: 'Pending\nSign-off', value: signOffCount,              icon: BadgeCheck,    accent: 'border-l-orange-500', iconCls: 'text-orange-600 dark:text-orange-400', href: '/contractor/tickets?status=pending_sign_off' },
+          { label: 'Snag',             value: snagCount,                 icon: ShieldAlert,   accent: 'border-l-rose-500',   iconCls: 'text-rose-600 dark:text-rose-400',   href: '/contractor/snag' },
+          { label: 'Completed',        value: completedCount,            icon: CheckCircle2,  accent: 'border-l-green-500',  iconCls: 'text-green-600 dark:text-green-400', href: '/contractor/tickets?status=completed' },
         ].map(stat => (
           <Link key={stat.label} href={stat.href}>
             <div className={`bg-slate-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 border-l-4 ${stat.accent} p-4 flex items-center gap-3 hover:opacity-80 transition-opacity h-full`}>
@@ -186,8 +186,8 @@ export default async function AdminDashboard() {
           ) : (
             <RecentTicketsStack
               tickets={attentionTickets as any}
-              variant="admin"
-              basePath="/admin/tickets"
+              variant="contractor"
+              basePath="/contractor/tickets"
               countLabel="need attention"
             />
           )}
@@ -199,12 +199,12 @@ export default async function AdminDashboard() {
             <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
               <Clock4 size={16} className="text-brand-600" /> Recent Tickets
             </h2>
-            <Link href="/admin/tickets" className="text-sm text-brand-600 hover:underline">View all</Link>
+            <Link href="/contractor/tickets" className="text-sm text-brand-600 hover:underline">View all</Link>
           </div>
           <RecentTicketsStack
             tickets={recentTickets as any}
-            variant="admin"
-            basePath="/admin/tickets"
+            variant="contractor"
+            basePath="/contractor/tickets"
             countLabel="last 7 days"
           />
         </div>

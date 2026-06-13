@@ -63,7 +63,7 @@ export async function PATCH(
           comment:       comment || null,
         })
       : Promise.resolve(),
-    adminClient.from('profiles').select('id').eq('role', 'admin'),
+    adminClient.from('profiles').select('id').eq('role', 'contractor'),
   ])
 
   // Fire all notifications in parallel
@@ -77,7 +77,7 @@ export async function PATCH(
             message: status === 'approved'
               ? `Regional manager approved the COC/POC for "${ticket.title}". Rated ${score}/5.`
               : `Regional manager rejected the COC/POC for "${ticket.title}". Reason: "${reject_reason}". Ticket moved to Snag.`,
-            link: `/admin/tickets/${completion.ticket_id}`,
+            link: `/contractor/tickets/${completion.ticket_id}`,
           }))
         )
       : Promise.resolve(),
@@ -99,7 +99,7 @@ export async function PATCH(
       body: status === 'approved'
         ? `COC/POC approved for "${ticket.title}". Rated ${score}/5.`
         : `COC/POC rejected for "${ticket.title}". Moved to Snag.`,
-      url: `/admin/tickets/${completion.ticket_id}`,
+      url: `/contractor/tickets/${completion.ticket_id}`,
     })
   }
   if (status === 'approved' && ticket?.client_id) {
@@ -110,10 +110,10 @@ export async function PATCH(
     })
   }
 
-  revalidatePath('/admin/tickets/' + completion.ticket_id)
-  revalidatePath('/admin/tickets')
-  revalidatePath('/admin')
-  revalidatePath('/admin/snag')
+  revalidatePath('/contractor/tickets/' + completion.ticket_id)
+  revalidatePath('/contractor/tickets')
+  revalidatePath('/contractor')
+  revalidatePath('/contractor/snag')
   revalidatePath('/regional/signoff')
   revalidatePath('/regional/snag')
 

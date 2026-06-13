@@ -31,6 +31,7 @@ export const STATUS_LABELS: Record<TicketStatus, string> = {
   pending_sign_off: 'Pending Sign-off',
   snag:             'Snag',
   snag_in_progress: 'Snag — In Progress',
+  variation_pending: 'Variation Pending',
 }
 
 export const STATUS_COLORS: Record<TicketStatus, string> = {
@@ -44,6 +45,7 @@ export const STATUS_COLORS: Record<TicketStatus, string> = {
   pending_sign_off: 'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400',
   snag:             'bg-rose-100   text-rose-700   dark:bg-rose-950   dark:text-rose-400',
   snag_in_progress: 'bg-amber-100  text-amber-700  dark:bg-amber-950  dark:text-amber-400',
+  variation_pending: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400',
 }
 
 export const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {

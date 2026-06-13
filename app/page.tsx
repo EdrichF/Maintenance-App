@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation'
+﻿import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function Home() {
@@ -13,6 +13,6 @@ export default async function Home() {
     .eq('id', user.id)
     .single()
 
-  if (profile?.role === 'admin') redirect('/admin')
+  if (profile?.role === 'contractor') redirect('/contractor')
   redirect('/client')
 }

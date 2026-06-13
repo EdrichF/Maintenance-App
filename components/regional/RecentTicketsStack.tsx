@@ -23,24 +23,24 @@ export interface RecentTicket {
   quotes?: { status: string; created_at: string }[]
 }
 
-type Variant = 'regional' | 'admin'
+type Variant = 'regional' | 'contractor'
 
 function TicketContent({ ticket, variant }: { ticket: RecentTicket; variant: Variant }) {
   const latestQuote = (ticket.quotes ?? [])
     .filter(q => q.status !== 'declined')
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
 
-  const companyName = variant === 'admin'
+  const companyName = variant === 'contractor'
     ? ticket.profiles?.company_name
     : ticket.store?.company_name
 
-  const subStore = variant === 'admin'
+  const subStore = variant === 'contractor'
     ? ticket.profiles?.sub_store
     : ticket.store?.sub_store
 
   return (
     <>
-      {variant === 'admin' ? (
+      {variant === 'contractor' ? (
         <>
           <p className="font-bold text-base text-gray-900 dark:text-white truncate">{companyName ?? '—'}</p>
           <p className="text-xs text-gray-600 dark:text-gray-300 truncate mt-0.5">{ticket.title}</p>
@@ -74,7 +74,7 @@ function TicketContent({ ticket, variant }: { ticket: RecentTicket; variant: Var
 interface RecentTicketsStackProps {
   tickets: RecentTicket[]
   variant?: Variant
-  /** Base path for ticket detail links, e.g. '/regional/tickets' or '/admin/tickets' */
+  /** Base path for ticket detail links, e.g. '/regional/tickets' or '/contractor/tickets' */
   basePath?: string
   /** Label shown next to ticket count, e.g. 'last 7 days' or 'need attention' */
   countLabel?: string
@@ -88,7 +88,7 @@ export function RecentTicketsStack({
 }: RecentTicketsStackProps) {
   const [expanded, setExpanded] = useState(false)
 
-  const detailPath = basePath ?? (variant === 'admin' ? '/admin/tickets' : '/regional/tickets')
+  const detailPath = basePath ?? (variant === 'contractor' ? '/contractor/tickets' : '/regional/tickets')
 
   if (tickets.length === 0) {
     return (

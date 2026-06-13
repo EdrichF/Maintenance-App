@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -13,7 +13,7 @@ export function SupplierDeleteButton({ supplierId }: { supplierId: string }) {
   async function handleDelete() {
     setDeleting(true)
     await fetch(`/api/suppliers/${supplierId}`, { method: 'DELETE' })
-    router.push('/admin/suppliers')
+    router.push('/contractor/suppliers')
     router.refresh()
   }
 

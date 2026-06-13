@@ -28,7 +28,7 @@ export async function POST(request: Request) {
 
   // Fetch admins and store profile in parallel
   const [{ data: adminProfiles }, { data: storeProfile }] = await Promise.all([
-    adminClient.from('profiles').select('id').eq('role', 'admin'),
+    adminClient.from('profiles').select('id').eq('role', 'contractor'),
     adminClient.from('profiles').select('regional_manager_id, company_name, sub_store').eq('id', user.id).single(),
   ])
 
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
             type: 'new_ticket',
             title: 'New Maintenance Ticket',
             message: `A new ${priority} priority ticket has been submitted: "${title}"`,
-            link: `/admin/tickets/${ticket.id}`,
+            link: `/contractor/tickets/${ticket.id}`,
           }))
         )
       : Promise.resolve(),
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
   if (adminProfiles?.length) {
     void sendPushToMany(
       adminProfiles.map((a: any) => a.id),
-      { title: 'New Maintenance Ticket', body: `A new ${priority} ticket: "${title}"`, url: `/admin/tickets/${ticket.id}` }
+      { title: 'New Maintenance Ticket', body: `A new ${priority} ticket: "${title}"`, url: `/contractor/tickets/${ticket.id}` }
     )
   }
   if (storeProfile?.regional_manager_id) {
@@ -72,6 +72,6 @@ export async function POST(request: Request) {
   }
 
   revalidatePath('/client')
-  revalidatePath('/admin')
+  revalidatePath('/contractor')
   return NextResponse.json({ ticket }, { status: 201 })
 }

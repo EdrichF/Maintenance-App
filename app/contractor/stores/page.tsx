@@ -44,7 +44,7 @@ export default async function AdminStoresPage() {
       ) : (
         <div className="space-y-2">
           {storeList.map((store: any) => (
-            <Link key={store.id} href={`/admin/stores/${store.id}`}>
+            <Link key={store.id} href={`/contractor/stores/${store.id}`}>
               <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-400 dark:hover:border-gray-400 transition-colors">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
