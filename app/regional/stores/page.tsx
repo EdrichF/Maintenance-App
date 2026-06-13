@@ -36,6 +36,7 @@ export default async function RegionalStoresPage() {
       pending_sign_off: tickets.filter((t: any) => t.status === 'pending_sign_off').length,
       snag:             tickets.filter((t: any) => ['snag','snag_in_progress'].includes(t.status)).length,
       declined:         tickets.filter((t: any) => t.status === 'declined').length,
+      cancelled:        tickets.filter((t: any) => t.status === 'cancelled').length,
       total:            tickets.length,
     }
 
@@ -48,10 +49,11 @@ export default async function RegionalStoresPage() {
 
     const pct = (n: number) => counts.total > 0 ? Math.round((n / counts.total) * 100) : 0
 
-    // Store health = problem-free rate: tickets not in snag or declined.
-    const health = counts.total > 0
-      ? Math.round(((counts.total - counts.snag - counts.declined) / counts.total) * 100)
-      : null
+    // Store health = % of tickets that are settled (completed / declined /
+    // cancelled). 100% means nothing is still open, awaiting a quote, in
+    // progress, in snag or awaiting sign-off.
+    const settled = counts.completed + counts.declined + counts.cancelled
+    const health  = counts.total > 0 ? Math.round((settled / counts.total) * 100) : null
 
     return { ...s, counts, acceptanceRate, health, acceptedValue, pendingValue, pendingQuotes, pct }
   })
