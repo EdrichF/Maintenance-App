@@ -9,26 +9,67 @@ import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { createClient } from '@/lib/supabase/client'
 
-/** Render first page of a PDF to a PNG blob using pdfjs-dist (browser only) */
-async function pdfFirstPageToBlob(file: File): Promise<Blob> {
+/**
+ * Render pages of a scanned PDF to JPEG blobs using pdfjs-dist (browser only).
+ * Totals live on the LAST page, scope on the first — so for long PDFs we send
+ * page 1 plus the final pages (vision model accepts up to 5 images per request).
+ */
+async function pdfPagesToBlobs(file: File, maxPages = 5): Promise<Blob[]> {
   const pdfjsLib = await import('pdfjs-dist')
   // unpkg mirrors npm exactly — cdnjs doesn't carry pdfjs-dist v6.x
   pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`
 
   const arrayBuffer = await file.arrayBuffer()
   const pdf         = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
-  const page        = await pdf.getPage(1)
-  const viewport    = page.getViewport({ scale: 2 }) // scale 2 = higher res for better OCR
+  const total       = pdf.numPages
 
-  const canvas         = document.createElement('canvas')
-  canvas.width         = viewport.width
-  canvas.height        = viewport.height
-  const ctx            = canvas.getContext('2d')!
-  await page.render({ canvasContext: ctx as any, viewport, canvas } as any).promise
+  // Choose which pages to send: all if small, else first + last (maxPages-1)
+  let pageNums: number[]
+  if (total <= maxPages) {
+    pageNums = Array.from({ length: total }, (_, i) => i + 1)
+  } else {
+    const tail = Array.from({ length: maxPages - 1 }, (_, i) => total - (maxPages - 2) + i)
+    pageNums = [1, ...tail]
+  }
 
+  const blobs: Blob[] = []
+  for (const num of pageNums) {
+    const page     = await pdf.getPage(num)
+    const viewport = page.getViewport({ scale: 1.6 })
+    const canvas   = document.createElement('canvas')
+    canvas.width   = viewport.width
+    canvas.height  = viewport.height
+    const ctx      = canvas.getContext('2d')!
+    await page.render({ canvasContext: ctx as any, viewport, canvas } as any).promise
+    const blob = await new Promise<Blob>((resolve, reject) =>
+      canvas.toBlob(b => b ? resolve(b) : reject(new Error('canvas toBlob failed')), 'image/jpeg', 0.82)
+    )
+    blobs.push(blob)
+  }
+  return blobs
+}
+
+/** Downscale an image to keep the base64 payload under Groq's 4 MB vision limit. */
+async function imageToBlob(file: File, maxDim = 2200, quality = 0.85): Promise<Blob> {
+  const bitmap = await createImageBitmap(file)
+  const scale  = Math.min(1, maxDim / Math.max(bitmap.width, bitmap.height))
+  const w      = Math.round(bitmap.width * scale)
+  const h      = Math.round(bitmap.height * scale)
+  const canvas = document.createElement('canvas')
+  canvas.width  = w
+  canvas.height = h
+  const ctx = canvas.getContext('2d')!
+  ctx.drawImage(bitmap, 0, 0, w, h)
   return new Promise((resolve, reject) =>
-    canvas.toBlob(b => b ? resolve(b) : reject(new Error('canvas toBlob failed')), 'image/png')
+    canvas.toBlob(b => b ? resolve(b) : reject(new Error('canvas toBlob failed')), 'image/jpeg', quality)
   )
+}
+
+interface ParsedResult {
+  amount:          number | null
+  amount_incl_vat: number | null
+  description:     string | null
+  valid_until:     string | null
 }
 
 interface QuoteForm {
@@ -60,9 +101,24 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
   const [parsing,     setParsing]     = useState(false)
   const [autofilled,  setAutofilled]  = useState(false)
   const [parseError,  setParseError]  = useState<'scanned' | 'generic' | false>(false)
+  const [needAmount,  setNeedAmount]  = useState(false)   // parsed ok but amount couldn't be read confidently
   const [validNA,     setValidNA]     = useState(false)   // user chose N/A for valid_until
 
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<QuoteForm>()
+
+  /** Apply a parse result to the form. Returns true if anything was filled. */
+  function applyParsed(data: ParsedResult): boolean {
+    if (data.amount          !== null) setValue('amount',          data.amount)
+    if (data.amount_incl_vat !== null) setValue('amount_incl_vat', data.amount_incl_vat)
+    if (data.description     !== null) setValue('description',     data.description)
+    if (data.valid_until     !== null) { setValue('valid_until', data.valid_until); setValidNA(false) }
+    else                               { setValue('valid_until', ''); setValidNA(false) }
+
+    const filledSomething = data.amount !== null || data.description !== null || data.valid_until !== null
+    // Precision mode: if we filled context but couldn't read the amount, flag it for manual entry.
+    setNeedAmount(filledSomething && data.amount === null)
+    return filledSomething
+  }
 
   async function onDrop(accepted: File[]) {
     const f = accepted[0]
@@ -73,42 +129,37 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
     setValidNA(false)
     setAutofilled(false)
     setParseError(false)
+    setNeedAmount(false)
 
-    const parseable = f.type === 'application/pdf' || f.type.startsWith('image/')
+    const isExcel   = /\.xlsx?$/i.test(f.name) || f.type.includes('spreadsheet') || f.type === 'application/vnd.ms-excel'
+    const parseable = f.type === 'application/pdf' || f.type.startsWith('image/') || isExcel
     if (!parseable) return
 
     setParsing(true)
-    setAutofilled(false)
-    setParseError(false)
 
     try {
       const fd = new FormData()
-      fd.append('file', f)
-      console.log('[parse-quote-pdf] Sending request...')
+      if (f.type.startsWith('image/')) {
+        // Downscale before sending so large phone photos stay under the vision size limit
+        const img = await imageToBlob(f)
+        fd.append('file', img, 'quote.jpg')
+      } else {
+        fd.append('file', f)
+      }
       const res = await fetch('/api/parse-quote-pdf', { method: 'POST', body: fd })
 
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({})) as { error?: string }
         if (errBody.error === 'SCANNED_PDF') {
-          // Scanned PDF — render page 1 to image in browser, retry with vision model
-          console.log('[parse-quote-pdf] Scanned PDF detected, converting to image...')
+          // Scanned PDF — render pages to images in the browser, retry with the vision model
           try {
-            const imgBlob = await pdfFirstPageToBlob(f)
+            const blobs = await pdfPagesToBlobs(f)
             const fd2 = new FormData()
-            fd2.append('file', imgBlob, 'quote-page1.png')
+            blobs.forEach((b, i) => fd2.append('file', b, `quote-page${i + 1}.jpg`))
             const res2 = await fetch('/api/parse-quote-pdf', { method: 'POST', body: fd2 })
-            if (!res2.ok) {
-              setParseError('generic')
-              return
-            }
-            const data2 = await res2.json() as { amount: number | null; amount_incl_vat: number | null; description: string | null; valid_until: string | null }
-            console.log('[parse-quote-pdf] Vision extracted:', data2)
-            if (data2.amount          !== null) setValue('amount',          data2.amount)
-            if (data2.amount_incl_vat !== null) setValue('amount_incl_vat', data2.amount_incl_vat)
-            if (data2.description     !== null) setValue('description',     data2.description)
-            if (data2.valid_until !== null) { setValue('valid_until', data2.valid_until); setValidNA(false) }
-            else { setValue('valid_until', ''); setValidNA(false) }
-            if (data2.amount !== null || data2.description !== null || data2.valid_until !== null) setAutofilled(true)
+            if (!res2.ok) { setParseError('generic'); return }
+            const data2 = await res2.json() as ParsedResult
+            if (applyParsed(data2)) setAutofilled(true)
             else setParseError('generic')
           } catch (convErr) {
             console.error('[parse-quote-pdf] PDF→image conversion failed:', convErr)
@@ -120,29 +171,10 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
         }
         return
       }
-      const data = await res.json() as {
-        amount:          number | null
-        amount_incl_vat: number | null
-        description:     string | null
-        valid_until:     string | null
-      }
-      console.log('[parse-quote-pdf] Extracted:', data)
 
-      if (data.amount          !== null) setValue('amount',          data.amount)
-      if (data.amount_incl_vat !== null) setValue('amount_incl_vat', data.amount_incl_vat)
-      if (data.description     !== null) setValue('description',     data.description)
-      if (data.valid_until !== null) {
-        setValue('valid_until', data.valid_until)
-        setValidNA(false)
-      } else {
-        setValue('valid_until', '')
-        setValidNA(false)
-      }
-      if (data.amount !== null || data.description !== null || data.valid_until !== null) {
-        setAutofilled(true)
-      } else {
-        setParseError('generic')
-      }
+      const data = await res.json() as ParsedResult
+      if (applyParsed(data)) setAutofilled(true)
+      else setParseError('generic')
     } catch (err) {
       console.error('[parse-quote-pdf] fetch error:', err)
       setParseError('generic')
@@ -158,6 +190,8 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
     accept: {
       'application/pdf': ['.pdf'],
       'image/*': ['.png', '.jpg', '.jpeg', '.webp'],
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+      'application/vnd.ms-excel': ['.xls'],
       'application/msword': ['.doc'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
     },
@@ -219,6 +253,7 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
     setFile(null)
     setOpen(false)
     setAutofilled(false)
+    setNeedAmount(false)
     setValidNA(false)
     router.refresh()
     setLoading(false)
@@ -228,6 +263,7 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
     setOpen(false)
     setFile(null)
     setAutofilled(false)
+    setNeedAmount(false)
     setValidNA(false)
     reset()
   }
@@ -250,7 +286,7 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Attachment <span className="text-red-500">*</span>{' '}
-            <span className="text-gray-400 font-normal">(PDF, Word, or image, max 10 MB)</span>
+            <span className="text-gray-400 font-normal">(PDF, Excel, image or Word, max 10 MB)</span>
           </label>
           {file ? (
             <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
@@ -258,14 +294,14 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
               <span className="text-sm text-gray-700 dark:text-gray-200 truncate flex-1">{file.name}</span>
               {parsing ? (
                 <span className="flex items-center gap-1 text-xs text-brand-600 shrink-0">
-                  <Loader2 size={12} className="animate-spin" /> Reading PDF…
+                  <Loader2 size={12} className="animate-spin" /> Reading…
                 </span>
               ) : (
                 <span className="text-xs text-gray-400 shrink-0">{(file.size / 1024).toFixed(0)} KB</span>
               )}
               <button
                 type="button"
-                onClick={() => { setFile(null); setAutofilled(false); setValidNA(false); setParseError(false) }}
+                onClick={() => { setFile(null); setAutofilled(false); setNeedAmount(false); setValidNA(false); setParseError(false) }}
                 className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors"
               >
                 <X size={16} />
@@ -289,7 +325,7 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
                   <p className="text-sm text-gray-600 dark:text-gray-300">
                     Drag & drop a file, or <span className="text-brand-600 font-medium">browse</span>
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">PDF or photo auto-fills fields · Word also accepted · max 10 MB</p>
+                  <p className="text-xs text-gray-400 mt-1">PDF, Excel or photo auto-fills fields · Word also accepted · max 10 MB</p>
                 </>
               )}
             </div>
@@ -301,7 +337,16 @@ export function SendQuoteForm({ ticketId }: { ticketId: string }) {
           <div className="flex items-center gap-2 px-3 py-2 bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800/40 rounded-lg">
             <Sparkles size={14} className="text-brand-600 dark:text-brand-400 shrink-0" />
             <p className="text-xs text-brand-700 dark:text-brand-300">
-              Fields auto-filled from PDF — please review and adjust if needed.
+              Fields auto-filled from your file — please review and adjust if needed.
+            </p>
+          </div>
+        )}
+
+        {/* Amount needs manual entry — context read, but amount not confidently found */}
+        {needAmount && !parsing && (
+          <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 rounded-lg">
+            <p className="text-xs text-amber-700 dark:text-amber-300">
+              ⚠️ Couldn&apos;t read the amount with confidence — please enter the amount(s) manually.
             </p>
           </div>
         )}

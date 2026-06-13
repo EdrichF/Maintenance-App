@@ -24,7 +24,8 @@
     "react-hook-form": "^7.52.1",
     "tailwind-merge": "^2.4.0",
     "unpdf": "^1.6.2",
-    "web-push": "^3.6.7"
+    "web-push": "^3.6.7",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
     "@types/node": "^20",
