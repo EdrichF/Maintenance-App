@@ -14,6 +14,7 @@ export interface Profile {
   company_name: string | null
   sub_store: string | null
   regional_manager_id: string | null
+  capex_budget: number | null
   created_at: string
 }
 

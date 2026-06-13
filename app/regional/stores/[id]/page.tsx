@@ -207,13 +207,19 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
           </div>
         </div>
 
-        {/* Quote summary */}
+        {/* Quote overview (merged: totals + awaiting approval) */}
         <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Quote Overview</p>
           <div className="space-y-3">
-            <div>
-              <p className="text-xl font-bold text-green-600 dark:text-green-400">{formatCurrency(acceptedValue)}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Total Accepted Value</p>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xl font-bold text-green-600 dark:text-green-400">{formatCurrency(acceptedValue)}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Total Accepted Value</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xl font-bold text-yellow-600 dark:text-yellow-400">{formatCurrency(pendingValue)}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Awaiting Approval</p>
+              </div>
             </div>
             {acceptanceRate !== null && (
               <div>
@@ -249,22 +255,19 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
           </div>
         </div>
 
-        {/* Pending Quotes card */}
-        <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Quotes Awaiting Approval</p>
-          <div className="space-y-3">
-            <div>
-              <p className="text-xl font-bold text-yellow-600 dark:text-yellow-400 truncate">{formatCurrency(pendingValue)}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Total Pending Value</p>
-            </div>
-            <div className="flex gap-4">
-              <div>
-                <p className="text-lg font-bold text-yellow-600">{pendingQ}</p>
-                <p className="text-xs text-gray-400">Pending</p>
-              </div>
-            </div>
+        {/* Budget allowance (Capex) — clickable, opens edit page */}
+        <Link href={`/regional/stores/${params.id}/budget`} className="group block">
+          <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 h-full hover:border-brand-400 dark:hover:border-gray-400 transition-colors">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Budget Allowance (Capex)</p>
+            {store.capex_budget != null ? (
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(store.capex_budget)}</p>
+            ) : (
+              <p className="text-base font-medium text-gray-400">Not set</p>
+            )}
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Per month</p>
+            <p className="text-xs text-brand-600 dark:text-brand-400 mt-2 group-hover:underline">Tap to edit →</p>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* ── OPEN TICKETS ── */}

@@ -16,3 +16,8 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# Android release signing — NEVER commit these (back them up safely instead)
+android/keystore.properties
+*.keystore
+*.jks
