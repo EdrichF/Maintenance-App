@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -7,16 +7,16 @@ import {
   AlertTriangle, Store, ClipboardCheck, Truck,
 } from 'lucide-react'
 
-type NavRole = 'client' | 'contractor' | 'regional'
+type NavRole = 'client' | 'supplier' | 'regional'
 
 const NAV_LINKS: Record<NavRole, { href: string; label: string; icon: React.ElementType }[]> = {
-  contractor: [
-    { href: '/contractor',           label: 'Home',      icon: LayoutDashboard },
-    { href: '/contractor/tickets',   label: 'Tickets',   icon: Ticket          },
-    { href: '/contractor/regional',  label: 'Clients',   icon: Users           },
-    { href: '/contractor/suppliers', label: 'Suppliers', icon: Truck           },
-    { href: '/contractor/stats',     label: 'Stats',     icon: BarChart2       },
-    { href: '/contractor/snag',      label: 'Snag',      icon: AlertTriangle   },
+  supplier: [
+    { href: '/supplier',           label: 'Home',          icon: LayoutDashboard },
+    { href: '/supplier/tickets',   label: 'Tickets',       icon: Ticket          },
+    { href: '/supplier/regional',  label: 'Clients',       icon: Users           },
+    { href: '/supplier/suppliers', label: 'Sub Suppliers', icon: Truck           },
+    { href: '/supplier/stats',     label: 'Stats',         icon: BarChart2       },
+    { href: '/supplier/snag',      label: 'Snag',          icon: AlertTriangle   },
   ],
   regional: [
     { href: '/regional',         label: 'Dashboard', icon: LayoutDashboard },
@@ -32,9 +32,9 @@ const NAV_LINKS: Record<NavRole, { href: string; label: string; icon: React.Elem
 }
 
 const BASE: Record<NavRole, string> = {
-  contractor: '/contractor',
-  regional:   '/regional',
-  client:     '/client',
+  supplier: '/supplier',
+  regional: '/regional',
+  client:   '/client',
 }
 
 export function BottomNav({ role }: { role: NavRole }) {

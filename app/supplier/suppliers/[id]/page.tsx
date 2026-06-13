@@ -57,7 +57,7 @@ export default async function SupplierDetailPage({ params }: { params: { id: str
             </span>
           )}
         </div>
-        <Link href={`/contractor/suppliers/${supplier.id}/edit`}
+        <Link href={`/supplier/suppliers/${supplier.id}/edit`}
           className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-3 py-2 rounded-xl transition-colors">
           <Pencil size={13} /> Edit
         </Link>
@@ -68,7 +68,7 @@ export default async function SupplierDetailPage({ params }: { params: { id: str
         <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800/40 rounded-xl px-4 py-3">
           <CheckCircle2 size={16} className="text-green-500 shrink-0" />
           <div>
-            <p className="text-sm font-semibold text-green-700 dark:text-green-400">Qualified Supplier</p>
+            <p className="text-sm font-semibold text-green-700 dark:text-green-400">Qualified Sub Supplier</p>
             {supplier.qualification_number && (
               <p className="text-xs text-green-600 dark:text-green-500">Reg: {supplier.qualification_number}</p>
             )}

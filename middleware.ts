@@ -53,10 +53,10 @@ export async function middleware(request: NextRequest) {
   }
 
   // Admin routes
-  if (path.startsWith('/contractor')) {
+  if (path.startsWith('/supplier')) {
     if (!user) return NextResponse.redirect(new URL('/auth/login', request.url))
     const role = await getRole()
-    if (role !== 'contractor') {
+    if (role !== 'supplier') {
       return NextResponse.redirect(new URL('/auth/login', request.url))
     }
   }
@@ -70,7 +70,7 @@ export async function middleware(request: NextRequest) {
   if (user && (path === '/auth/login' || path === '/auth/signup')) {
     const role = await getRole()
     let dest = '/client'
-    if (role === 'contractor') dest = '/contractor'
+    if (role === 'supplier') dest = '/supplier'
     else if (role === 'regional_manager') dest = '/regional'
     return NextResponse.redirect(new URL(dest, request.url))
   }
@@ -81,7 +81,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     '/client/:path*',
-    '/contractor/:path*',
+    '/supplier/:path*',
     '/regional/:path*',
     '/settings',
     '/settings/:path*',

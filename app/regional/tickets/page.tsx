@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui/Badge'
 import { CollapsibleArchive } from '@/components/ui/CollapsibleArchive'
 import { SearchInput } from '@/components/ui/SearchInput'
+import { StatusTicketDecks } from '@/components/ui/StatusTicketDecks'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
@@ -206,31 +207,10 @@ export default async function RegionalTicketsPage({
           </Link>
         </div>
       ) : (
-        <div className="space-y-2">
-          {active.map((ticket: any) => (
-            <Link key={ticket.id} href={`/regional/tickets/${ticket.id}`}>
-              <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-400 dark:hover:border-gray-400 transition-colors">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
-                      {ticket.store?.company_name} — {ticket.store?.sub_store}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      <Badge className={`text-xs ${PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}`}>
-                        {PRIORITY_LABELS[ticket.priority as keyof typeof PRIORITY_LABELS]}
-                      </Badge>
-                      <Badge className={`text-xs ${STATUS_COLORS[ticket.status as keyof typeof STATUS_COLORS]}`}>
-                        {STATUS_LABELS[ticket.status as keyof typeof STATUS_LABELS]}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
-                      Created: {formatDateTime(ticket.created_at)}
-                      {(() => { const qs = (ticket as any).quotes ?? []; const latest = qs.filter((q:any)=>q.status!=='declined').sort((a:any,b:any)=>new Date(b.created_at).getTime()-new Date(a.created_at).getTime())[0]; return latest ? <span className="ml-2 text-purple-500 dark:text-purple-400">· Quoted: {formatDateTime(latest.created_at)}</span> : null })()}
-                    </p>
-                  </div>
-              </div>
-            </Link>
-          ))}
+        <div className="space-y-4">
+          {active.length > 0 && (
+            <StatusTicketDecks tickets={active as any} variant="regional" basePath="/regional/tickets" />
+          )}
 
           {archived.length > 0 && (
             <CollapsibleArchive count={archived.length}>

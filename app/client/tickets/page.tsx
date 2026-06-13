@@ -6,6 +6,7 @@ import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { CollapsibleArchive } from '@/components/ui/CollapsibleArchive'
+import { StatusTicketDecks } from '@/components/ui/StatusTicketDecks'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
@@ -148,11 +149,11 @@ export default async function ClientTicketsPage({
         </div>
       ) : (
         <>
-          <div className="space-y-2">
+          <div className="space-y-4">
             {active.length === 0 && !activeFilter ? (
               <p className="text-sm text-gray-400 text-center py-4">No active tickets.</p>
             ) : (
-              active.map(t => <TicketRow key={t.id} ticket={t as Ticket} />)
+              <StatusTicketDecks tickets={active as any} variant="client" basePath="/client/tickets" />
             )}
           </div>
 

@@ -17,7 +17,7 @@ export async function PATCH(
   const role = profile?.role ?? ''
   const isStoreManager = role === 'store_manager' || role === 'client'
   const isRM            = role === 'regional_manager'
-  const isAdmin         = role === 'contractor'
+  const isAdmin         = role === 'supplier'
 
   if (!isStoreManager && !isRM && !isAdmin) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -73,14 +73,14 @@ export async function PATCH(
     : 'open'
 
   const reasonNote = decline_reason ? ` Reason: "${decline_reason}".` : ''
-  const actorLabel = isRM ? 'Regional manager' : isStoreManager ? 'Store manager' : 'contractor'
+  const actorLabel = isRM ? 'Regional manager' : isStoreManager ? 'Store manager' : 'supplier'
   const noun       = isVariation ? 'variation order' : 'quote'
 
   // Update quote + ticket status + fetch admins in parallel
   const [, , { data: admins }] = await Promise.all([
     adminClient.from('quotes').update(quoteUpdate).eq('id', params.id),
     adminClient.from('tickets').update({ status: ticketStatus }).eq('id', quote.ticket_id),
-    adminClient.from('profiles').select('id').eq('role', 'contractor'),
+    adminClient.from('profiles').select('id').eq('role', 'supplier'),
   ])
 
   const titleNoun = isVariation ? 'Variation Order' : 'Quote'
@@ -108,7 +108,7 @@ export async function PATCH(
             message: status === 'accepted'
               ? `${actorLabel} accepted the ${noun} of R${quote.amount} for "${ticket?.title}".`
               : `${actorLabel} declined the ${noun} of R${quote.amount} for "${ticket?.title}".${reasonNote}`,
-            link: `/contractor/tickets/${quote.ticket_id}`,
+            link: `/supplier/tickets/${quote.ticket_id}`,
           }))
         )
       : Promise.resolve(),
@@ -128,12 +128,12 @@ export async function PATCH(
     void sendPushToMany(admins.map((a: any) => a.id), {
       title: status === 'accepted' ? `${titleNoun} Accepted` : `${titleNoun} Declined`,
       body: `${actorLabel} ${status === 'accepted' ? 'accepted' : 'declined'} the ${noun} for "${ticket?.title}".`,
-      url: `/contractor/tickets/${quote.ticket_id}`,
+      url: `/supplier/tickets/${quote.ticket_id}`,
     })
   }
 
-  revalidatePath('/contractor/tickets')
-  revalidatePath(`/contractor/tickets/${quote.ticket_id}`)
-  revalidatePath('/contractor')
+  revalidatePath('/supplier/tickets')
+  revalidatePath(`/supplier/tickets/${quote.ticket_id}`)
+  revalidatePath('/supplier')
   return NextResponse.json({ success: true })
 }

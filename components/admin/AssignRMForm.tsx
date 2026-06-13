@@ -35,7 +35,7 @@ export function AssignRMForm({ storeId, currentRmId, currentRmName, regionalMana
 
   async function assign(rmId: string | null) {
     rmId ? setLoading(true) : setRemoving(true)
-    await fetch('/api/contractor/assign-rm', {
+    await fetch('/api/supplier/assign-rm', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ storeId, regionalManagerId: rmId }),

@@ -1,4 +1,4 @@
-﻿export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic'
 
 import { createAdminClient } from '@/lib/supabase/server'
 import Link from 'next/link'
@@ -77,7 +77,7 @@ export default async function AdminSnagPage() {
                     .filter((c: any) => c.status === 'rejected')
                     .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
                   return (
-                    <Link key={ticket.id} href={`/contractor/tickets/${ticket.id}`}>
+                    <Link key={ticket.id} href={`/supplier/tickets/${ticket.id}`}>
                       <div className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1 min-w-0">

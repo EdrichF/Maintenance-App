@@ -47,7 +47,7 @@ export default function LoginPage() {
 
     const role = profile?.role
     let dest = '/client'
-    if (role === 'contractor') dest = '/contractor'
+    if (role === 'supplier') dest = '/supplier'
     else if (role === 'regional_manager') dest = '/regional'
     router.push(dest)
     router.refresh()

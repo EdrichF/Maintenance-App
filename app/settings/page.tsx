@@ -19,7 +19,7 @@ interface ProfileForm {
 }
 
 const ROLE_LABELS: Record<string, string> = {
-  contractor:       'Contractor',
+  supplier:         'Supplier',
   regional_manager: 'Regional Manager',
   store_manager:    'Store Manager',
   client:           'Store Manager',

@@ -42,7 +42,7 @@ export default async function ContractorReviewsPage({ params }: { params: { id: 
   ])
 
   if (rmProfile?.role !== 'regional_manager') redirect('/auth/login')
-  if (!contractor || contractor.role !== 'contractor') notFound()
+  if (!contractor || contractor.role !== 'supplier') notFound()
 
   const reviews = (ratings ?? []) as any[]
   const avgRating = reviews.length > 0
@@ -55,7 +55,7 @@ export default async function ContractorReviewsPage({ params }: { params: { id: 
         <BackButton />
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-            {contractor.full_name ?? 'Contractor'} — Reviews
+            {contractor.full_name ?? 'Supplier'} — Reviews
           </h1>
           {avgRating !== null && (
             <p className="text-sm text-amber-600 dark:text-amber-400 mt-0.5 flex items-center gap-1.5">

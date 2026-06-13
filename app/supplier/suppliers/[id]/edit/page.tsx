@@ -15,7 +15,7 @@ export default async function EditSupplierPage({ params }: { params: { id: strin
     <div className="space-y-5">
       <div className="flex items-center gap-3">
         <BackButton />
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Edit Supplier</h1>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Edit Sub Supplier</h1>
       </div>
       <SupplierEditForm supplier={data as Supplier} />
     </div>

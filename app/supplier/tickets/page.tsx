@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/Badge'
 import { CollapsibleArchive } from '@/components/ui/CollapsibleArchive'
+import { StatusTicketDecks } from '@/components/ui/StatusTicketDecks'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
@@ -56,14 +57,14 @@ export default async function AdminTicketsPage({
       <h1 className="text-xl font-bold text-gray-900 dark:text-white">All Tickets</h1>
 
       <div className="flex gap-2 flex-wrap">
-        <Link href="/contractor/tickets"
+        <Link href="/supplier/tickets"
           className={`px-3 py-1 rounded-full text-sm border transition-colors ${noFilter
             ? 'bg-brand-600 text-white border-brand-600'
             : 'bg-slate-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400'}`}>
           All
         </Link>
         {filterStatuses.map(s => (
-          <Link key={s} href={`/contractor/tickets?status=${s}`}
+          <Link key={s} href={`/supplier/tickets?status=${s}`}
             className={`px-3 py-1 rounded-full text-sm border transition-colors ${searchParams.status === s
               ? 'bg-brand-600 text-white border-brand-600'
               : 'bg-slate-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400'}`}>
@@ -113,31 +114,14 @@ export default async function AdminTicketsPage({
           <p className="text-sm text-gray-400">No tickets found.</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {(active as (Ticket & { profiles: any })[]).map(ticket => (
-            <Link key={ticket.id} href={`/contractor/tickets/${ticket.id}`}>
-              <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-400 dark:hover:border-gray-400 transition-colors">
-                <p className="font-bold text-base text-gray-900 dark:text-white truncate">{ticket.profiles?.company_name}</p>
-                <p className="text-xs text-gray-600 dark:text-gray-300 truncate mt-0.5">{ticket.title}</p>
-                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                  <Badge className={PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}>
-                    {PRIORITY_LABELS[ticket.priority as keyof typeof PRIORITY_LABELS]}
-                  </Badge>
-                  <Badge className={STATUS_COLORS[ticket.status as keyof typeof STATUS_COLORS]}>
-                    {STATUS_LABELS[ticket.status as keyof typeof STATUS_LABELS]}
-                  </Badge>
-                </div>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5 truncate">
-                  Created: {formatDateTimeShort(ticket.created_at)}
-                  {(() => { const qs = (ticket as any).quotes ?? []; const latest = qs.filter((q:any)=>q.status!=='declined').sort((a:any,b:any)=>new Date(b.created_at).getTime()-new Date(a.created_at).getTime())[0]; return latest ? <span className="text-purple-500 dark:text-purple-400"> · Quoted: {formatDateTimeShort(latest.created_at)}</span> : null })()}
-                </p>
-              </div>
-            </Link>
-          ))}
+        <div className="space-y-4">
+          {active.length > 0 && (
+            <StatusTicketDecks tickets={active as any} variant="supplier" basePath="/supplier/tickets" />
+          )}
 
           <CollapsibleArchive count={archived.length}>
             {(archived as (Ticket & { profiles: any })[]).map(ticket => (
-              <Link key={ticket.id} href={`/contractor/tickets/${ticket.id}`}>
+              <Link key={ticket.id} href={`/supplier/tickets/${ticket.id}`}>
                 <div className="px-4 py-3 opacity-75 hover:opacity-100 transition-opacity hover:bg-gray-50 dark:hover:bg-gray-700/30">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">

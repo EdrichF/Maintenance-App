@@ -1,4 +1,4 @@
-﻿import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { Navbar } from '@/components/ui/Navbar'
 import { redirect } from 'next/navigation'
 
@@ -14,7 +14,7 @@ export default async function SettingsLayout({ children }: { children: React.Rea
     .single()
 
   const role = profile?.role ?? 'client'
-  const navRole = role === 'contractor' ? 'contractor'
+  const navRole = role === 'supplier' ? 'supplier'
     : role === 'regional_manager' ? 'regional'
     : 'client'
 

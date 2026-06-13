@@ -1,8 +1,8 @@
-﻿export type Priority = 'low' | 'medium' | 'high' | 'urgent'
+export type Priority = 'low' | 'medium' | 'high' | 'urgent'
 export type TicketStatus = 'open' | 'quoted' | 'accepted' | 'in_progress' | 'completed' | 'cancelled' | 'declined' | 'pending_sign_off' | 'snag' | 'snag_in_progress' | 'variation_pending'
 export type QuoteStatus = 'pending' | 'accepted' | 'declined'
 export type QuoteType = 'quote' | 'variation'
-export type UserRole = 'client' | 'store_manager' | 'regional_manager' | 'contractor'
+export type UserRole = 'client' | 'store_manager' | 'regional_manager' | 'supplier'
 
 export interface Profile {
   id: string

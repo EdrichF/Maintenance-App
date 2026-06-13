@@ -95,7 +95,7 @@ export default function NewSupplierPage() {
     const json = await res.json()
     setSaving(false)
     if (!res.ok) { setManualError(json.error ?? 'Failed to save'); return }
-    router.push(`/contractor/suppliers/${json.supplier.id}`)
+    router.push(`/supplier/suppliers/${json.supplier.id}`)
   }
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -138,7 +138,7 @@ export default function NewSupplierPage() {
     <div className="space-y-5">
       <div className="flex items-center gap-3">
         <BackButton />
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Add Supplier</h1>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Add Sub Supplier</h1>
       </div>
 
       {/* Tab switcher */}
@@ -266,7 +266,7 @@ export default function NewSupplierPage() {
           )}
 
           <Button type="submit" loading={saving} className="w-full bg-brand-600 hover:bg-brand-700 text-white">
-            Save Supplier
+            Save Sub Supplier
           </Button>
         </form>
       )}
@@ -351,7 +351,7 @@ export default function NewSupplierPage() {
 
               <Button onClick={submitCSV} loading={uploading} className="w-full bg-brand-600 hover:bg-brand-700 text-white">
                 <FileText size={14} className="mr-1.5" />
-                Import {csvRows.length} Supplier{csvRows.length !== 1 ? 's' : ''}
+                Import {csvRows.length} Sub Supplier{csvRows.length !== 1 ? 's' : ''}
               </Button>
             </div>
           )}
@@ -364,7 +364,7 @@ export default function NewSupplierPage() {
                 {uploadResult.inserted} supplier{uploadResult.inserted !== 1 ? 's' : ''} imported successfully
               </p>
               <button
-                onClick={() => router.push('/contractor/suppliers')}
+                onClick={() => router.push('/supplier/suppliers')}
                 className="text-sm text-brand-600 dark:text-brand-400 hover:underline"
               >
                 View all suppliers →

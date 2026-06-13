@@ -24,15 +24,15 @@ Migrations live in `supabase/migrations/` but are **not** applied via Supabase C
 
 ### Roles & route protection
 
-Four roles drive everything: `client` / `store_manager` (treated identically — see `isStoreManager()` in `lib/types.ts`), `regional_manager`, and `contractor` (the contractor side; this role was formerly named `admin`). `middleware.ts` is the single gate for route access:
+Four roles drive everything: `client` / `store_manager` (treated identically — see `isStoreManager()` in `lib/types.ts`), `regional_manager`, and `supplier` (the contractor/maintenance-company side; this role was formerly named `admin`). `middleware.ts` is the single gate for route access:
 
 - `/client/*` → `client` or `store_manager`
 - `/regional/*` → `regional_manager`
-- `/contractor/*` → `contractor`
+- `/supplier/*` → `supplier`
 - `/settings*` → any authenticated user
-- Logged-in users hitting `/auth/login` or `/auth/signup` are redirected to their role's home (`/client`, `/contractor`, or `/regional`)
+- Logged-in users hitting `/auth/login` or `/auth/signup` are redirected to their role's home (`/client`, `/supplier`, or `/regional`)
 
-> Note: the service-role Supabase client is still `createAdminClient()`/`adminClient` — that's infrastructure (RLS bypass), unrelated to the `contractor` role. The DB FK columns `quotes.admin_id` / `completions.admin_id` keep their names too and reference the contractor.
+> Note: the service-role Supabase client is still `createAdminClient()`/`adminClient` — that's infrastructure (RLS bypass), unrelated to the `supplier` role. The DB FK columns `quotes.admin_id` / `completions.admin_id` keep their names too and reference the supplier. The `supplier` role manages a directory of trade companies shown in the UI as **"Sub Suppliers"** (the `suppliers` table) — distinct from the role itself.
 
 Each role has its own top-level `app/<role>/layout.tsx` defining nav links (`Navbar` + `BottomNav` + `SwipeNav`) and which Supabase tables `RealtimeRefresh` subscribes to for that section.
 
@@ -66,7 +66,7 @@ also: cancelled (any point)
 
 Flow across roles: client submits ticket → admins (and the store's `regional_manager`) get notifications → admin sends a `quote` → client accepts/declines → admin progresses status → admin submits a `completion` (COC + proof-of-completion photos) → regional manager reviews/approves (`pending_sign_off → completed`) or raises a `snag`.
 
-Other tables: `suppliers` (admin-managed contractor directory), `ratings` (clients rate contractors), `push_subscriptions` (web-push endpoints).
+Other tables: `suppliers` (the supplier-role-managed trade directory, shown in the UI as "Sub Suppliers"), `ratings` (clients rate suppliers), `push_subscriptions` (web-push endpoints).
 
 ### Shared formatting/labels
 
