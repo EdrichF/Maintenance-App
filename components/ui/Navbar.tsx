@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Bell, Settings, LogOut } from 'lucide-react'
+import { Bell, Settings, LogOut, FileBarChart } from 'lucide-react'
 import { MotivLogo } from '@/components/ui/MotivLogo'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -61,6 +61,11 @@ export function Navbar({ role }: { role: NavRole }) {
         </Link>
 
         <div className="flex items-center gap-0.5 shrink-0">
+          {role !== 'client' && (
+            <Link href={`${base}/reports`} className={iconBtn} title="Reports">
+              <FileBarChart size={19} />
+            </Link>
+          )}
           <Link href={`${base}/notifications`} className={`relative ${iconBtn}`}>
             <Bell size={20} />
             {unread > 0 && (

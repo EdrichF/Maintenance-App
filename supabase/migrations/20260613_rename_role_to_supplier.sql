@@ -1,5 +1,5 @@
 -- ============================================================
--- ConnexServ — Rename the contractor-side role to 'supplier'
+-- Motiv — Rename the contractor-side role to 'supplier'
 -- Run this in the Supabase SQL editor.
 --
 -- ⚠ DEPLOY IN LOCKSTEP with the code release that renames /contractor → /supplier

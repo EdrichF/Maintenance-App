@@ -21,7 +21,7 @@ export function ReportDocument({ model }: { model: ReportModel }) {
     <div className="report mx-auto bg-white text-gray-900" style={{ maxWidth: '800px' }}>
       {/* Cover */}
       <section className="report-cover">
-        <p className="text-3xl font-bold" style={{ color: '#9a7b34' }}>ConnexServ</p>
+        <p className="text-3xl font-bold" style={{ color: '#9a7b34' }}>Motiv</p>
         <p className="text-sm text-gray-500 mb-16">Maintenance Platform</p>
         <h1 className="text-4xl font-bold mt-24">{model.title}</h1>
         <p className="text-lg text-gray-500 mt-2 mb-12">{model.subtitle}</p>

@@ -61,7 +61,7 @@ export async function buildReportDocx(model: ReportModel): Promise<Buffer> {
   // ── Cover page ──
   children.push(
     new Paragraph({ spacing: { before: 2400 } }),
-    new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'ConnexServ', bold: true, size: 56, color: GOLD })] }),
+    new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Motiv', bold: true, size: 56, color: GOLD })] }),
     new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 800 }, children: [new TextRun({ text: 'Maintenance Platform', size: 22, color: GREY })] }),
     new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: model.title, bold: true, size: 40 })] }),
     new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 600 }, children: [new TextRun({ text: model.subtitle, size: 24, color: GREY })] }),
@@ -119,7 +119,7 @@ export async function buildReportDocx(model: ReportModel): Promise<Buffer> {
   }
 
   const doc = new Document({
-    creator: 'ConnexServ',
+    creator: 'Motiv',
     title: model.title,
     features: { updateFields: true }, // prompts Word to populate TOC / figures / tables on open
     styles: {

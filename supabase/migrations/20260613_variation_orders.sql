@@ -1,5 +1,5 @@
 -- ============================================================
--- ConnexServ — Variation Orders
+-- Motiv — Variation Orders
 -- Run this in the Supabase SQL editor (Database → SQL Editor)
 -- ============================================================
 -- A variation order is a quote-like document a contractor raises mid-job when

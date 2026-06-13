@@ -1,5 +1,5 @@
 -- ============================================================
--- ConnexServ Migration 003 — Add decline_reason to quotes
+-- Motiv Migration 003 — Add decline_reason to quotes
 -- Run this in Supabase SQL Editor (https://app.supabase.com)
 -- ============================================================
 

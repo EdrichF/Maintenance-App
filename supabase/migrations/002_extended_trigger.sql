@@ -1,5 +1,5 @@
 -- ============================================================
--- ConnexServ Migration 002 — Extended signup trigger
+-- Motiv Migration 002 — Extended signup trigger
 -- Run this in Supabase SQL Editor (https://app.supabase.com)
 -- ============================================================
 

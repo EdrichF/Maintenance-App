@@ -9,7 +9,7 @@
   </defs>
 
   <rect width="1240" height="1580" fill="#f8fafc"/>
-  <text x="40" y="46" font-size="26" font-weight="700" fill="#0f172a">ConnexServ / Motiv — App Flow &amp; Page Communication</text>
+  <text x="40" y="46" font-size="26" font-weight="700" fill="#0f172a">Motiv — App Flow &amp; Page Communication</text>
   <text x="40" y="72" font-size="14" fill="#64748b">Mobile-first maintenance ticketing. Three roles, one ticket lifecycle. Arrows = data + notifications between role pages (via API routes).</text>
 
   <!-- Swimlane bands -->

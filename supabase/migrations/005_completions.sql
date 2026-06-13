@@ -1,5 +1,5 @@
 -- ============================================================
--- ConnexServ Migration 005 — COC/POC Sign-off Workflow
+-- Motiv Migration 005 — COC/POC Sign-off Workflow
 -- Run this in the Supabase SQL editor (Database → SQL Editor)
 -- ============================================================
 

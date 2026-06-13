@@ -87,7 +87,7 @@ export function ReportBuilder({ role, stores }: { role: 'supplier' | 'regional';
           {PERIODS.map(p => (
             <button key={p.key} type="button" onClick={() => setPeriod(p.key)}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
-                period === p.key ? 'bg-brand-600 text-white border-brand-600'
+                period === p.key ? 'bg-[#C6A35D] text-white border-[#C6A35D]'
                 : 'bg-slate-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-brand-400'}`}>
               {p.label}
             </button>
@@ -120,7 +120,7 @@ export function ReportBuilder({ role, stores }: { role: 'supplier' | 'regional';
           <div className="max-h-56 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-100 dark:divide-gray-700">
             {stores.map(s => (
               <label key={s.id} className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/40">
-                <input type="checkbox" checked={selected.has(s.id)} onChange={() => toggle(s.id)} className="accent-brand-600" />
+                <input type="checkbox" checked={selected.has(s.id)} onChange={() => toggle(s.id)} className="accent-[#C6A35D]" />
                 <span className="text-gray-700 dark:text-gray-200">{s.label}</span>
               </label>
             ))}
@@ -135,13 +135,13 @@ export function ReportBuilder({ role, stores }: { role: 'supplier' | 'regional';
         <div className="flex gap-2">
           <button type="button" onClick={() => setFormat('docx')}
             className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
-              format === 'docx' ? 'bg-brand-600 text-white border-brand-600'
+              format === 'docx' ? 'bg-[#C6A35D] text-white border-[#C6A35D]'
               : 'bg-slate-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-brand-400'}`}>
             <FileText size={16} /> Word (.docx)
           </button>
           <button type="button" onClick={() => setFormat('pdf')}
             className={`flex-1 inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium border transition-colors ${
-              format === 'pdf' ? 'bg-brand-600 text-white border-brand-600'
+              format === 'pdf' ? 'bg-[#C6A35D] text-white border-[#C6A35D]'
               : 'bg-slate-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-brand-400'}`}>
             <FileType2 size={16} /> PDF
           </button>

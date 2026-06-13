@@ -1,5 +1,5 @@
 -- ============================================================
--- ConnexServ — Initial Schema
+-- Motiv — Initial Schema
 -- Run this in Supabase SQL Editor (https://app.supabase.com)
 -- ============================================================
 

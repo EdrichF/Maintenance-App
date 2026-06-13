@@ -10,7 +10,6 @@ const LINKS = [
   { href: '/supplier/suppliers', label: 'Sub Suppliers' },
   { href: '/supplier/stats',     label: 'Stats'     },
   { href: '/supplier/snag',      label: 'Snag'      },
-  { href: '/supplier/reports',   label: 'Reports'      },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

@@ -1,5 +1,5 @@
 -- ============================================================
--- ConnexServ Migration 002
+-- Motiv Migration 002
 -- Run this in the Supabase SQL editor (Database → SQL Editor)
 -- ============================================================
 

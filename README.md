@@ -1,4 +1,4 @@
-# ConnexServ — Maintenance App
+# Motiv — Maintenance App
 
 A mobile-first maintenance ticketing and quoting platform built with Next.js + Supabase.
 

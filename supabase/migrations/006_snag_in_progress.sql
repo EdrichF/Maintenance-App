@@ -1,5 +1,5 @@
 -- ============================================================
--- ConnexServ Migration 006 — Add snag_in_progress status
+-- Motiv Migration 006 — Add snag_in_progress status
 -- Run this in the Supabase SQL editor (Database → SQL Editor)
 -- ============================================================
 
