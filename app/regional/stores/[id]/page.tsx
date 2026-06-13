@@ -230,7 +230,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
                   {acceptedQ > 0 && <div className="h-full bg-green-500"  style={{ width: w(acceptedQ) }} />}
                   {pendingQ  > 0 && <div className="h-full bg-yellow-500" style={{ width: w(pendingQ)  }} />}
                   {declinedQ > 0 && <div className="h-full bg-red-500"    style={{ width: w(declinedQ) }} />}
-                  {snagQ     > 0 && <div className="h-full bg-rose-500"   style={{ width: w(snagQ)     }} />}
+                  {snagQ     > 0 && <div className="h-full bg-purple-500" style={{ width: w(snagQ)     }} />}
                 </div>
               )
             })()}
@@ -249,7 +249,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
               </div>
               {snagQ > 0 && (
                 <div>
-                  <p className="text-lg font-bold text-rose-500">{snagQ}</p>
+                  <p className="text-lg font-bold text-purple-500">{snagQ}</p>
                   <p className="text-xs text-gray-400">Snag</p>
                 </div>
               )}
@@ -267,7 +267,6 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
               <p className="text-base font-medium text-gray-400">Not set</p>
             )}
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Per month</p>
-            <p className="text-xs text-brand-600 dark:text-brand-400 mt-2 group-hover:underline">Tap to edit →</p>
           </div>
         </Link>
       </div>

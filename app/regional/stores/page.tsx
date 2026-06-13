@@ -48,7 +48,12 @@ export default async function RegionalStoresPage() {
 
     const pct = (n: number) => counts.total > 0 ? Math.round((n / counts.total) * 100) : 0
 
-    return { ...s, counts, acceptanceRate, acceptedValue, pendingValue, pendingQuotes, pct }
+    // Store health = problem-free rate: tickets not in snag or declined.
+    const health = counts.total > 0
+      ? Math.round(((counts.total - counts.snag - counts.declined) / counts.total) * 100)
+      : null
+
+    return { ...s, counts, acceptanceRate, health, acceptedValue, pendingValue, pendingQuotes, pct }
   })
 
   return (
@@ -82,15 +87,15 @@ export default async function RegionalStoresPage() {
                     <p className="text-sm text-brand-600 dark:text-brand-400 font-medium">{store.sub_store}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    {store.acceptanceRate !== null && (
+                    {store.health !== null && (
                       <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                        store.acceptanceRate >= 70
+                        store.health >= 70
                           ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                          : store.acceptanceRate >= 40
+                          : store.health >= 40
                           ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
                           : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                       }`}>
-                        {store.acceptanceRate}% accept
+                        {store.health}% health
                       </span>
                     )}
                     <ArrowRight size={16} className="text-gray-400" />
