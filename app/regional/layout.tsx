@@ -9,6 +9,7 @@ const LINKS = [
   { href: '/regional/stores',  label: 'Stores'    },
   { href: '/regional/signoff', label: 'Sign-off'  },
   { href: '/regional/snag',    label: 'Snag'      },
+  { href: '/regional/reports', label: 'Reports'   },
 ]
 
 export default function RegionalLayout({ children }: { children: React.ReactNode }) {

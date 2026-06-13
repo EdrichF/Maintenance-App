@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Ticket, Users, BarChart2,
-  AlertTriangle, Store, ClipboardCheck, Truck,
+  AlertTriangle, Store, ClipboardCheck, Truck, FileBarChart,
 } from 'lucide-react'
 
 type NavRole = 'client' | 'supplier' | 'regional'
@@ -17,6 +17,7 @@ const NAV_LINKS: Record<NavRole, { href: string; label: string; icon: React.Elem
     { href: '/supplier/suppliers', label: 'Sub Suppliers', icon: Truck           },
     { href: '/supplier/stats',     label: 'Stats',         icon: BarChart2       },
     { href: '/supplier/snag',      label: 'Snag',          icon: AlertTriangle   },
+    { href: '/supplier/reports',   label: 'Reports',       icon: FileBarChart    },
   ],
   regional: [
     { href: '/regional',         label: 'Dashboard', icon: LayoutDashboard },
@@ -24,6 +25,7 @@ const NAV_LINKS: Record<NavRole, { href: string; label: string; icon: React.Elem
     { href: '/regional/stores',  label: 'Stores',    icon: Store           },
     { href: '/regional/signoff', label: 'Sign-off',  icon: ClipboardCheck  },
     { href: '/regional/snag',    label: 'Snag',      icon: AlertTriangle   },
+    { href: '/regional/reports', label: 'Reports',   icon: FileBarChart    },
   ],
   client: [
     { href: '/client',         label: 'Dashboard', icon: LayoutDashboard },
