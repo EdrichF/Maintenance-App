@@ -211,27 +211,29 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
         <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Quote Overview</p>
           <div className="space-y-3">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xl font-bold text-green-600 dark:text-green-400">{formatCurrency(acceptedValue)}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Total Accepted Value</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xl font-bold text-yellow-600 dark:text-yellow-400">{formatCurrency(pendingValue)}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Awaiting Approval</p>
-              </div>
+            {/* Accepted value — own line */}
+            <div>
+              <p className="text-xl font-bold text-green-600 dark:text-green-400">{formatCurrency(acceptedValue)}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Total Accepted Value</p>
             </div>
-            {acceptanceRate !== null && (
-              <div>
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-gray-500 dark:text-gray-400">Acceptance rate</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">{acceptanceRate}%</span>
+            {/* Awaiting approval value — own line */}
+            <div>
+              <p className="text-xl font-bold text-yellow-600 dark:text-yellow-400">{formatCurrency(pendingValue)}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Awaiting Approval Value</p>
+            </div>
+            {/* Breakdown bar — accepted / awaiting / declined / snag */}
+            {(acceptedQ + pendingQ + declinedQ + snagQ) > 0 && (() => {
+              const totalQ = acceptedQ + pendingQ + declinedQ + snagQ
+              const w = (n: number) => `${(n / totalQ) * 100}%`
+              return (
+                <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden flex">
+                  {acceptedQ > 0 && <div className="h-full bg-green-500"  style={{ width: w(acceptedQ) }} />}
+                  {pendingQ  > 0 && <div className="h-full bg-yellow-500" style={{ width: w(pendingQ)  }} />}
+                  {declinedQ > 0 && <div className="h-full bg-red-500"    style={{ width: w(declinedQ) }} />}
+                  {snagQ     > 0 && <div className="h-full bg-rose-500"   style={{ width: w(snagQ)     }} />}
                 </div>
-                <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                  <div className="h-full bg-green-500 rounded-full" style={{ width: `${acceptanceRate}%` }} />
-                </div>
-              </div>
-            )}
+              )
+            })()}
             <div className="flex gap-3 flex-wrap">
               <div>
                 <p className="text-lg font-bold text-yellow-600">{pendingQ}</p>
