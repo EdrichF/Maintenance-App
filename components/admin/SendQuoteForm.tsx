@@ -425,7 +425,7 @@ export function SendQuoteForm({
             type="number"
             step="0.01"
             label="Amount Excl. VAT (R) *"
-            placeholder="45000.00"
+            placeholder="0.00"
             error={errors.amount?.message}
             {...register('amount', { required: 'Required', min: { value: 1, message: 'Must be > 0' } })}
           />
@@ -435,7 +435,7 @@ export function SendQuoteForm({
               type="number"
               step="0.01"
               label="Amount Incl. VAT (R)"
-              placeholder="51750.00"
+              placeholder="0.00"
               error={errors.amount_incl_vat?.message}
               {...register('amount_incl_vat', {
                 min: { value: 1, message: 'Must be > 0' },

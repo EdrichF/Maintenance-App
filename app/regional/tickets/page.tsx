@@ -59,7 +59,10 @@ export default async function RegionalTicketsPage({
     : ''
 
   const filtered = allTickets.filter((t: any) => {
-    const matchesStatus = !activeStatus || t.status === activeStatus
+    const matchesStatus =
+      !activeStatus ? true
+      : activeStatus === 'quote_approved' ? (t.quotes ?? []).some((q: any) => q.status === 'accepted')
+      : t.status === activeStatus
     const matchesStore  = !activeStore  || t.client_id === activeStore
     const matchesSearch = !searchQuery ||
       t.title.toLowerCase().includes(searchQuery) ||
@@ -75,6 +78,7 @@ export default async function RegionalTicketsPage({
     all:             allTickets.length,
     open:            allTickets.filter((t: any) => t.status === 'open').length,
     quoted:          allTickets.filter((t: any) => t.status === 'quoted').length,
+    quote_approved:  allTickets.filter((t: any) => (t.quotes ?? []).some((q: any) => q.status === 'accepted')).length,
     in_progress:     allTickets.filter((t: any) => t.status === 'in_progress').length,
     pending_sign_off:allTickets.filter((t: any) => t.status === 'pending_sign_off').length,
     snag:            allTickets.filter((t: any) => t.status === 'snag').length,
@@ -86,6 +90,7 @@ export default async function RegionalTicketsPage({
     { label: 'All',         status: '',            count: counts.all,         active: 'bg-brand-600 text-white border-brand-600',         inactive: 'bg-slate-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400' },
     { label: 'Open',           status: 'open',           count: counts.open,             active: 'bg-blue-600 text-white border-blue-600',    inactive: 'bg-slate-50 dark:bg-gray-800 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/40 hover:border-blue-400' },
     { label: 'Quoted',         status: 'quoted',         count: counts.quoted,           active: 'bg-purple-600 text-white border-purple-600',inactive: 'bg-slate-50 dark:bg-gray-800 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900/40 hover:border-purple-400' },
+    { label: 'Quote Approved', status: 'quote_approved', count: counts.quote_approved,   active: 'bg-teal-600 text-white border-teal-600',    inactive: 'bg-slate-50 dark:bg-gray-800 text-teal-600 dark:text-teal-400 border-teal-200 dark:border-teal-900/40 hover:border-teal-400' },
     { label: 'In Progress',    status: 'in_progress',    count: counts.in_progress,      active: 'bg-amber-500 text-white border-amber-500',  inactive: 'bg-slate-50 dark:bg-gray-800 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/40 hover:border-amber-400' },
     { label: 'Pending Sign-off',status:'pending_sign_off',count: counts.pending_sign_off,active:'bg-orange-500 text-white border-orange-500',inactive:'bg-slate-50 dark:bg-gray-800 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/40 hover:border-orange-400' },
     { label: 'Snag',           status: 'snag',           count: counts.snag,             active: 'bg-amber-500 text-white border-amber-500',  inactive: 'bg-slate-50 dark:bg-gray-800 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900/40 hover:border-amber-400' },
