@@ -27,26 +27,30 @@ function TicketRow({ ticket, storeName }: { ticket: Ticket; storeName?: string }
   return (
     <Link href={`/regional/tickets/${ticket.id}`}>
       <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-400 dark:hover:border-gray-400 transition-colors">
-        <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
-        {storeName && (
-          <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{storeName}</p>
-        )}
-        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-          <Badge className={PRIORITY_COLORS[ticket.priority]}>
-            {PRIORITY_LABELS[ticket.priority]}
-          </Badge>
-          <Badge className={STATUS_COLORS[ticket.status]}>
-            {STATUS_LABELS[ticket.status]}
-          </Badge>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
+            {storeName && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{storeName}</p>
+            )}
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5 truncate">
+              Created: {formatDateTime(ticket.created_at)}
+              {latestQuote && (
+                <span className="ml-2 text-purple-500 dark:text-purple-400">
+                  · Quoted: {formatDateTime(latestQuote.created_at)}
+                </span>
+              )}
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Badge className={PRIORITY_COLORS[ticket.priority]}>
+              {PRIORITY_LABELS[ticket.priority]}
+            </Badge>
+            <Badge className={STATUS_COLORS[ticket.status]}>
+              {STATUS_LABELS[ticket.status]}
+            </Badge>
+          </div>
         </div>
-        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5">
-          Created: {formatDateTime(ticket.created_at)}
-          {latestQuote && (
-            <span className="ml-2 text-purple-500 dark:text-purple-400">
-              · Quoted: {formatDateTime(latestQuote.created_at)}
-            </span>
-          )}
-        </p>
       </div>
     </Link>
   )

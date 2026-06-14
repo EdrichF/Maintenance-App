@@ -63,14 +63,16 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
       </div>
 
       {/* Status + Priority */}
-      <div className="flex gap-2 flex-wrap">
-        <Badge className={STATUS_COLORS[(ticket as Ticket).status]}>
-          {STATUS_LABELS[(ticket as Ticket).status]}
-        </Badge>
-        <Badge className={PRIORITY_COLORS[(ticket as Ticket).priority]}>
-          {PRIORITY_LABELS[(ticket as Ticket).priority]}
-        </Badge>
-        <span className="text-xs text-gray-400 ml-auto self-center">{formatDateTime(ticket.created_at)}</span>
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-xs text-gray-400 self-center">{formatDateTime(ticket.created_at)}</span>
+        <div className="flex items-center gap-2 ml-auto">
+          <Badge className={PRIORITY_COLORS[(ticket as Ticket).priority]}>
+            {PRIORITY_LABELS[(ticket as Ticket).priority]}
+          </Badge>
+          <Badge className={STATUS_COLORS[(ticket as Ticket).status]}>
+            {STATUS_LABELS[(ticket as Ticket).status]}
+          </Badge>
+        </div>
       </div>
 
       {/* Client info */}

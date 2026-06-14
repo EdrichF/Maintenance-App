@@ -93,16 +93,18 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
       </div>
 
       {/* Status + Priority */}
-      <div className="flex gap-2">
-        <Badge className={STATUS_COLORS[ticket.status as keyof typeof STATUS_COLORS]}>
-          {STATUS_LABELS[ticket.status as keyof typeof STATUS_LABELS]}
-        </Badge>
-        <Badge className={PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}>
-          {PRIORITY_LABELS[ticket.priority as keyof typeof PRIORITY_LABELS]}
-        </Badge>
-        <span className="text-xs text-gray-400 dark:text-gray-500 ml-1 self-center">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-xs text-gray-400 dark:text-gray-500 self-center">
           {formatDateTime(ticket.created_at)}
         </span>
+        <div className="flex items-center gap-2 ml-auto">
+          <Badge className={PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}>
+            {PRIORITY_LABELS[ticket.priority as keyof typeof PRIORITY_LABELS]}
+          </Badge>
+          <Badge className={STATUS_COLORS[ticket.status as keyof typeof STATUS_COLORS]}>
+            {STATUS_LABELS[ticket.status as keyof typeof STATUS_LABELS]}
+          </Badge>
+        </div>
       </div>
 
       {/* Description */}

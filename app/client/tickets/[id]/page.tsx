@@ -91,9 +91,11 @@ export default async function ClientTicketDetailPage({ params }: { params: { id:
       {/* Ticket details */}
       <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-5 space-y-4">
         <div className="flex items-center gap-2 flex-wrap">
-          <Badge className={STATUS_COLORS[badgeStatus]}>{STATUS_LABELS[badgeStatus]}</Badge>
-          <Badge className={PRIORITY_COLORS[t.priority]}>{PRIORITY_LABELS[t.priority]}</Badge>
-          <span className="text-xs text-gray-400 ml-auto">{formatDate(t.created_at)}</span>
+          <span className="text-xs text-gray-400">{formatDate(t.created_at)}</span>
+          <div className="flex items-center gap-2 ml-auto">
+            <Badge className={PRIORITY_COLORS[t.priority]}>{PRIORITY_LABELS[t.priority]}</Badge>
+            <Badge className={STATUS_COLORS[badgeStatus]}>{STATUS_LABELS[badgeStatus]}</Badge>
+          </div>
         </div>
         <div>
           <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">Description</p>

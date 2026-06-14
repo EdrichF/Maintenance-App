@@ -39,23 +39,33 @@ export function TicketContent({ ticket, variant }: { ticket: RecentTicket; varia
     : ticket.store?.sub_store
 
   return (
-    <>
-      {variant === 'supplier' ? (
-        <>
-          <p className="font-bold text-base text-gray-900 dark:text-white truncate">{companyName ?? '—'}</p>
-          <p className="text-xs text-gray-600 dark:text-gray-300 truncate mt-0.5">{ticket.title}</p>
-        </>
-      ) : variant === 'client' ? (
-        <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
-      ) : (
-        <>
+    <div className="flex items-start justify-between gap-3">
+      <div className="min-w-0 flex-1">
+        {variant === 'supplier' ? (
+          <>
+            <p className="font-bold text-base text-gray-900 dark:text-white truncate">{companyName ?? '—'}</p>
+            <p className="text-xs text-gray-600 dark:text-gray-300 truncate mt-0.5">{ticket.title}</p>
+          </>
+        ) : variant === 'client' ? (
           <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
-            {companyName} — {subStore}
-          </p>
-        </>
-      )}
-      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+        ) : (
+          <>
+            <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+              {companyName} — {subStore}
+            </p>
+          </>
+        )}
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5 truncate">
+          Created: {formatDateTimeShort(ticket.created_at)}
+          {latestQuote && (
+            <span className="text-purple-500 dark:text-purple-400"> · Quoted: {formatDateTimeShort(latestQuote.created_at)}</span>
+          )}
+        </p>
+      </div>
+
+      {/* Priority + Status — right side */}
+      <div className="flex items-center gap-1.5 shrink-0">
         <Badge className={`text-xs ${PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}`}>
           {PRIORITY_LABELS[ticket.priority as keyof typeof PRIORITY_LABELS]}
         </Badge>
@@ -63,13 +73,7 @@ export function TicketContent({ ticket, variant }: { ticket: RecentTicket; varia
           {STATUS_LABELS[ticket.status as keyof typeof STATUS_LABELS]}
         </Badge>
       </div>
-      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5 truncate">
-        Created: {formatDateTimeShort(ticket.created_at)}
-        {latestQuote && (
-          <span className="text-purple-500 dark:text-purple-400"> · Quoted: {formatDateTimeShort(latestQuote.created_at)}</span>
-        )}
-      </p>
-    </>
+    </div>
   )
 }
 
