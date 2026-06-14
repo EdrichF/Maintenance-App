@@ -3,15 +3,9 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Badge } from '@/components/ui/Badge'
 import { CollapsibleArchive } from '@/components/ui/CollapsibleArchive'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { StatusTicketDecks } from '@/components/ui/StatusTicketDecks'
-import {
-  STATUS_COLORS, STATUS_LABELS,
-  PRIORITY_COLORS, PRIORITY_LABELS,
-  formatDate, formatDateTime,
-} from '@/lib/utils'
 
 export default async function RegionalTicketsPage({
   searchParams,
@@ -150,7 +144,7 @@ export default async function RegionalTicketsPage({
             {statusCounts.declined > 0 && <div className="h-full bg-red-500 transition-all" style={{ width: `${Math.round((statusCounts.declined/totalCount)*100)}%` }} />}
             {statusCounts.cancelled > 0 && <div className="h-full bg-gray-400 transition-all" style={{ width: `${Math.round((statusCounts.cancelled/totalCount)*100)}%` }} />}
           </div>
-          <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-gray-500 dark:text-gray-400">
+          <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-x-4 gap-y-1.5 text-xs text-gray-500 dark:text-gray-400">
             {statusCounts.open > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />Open ({statusCounts.open})</span>}
             {statusCounts.quoted > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-purple-500 inline-block" />Quoted ({statusCounts.quoted})</span>}
             {statusCounts.accepted > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-teal-500 inline-block" />Accepted ({statusCounts.accepted})</span>}
@@ -221,23 +215,7 @@ export default async function RegionalTicketsPage({
 
           {archived.length > 0 && (
             <CollapsibleArchive count={archived.length}>
-              {archived.map((ticket: any) => (
-                <Link key={ticket.id} href={`/regional/tickets/${ticket.id}`}>
-                  <div className="px-4 py-3 opacity-75 hover:opacity-100 transition-opacity hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm text-gray-700 dark:text-gray-300 truncate">{ticket.title}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
-                          {ticket.store?.company_name} — {ticket.store?.sub_store} · {formatDateTime(ticket.updated_at)}
-                        </p>
-                      </div>
-                      <Badge className={STATUS_COLORS[ticket.status as keyof typeof STATUS_COLORS]}>
-                        {STATUS_LABELS[ticket.status as keyof typeof STATUS_LABELS]}
-                      </Badge>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+              <StatusTicketDecks tickets={archived as any} variant="regional" basePath="/regional/tickets" />
             </CollapsibleArchive>
           )}
         </div>

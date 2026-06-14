@@ -20,8 +20,8 @@ const NAV_LINKS: Record<NavRole, { href: string; label: string; icon: React.Elem
   ],
   regional: [
     { href: '/regional',         label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/regional/tickets', label: 'Tickets',   icon: Ticket          },
     { href: '/regional/stores',  label: 'Stores',    icon: Store           },
+    { href: '/regional/tickets', label: 'Tickets',   icon: Ticket          },
     { href: '/regional/signoff', label: 'Sign-off',  icon: ClipboardCheck  },
     { href: '/regional/snag',    label: 'Snag',      icon: AlertTriangle   },
   ],

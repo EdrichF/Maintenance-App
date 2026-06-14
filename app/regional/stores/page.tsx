@@ -4,7 +4,6 @@ import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowRight, Building2 } from 'lucide-react'
-import { formatCurrency } from '@/lib/utils'
 import { AddStoreForm } from '@/components/regional/AddStoreForm'
 
 export default async function RegionalStoresPage() {
@@ -17,7 +16,7 @@ export default async function RegionalStoresPage() {
     .from('profiles')
     .select(`
       id, full_name, company_name, sub_store,
-      tickets(id, status, priority, created_at, updated_at, quotes(id, amount, status))
+      tickets(id, status, priority, created_at, updated_at)
     `)
     .eq('regional_manager_id', user.id)
     .in('role', ['store_manager', 'client'])
@@ -25,7 +24,6 @@ export default async function RegionalStoresPage() {
 
   const storeList = (stores ?? []).map((s: any) => {
     const tickets = s.tickets ?? []
-    const quotes  = tickets.flatMap((t: any) => t.quotes ?? [])
 
     const counts = {
       open:             tickets.filter((t: any) => t.status === 'open').length,
@@ -42,13 +40,6 @@ export default async function RegionalStoresPage() {
       total:            tickets.length,
     }
 
-    const decidedQuotes  = quotes.filter((q: any) => q.status !== 'pending').length
-    const acceptedQuotes = quotes.filter((q: any) => q.status === 'accepted').length
-    const acceptanceRate = decidedQuotes > 0 ? Math.round((acceptedQuotes / decidedQuotes) * 100) : null
-    const acceptedValue  = quotes.filter((q: any) => q.status === 'accepted').reduce((s: number, q: any) => s + (q.amount ?? 0), 0)
-    const pendingValue   = quotes.filter((q: any) => q.status === 'pending').reduce((s: number, q: any) => s + (q.amount ?? 0), 0)
-    const pendingQuotes  = quotes.filter((q: any) => q.status === 'pending').length
-
     const pct = (n: number) => counts.total > 0 ? Math.round((n / counts.total) * 100) : 0
 
     // Store health = % of tickets that are settled (completed / declined /
@@ -57,7 +48,7 @@ export default async function RegionalStoresPage() {
     const settled = counts.completed + counts.declined + counts.cancelled
     const health  = counts.total > 0 ? Math.round((settled / counts.total) * 100) : null
 
-    return { ...s, counts, acceptanceRate, health, acceptedValue, pendingValue, pendingQuotes, pct }
+    return { ...s, counts, health, pct }
   })
 
   return (
@@ -124,7 +115,7 @@ export default async function RegionalStoresPage() {
                       {store.counts.snag_in_progress > 0 && <div className="bg-amber-400"  style={{ width: `${store.pct(store.counts.snag_in_progress)}%` }} />}
                       {store.counts.variation_pending> 0 && <div className="bg-indigo-500" style={{ width: `${store.pct(store.counts.variation_pending)}%` }} />}
                     </div>
-                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-x-3 gap-y-1 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    <div className="grid grid-cols-2 sm:grid-cols-6 gap-x-3 gap-y-1 mt-2 text-xs text-gray-500 dark:text-gray-400">
                       {store.counts.completed        > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500  inline-block" />{store.pct(store.counts.completed)}% done ({store.counts.completed})</span>}
                       {store.counts.in_progress      > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500  inline-block" />{store.pct(store.counts.in_progress)}% in progress ({store.counts.in_progress})</span>}
                       {store.counts.accepted         > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-teal-500   inline-block" />{store.pct(store.counts.accepted)}% accepted ({store.counts.accepted})</span>}
@@ -139,22 +130,6 @@ export default async function RegionalStoresPage() {
                 ) : (
                   <p className="text-xs text-gray-400 italic mb-4">No tickets yet</p>
                 )}
-
-                {/* Bottom stats row */}
-                <div className="grid grid-cols-3 gap-2 pt-3 border-t border-gray-100 dark:border-gray-700">
-                  <div>
-                    <p className="text-xs text-gray-400">Pending Quotes</p>
-                    <p className="text-sm font-bold text-yellow-600 dark:text-yellow-400 mt-0.5">{store.pendingQuotes}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400">Accepted Value</p>
-                    <p className="text-xs font-bold text-green-600 dark:text-green-400 mt-0.5 leading-snug">{formatCurrency(store.acceptedValue)}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400">Pending Value</p>
-                    <p className="text-xs font-bold text-purple-600 dark:text-purple-400 mt-0.5 leading-snug">{formatCurrency(store.pendingValue)}</p>
-                  </div>
-                </div>
 
               </div>
             </Link>

@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { QuoteApprovalCard } from '@/components/regional/QuoteApprovalCard'
+import { RecentTicketsStack } from '@/components/regional/RecentTicketsStack'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
@@ -105,6 +106,8 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
 
   // Ticket groups
   const openTickets       = ticketList.filter(t => t.status === 'open' || t.status === 'quoted')
+  const urgentOpenTickets = openTickets.filter(t => t.priority === 'urgent')
+  const normalOpenTickets = openTickets.filter(t => t.priority !== 'urgent')
   const declinedTickets   = ticketList.filter(t => t.status === 'declined')
   const inProgressTickets = ticketList.filter(t => t.status === 'in_progress' || t.status === 'accepted')
   const pendingSignOff    = ticketList.filter(t => t.status === 'pending_sign_off')
@@ -153,7 +156,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
         {/* Store contact */}
-        <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-2">
+        <div className="order-1 sm:order-none bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-2">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Store Contact</p>
           {store.full_name && (
             <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
@@ -188,7 +191,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
         </div>
 
         {/* Ticket summary */}
-        <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+        <div className="order-2 sm:order-none bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3 text-center">Ticket Summary</p>
           <div className="grid grid-cols-3 gap-3 text-center">
             {[
@@ -208,7 +211,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
         </div>
 
         {/* Quote overview (merged: totals + awaiting approval) */}
-        <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+        <div className="order-4 sm:order-none bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Quote Overview</p>
           <div className="space-y-3">
             {/* Accepted value — own line */}
@@ -258,7 +261,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
         </div>
 
         {/* Budget allowance (Capex) — clickable, opens edit page */}
-        <Link href={`/regional/stores/${params.id}/budget`} className="group block">
+        <Link href={`/regional/stores/${params.id}/budget`} className="order-3 sm:order-none group block">
           <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 h-full hover:border-brand-400 dark:hover:border-gray-400 transition-colors">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Budget Allowance (Capex)</p>
             {store.capex_budget != null ? (
@@ -271,16 +274,25 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
         </Link>
       </div>
 
+      {/* ── URGENT OPEN TICKETS ── */}
+      {urgentOpenTickets.length > 0 && (
+        <div>
+          <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <AlertTriangle size={16} className="text-red-500" />
+            Urgent ({urgentOpenTickets.length})
+          </h2>
+          <RecentTicketsStack tickets={urgentOpenTickets as any} variant="client" basePath="/regional/tickets" />
+        </div>
+      )}
+
       {/* ── OPEN TICKETS ── */}
-      {openTickets.length > 0 && (
+      {normalOpenTickets.length > 0 && (
         <div>
           <h2 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
             <AlertCircle size={16} className="text-blue-500" />
-            Open Tickets ({openTickets.length})
+            Open Tickets ({normalOpenTickets.length})
           </h2>
-          <div className="space-y-2">
-            {openTickets.map(t => <TicketRow key={t.id} ticket={t} />)}
-          </div>
+          <RecentTicketsStack tickets={normalOpenTickets as any} variant="client" basePath="/regional/tickets" />
         </div>
       )}
 

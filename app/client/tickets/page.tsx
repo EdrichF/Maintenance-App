@@ -4,44 +4,11 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
 import { CollapsibleArchive } from '@/components/ui/CollapsibleArchive'
 import { StatusTicketDecks } from '@/components/ui/StatusTicketDecks'
-import {
-  STATUS_COLORS, STATUS_LABELS,
-  PRIORITY_COLORS, PRIORITY_LABELS,
-  formatDateTime,
-} from '@/lib/utils'
-import type { Ticket } from '@/lib/types'
 
 // Only these statuses are visible to store managers
 const VISIBLE_STATUSES = ['open', 'in_progress', 'completed']
-
-function TicketRow({ ticket }: { ticket: Ticket }) {
-  return (
-    <Link href={`/client/tickets/${ticket.id}`}>
-      <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-4 hover:border-brand-400 dark:hover:border-gray-400 transition-colors">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-gray-900 dark:text-white truncate">{ticket.title}</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">{ticket.description}</p>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-              Created: {formatDateTime(ticket.created_at)}
-            </p>
-          </div>
-          <div className="flex flex-col gap-1 items-end shrink-0">
-            <Badge className={PRIORITY_COLORS[ticket.priority]}>
-              {PRIORITY_LABELS[ticket.priority]}
-            </Badge>
-            <Badge className={STATUS_COLORS[ticket.status]}>
-              {STATUS_LABELS[ticket.status]}
-            </Badge>
-          </div>
-        </div>
-      </div>
-    </Link>
-  )
-}
 
 export default async function ClientTicketsPage({
   searchParams,
@@ -128,7 +95,7 @@ export default async function ClientTicketsPage({
             {counts.in_progress > 0 && <div className="h-full bg-amber-500 transition-all" style={{ width: `${Math.round((counts.in_progress/total)*100)}%` }} />}
             {counts.open        > 0 && <div className="h-full bg-blue-500 transition-all"  style={{ width: `${Math.round((counts.open/total)*100)}%` }} />}
           </div>
-          <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-gray-500 dark:text-gray-400">
+          <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-x-4 gap-y-1.5 text-xs text-gray-500 dark:text-gray-400">
             {counts.open        > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500  inline-block" />Open ({counts.open})</span>}
             {counts.in_progress > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />In Progress ({counts.in_progress})</span>}
             {counts.completed   > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />Completed ({counts.completed})</span>}
@@ -159,11 +126,7 @@ export default async function ClientTicketsPage({
 
           {archived.length > 0 && (
             <CollapsibleArchive count={archived.length}>
-              {archived.map(t => (
-                <div key={t.id} className="px-4 py-3 opacity-75 hover:opacity-100 transition-opacity">
-                  <TicketRow ticket={t as Ticket} />
-                </div>
-              ))}
+              <StatusTicketDecks tickets={archived as any} variant="client" basePath="/client/tickets" />
             </CollapsibleArchive>
           )}
         </>
