@@ -97,7 +97,7 @@ export default async function ClientTicketsPage({
       </div>
 
       {/* Filter tabs */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
         {FILTER_TABS.map(tab => {
           const isActive = tab.key === null ? !searchParams.status : tab.key === searchParams.status
           return (

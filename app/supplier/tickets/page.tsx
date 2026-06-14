@@ -56,7 +56,7 @@ export default async function AdminTicketsPage({
     <div className="space-y-4">
       <h1 className="text-xl font-bold text-gray-900 dark:text-white">All Tickets</h1>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
         <Link href="/supplier/tickets"
           className={`block text-center px-3 py-1 rounded-full text-sm border transition-colors ${noFilter
             ? 'bg-brand-600 text-white border-brand-600'

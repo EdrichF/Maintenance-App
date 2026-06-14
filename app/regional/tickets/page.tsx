@@ -183,7 +183,7 @@ export default async function RegionalTicketsPage({
       <SearchInput placeholder="Search by ticket title or store name…" />
 
       {/* Filter pills */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
         {filterPills.map(p => {
           const isActive = activeStatus === p.status
           return (
