@@ -21,7 +21,13 @@ export function SubmitCompletionForm({ ticketId }: Props) {
 
   // COC file
   const [cocFile, setCocFile] = useState<File | null>(null)
-  const onDropCoc = useCallback((files: File[]) => { if (files[0]) setCocFile(files[0]) }, [])
+  const [cocPreview, setCocPreview] = useState<string | null>(null)
+  const onDropCoc = useCallback((files: File[]) => {
+    if (files[0]) {
+      setCocFile(files[0])
+      setCocPreview(prev => { if (prev) URL.revokeObjectURL(prev); return URL.createObjectURL(files[0]) })
+    }
+  }, [])
   const { getRootProps: getCocProps, getInputProps: getCocInput, isDragActive: cocDrag } = useDropzone({
     onDrop: onDropCoc, multiple: false, maxSize: 20 * 1024 * 1024,
     accept: { 'application/pdf': ['.pdf'], 'application/msword': ['.doc'],
@@ -105,8 +111,16 @@ export function SubmitCompletionForm({ ticketId }: Props) {
         {cocFile ? (
           <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
             <FileText size={16} className="text-green-600 shrink-0" />
-            <span className="text-sm text-gray-700 dark:text-gray-200 truncate flex-1">{cocFile.name}</span>
-            <button type="button" onClick={() => setCocFile(null)} className="text-gray-400 hover:text-red-500">
+            <a
+              href={cocPreview ?? '#'}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-brand-600 dark:text-brand-400 truncate flex-1 hover:underline"
+              title="View document"
+            >
+              {cocFile.name}
+            </a>
+            <button type="button" onClick={() => { if (cocPreview) URL.revokeObjectURL(cocPreview); setCocFile(null); setCocPreview(null) }} className="text-gray-400 hover:text-red-500">
               <X size={14} />
             </button>
           </div>

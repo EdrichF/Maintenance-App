@@ -56,6 +56,23 @@ export const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {
   declined: 'Declined',
 }
 
+// Filter-pill colours per status — active (filled) + inactive (tinted outline),
+// matching STATUS_COLORS hues so a filter reads like the status it selects.
+// Reused by the ticket filter bars across regional / supplier / client pages.
+export const STATUS_PILL: Record<TicketStatus, { active: string; inactive: string }> = {
+  open:        { active: 'bg-blue-500 text-white border-blue-500',       inactive: 'text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/40 hover:border-blue-400' },
+  quoted:      { active: 'bg-cyan-500 text-white border-cyan-500',       inactive: 'text-cyan-600 dark:text-cyan-400 border-cyan-200 dark:border-cyan-900/40 hover:border-cyan-400' },
+  accepted:    { active: 'bg-teal-500 text-white border-teal-500',       inactive: 'text-teal-600 dark:text-teal-400 border-teal-200 dark:border-teal-900/40 hover:border-teal-400' },
+  in_progress: { active: 'bg-amber-500 text-white border-amber-500',     inactive: 'text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/40 hover:border-amber-400' },
+  variation_pending: { active: 'bg-purple-500 text-white border-purple-500', inactive: 'text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900/40 hover:border-purple-400' },
+  pending_sign_off:  { active: 'bg-orange-500 text-white border-orange-500', inactive: 'text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/40 hover:border-orange-400' },
+  snag:        { active: 'bg-red-500 text-white border-red-500',         inactive: 'text-red-700 dark:text-red-400 border-red-200 dark:border-red-900/40 hover:border-red-400' },
+  snag_in_progress: { active: 'bg-pink-500 text-white border-pink-500',  inactive: 'text-pink-700 dark:text-pink-400 border-pink-200 dark:border-pink-900/40 hover:border-pink-400' },
+  completed:   { active: 'bg-green-600 text-white border-green-600',     inactive: 'text-green-600 dark:text-green-400 border-green-200 dark:border-green-900/40 hover:border-green-400' },
+  declined:    { active: 'bg-fuchsia-600 text-white border-fuchsia-600', inactive: 'text-fuchsia-600 dark:text-fuchsia-400 border-fuchsia-200 dark:border-fuchsia-900/40 hover:border-fuchsia-400' },
+  cancelled:   { active: 'bg-gray-500 text-white border-gray-500',       inactive: 'text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-gray-400' },
+}
+
 export type ClientVisibleStatus = 'open' | 'in_progress' | 'completed'
 
 /**

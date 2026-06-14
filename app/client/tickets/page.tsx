@@ -6,7 +6,8 @@ import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { CollapsibleArchive } from '@/components/ui/CollapsibleArchive'
 import { StatusTicketDecks } from '@/components/ui/StatusTicketDecks'
-import { clientVisibleStatus } from '@/lib/utils'
+import { TicketList } from '@/components/ui/TicketList'
+import { clientVisibleStatus, STATUS_PILL } from '@/lib/utils'
 
 // Store managers only ever see three states; everything in between collapses.
 const VISIBLE_STATUSES = ['open', 'in_progress', 'completed']
@@ -70,15 +71,14 @@ export default async function ClientTicketsPage({
       <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
         {FILTER_TABS.map(tab => {
           const isActive = tab.key === null ? !searchParams.status : tab.key === searchParams.status
+          const pill = tab.key ? STATUS_PILL[tab.key as 'open' | 'in_progress' | 'completed'] : null
+          const activeCls   = pill ? pill.active : 'bg-brand-600 text-white border-brand-600'
+          const inactiveCls = pill ? `bg-slate-50 dark:bg-gray-800 ${pill.inactive}` : 'bg-slate-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400'
           return (
             <Link
               key={tab.label}
               href={tab.key ? `/client/tickets?status=${tab.key}` : '/client/tickets'}
-              className={`block text-center px-3 py-1 rounded-full text-sm border transition-colors ${
-                isActive
-                  ? 'bg-brand-600 text-white border-brand-600'
-                  : 'bg-slate-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400'
-              }`}
+              className={`block text-center px-3 py-1 rounded-full text-sm border transition-colors ${isActive ? activeCls : inactiveCls}`}
             >
               {tab.label}
             </Link>
@@ -129,7 +129,7 @@ export default async function ClientTicketsPage({
 
           {archived.length > 0 && (
             <CollapsibleArchive count={archived.length}>
-              <StatusTicketDecks tickets={archived as any} variant="client" basePath="/client/tickets" />
+              <TicketList tickets={archived as any} variant="client" basePath="/client/tickets" />
             </CollapsibleArchive>
           )}
         </>

@@ -433,7 +433,7 @@ export default async function RegionalDashboard() {
         {/* RIGHT — Recent Tickets */}
         <div>
           <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-3">
-            <Clock4 size={16} className="text-brand-600" /> Recent Tickets
+            <Clock4 size={16} className="text-brand-600 dark:text-brand-300" /> Recent Tickets
           </h2>
           <RecentTicketsStack
             tickets={recentTickets}

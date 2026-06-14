@@ -9,7 +9,6 @@ import type { TicketStatus } from '@/lib/types'
 const STATUS_OPTIONS: Record<string, { value: TicketStatus; label: string; color: string }[]> = {
   accepted: [
     { value: 'in_progress', label: 'Mark In Progress', color: 'amber' },
-    { value: 'cancelled',   label: 'Cancel Ticket',    color: 'gray'  },
   ],
   in_progress: [
     { value: 'cancelled', label: 'Cancel Ticket', color: 'gray' },

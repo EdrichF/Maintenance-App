@@ -197,9 +197,9 @@ export default async function AdminDashboard() {
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-              <Clock4 size={16} className="text-brand-600" /> Recent Tickets
+              <Clock4 size={16} className="text-brand-600 dark:text-brand-300" /> Recent Tickets
             </h2>
-            <Link href="/supplier/tickets" className="text-sm text-brand-600 hover:underline">View all</Link>
+            <Link href="/supplier/tickets" className="text-sm text-brand-600 dark:text-brand-300 hover:underline">View all</Link>
           </div>
           <RecentTicketsStack
             tickets={recentTickets as any}

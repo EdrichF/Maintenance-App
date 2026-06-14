@@ -2,11 +2,10 @@ export const dynamic = 'force-dynamic'
 
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Plus, ClipboardList, Wrench, CheckCircle2 } from 'lucide-react'
+import { Plus, ClipboardList, Wrench, CheckCircle2, Clock4 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
-import { STATUS_COLORS, STATUS_LABELS, PRIORITY_COLORS, PRIORITY_LABELS, formatDateTime, clientVisibleStatus } from '@/lib/utils'
-import type { Ticket as TicketType } from '@/lib/types'
+import { RecentTicketsStack } from '@/components/regional/RecentTicketsStack'
+import { clientVisibleStatus } from '@/lib/utils'
 
 export default async function ClientDashboard() {
   const supabase = createClient()
@@ -81,11 +80,13 @@ export default async function ClientDashboard() {
       {/* Recent tickets */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-semibold text-gray-900 dark:text-white">Recent Tickets</h2>
-          <Link href="/client/tickets" className="text-sm text-brand-600 hover:underline">View all</Link>
+          <h2 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+            <Clock4 size={16} className="text-brand-600 dark:text-brand-300" /> Recent Tickets
+          </h2>
+          <Link href="/client/tickets" className="text-sm text-brand-600 dark:text-brand-300 hover:underline">View all</Link>
         </div>
 
-        {!tickets?.length ? (
+        {!tickets.length ? (
           <div className="bg-slate-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-10 text-center">
             <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">No tickets yet.</p>
             <Link href="/client/tickets/new">
@@ -93,28 +94,12 @@ export default async function ClientDashboard() {
             </Link>
           </div>
         ) : (
-          <div className="space-y-2">
-            {(tickets as TicketType[]).map(ticket => (
-              <Link key={ticket.id} href={`/client/tickets/${ticket.id}`}>
-                <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 hover:border-brand-400 dark:hover:border-gray-400 transition-colors flex items-center justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm text-gray-900 dark:text-white truncate">{ticket.title}</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                      Created: {formatDateTime(ticket.created_at)}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Badge className={PRIORITY_COLORS[ticket.priority]}>
-                      {PRIORITY_LABELS[ticket.priority]}
-                    </Badge>
-                    <Badge className={STATUS_COLORS[ticket.status]}>
-                      {STATUS_LABELS[ticket.status]}
-                    </Badge>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+          <RecentTicketsStack
+            tickets={tickets as any}
+            variant="client"
+            basePath="/client/tickets"
+            countLabel="recent"
+          />
         )}
       </div>
     </div>

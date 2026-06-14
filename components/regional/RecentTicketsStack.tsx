@@ -25,7 +25,7 @@ export interface RecentTicket {
 
 type Variant = 'regional' | 'supplier' | 'client'
 
-function TicketContent({ ticket, variant }: { ticket: RecentTicket; variant: Variant }) {
+export function TicketContent({ ticket, variant }: { ticket: RecentTicket; variant: Variant }) {
   const latestQuote = (ticket.quotes ?? [])
     .filter(q => q.status !== 'declined')
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]

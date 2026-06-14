@@ -4,12 +4,15 @@ import { createAdminClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { CollapsibleArchive } from '@/components/ui/CollapsibleArchive'
 import { StatusTicketDecks } from '@/components/ui/StatusTicketDecks'
-import { STATUS_LABELS } from '@/lib/utils'
+import { TicketList } from '@/components/ui/TicketList'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { STATUS_LABELS, STATUS_PILL } from '@/lib/utils'
+import type { TicketStatus } from '@/lib/types'
 
 export default async function AdminTicketsPage({
   searchParams,
 }: {
-  searchParams: { status?: string; priority?: string }
+  searchParams: { status?: string; priority?: string; q?: string }
 }) {
   const db = createAdminClient()
 
@@ -27,8 +30,15 @@ export default async function AdminTicketsPage({
   const filterStatuses = ['open', 'quoted', 'accepted', 'in_progress', 'variation_pending', 'pending_sign_off', 'snag', 'snag_in_progress', 'completed', 'declined']
 
   const noFilter = !searchParams.status && !searchParams.priority
-  const active   = noFilter ? (tickets ?? []).filter((t: any) => activeStatuses.includes(t.status))        : (tickets ?? [])
-  const archived = noFilter ? (tickets ?? []).filter((t: any) => ['completed','cancelled'].includes(t.status)) : []
+  const queryText = (searchParams.q ?? '').toLowerCase().trim()
+  const matches = (t: any) =>
+    !queryText ||
+    t.title?.toLowerCase().includes(queryText) ||
+    t.profiles?.company_name?.toLowerCase().includes(queryText) ||
+    t.profiles?.sub_store?.toLowerCase().includes(queryText)
+  const base     = (tickets ?? []).filter(matches)
+  const active   = noFilter ? base.filter((t: any) => activeStatuses.includes(t.status))        : base
+  const archived = noFilter ? base.filter((t: any) => ['completed','cancelled'].includes(t.status)) : []
 
 
   const statusCounts = {
@@ -50,6 +60,9 @@ export default async function AdminTicketsPage({
     <div className="space-y-4">
       <h1 className="text-xl font-bold text-gray-900 dark:text-white">All Tickets</h1>
 
+      {/* Search — top of page */}
+      <SearchInput placeholder="Search by ticket title or store name…" />
+
       <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
         <Link href="/supplier/tickets"
           className={`block text-center px-3 py-1 rounded-full text-sm border transition-colors ${noFilter
@@ -57,14 +70,17 @@ export default async function AdminTicketsPage({
             : 'bg-slate-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400'}`}>
           All
         </Link>
-        {filterStatuses.map(s => (
-          <Link key={s} href={`/supplier/tickets?status=${s}`}
-            className={`block text-center px-3 py-1 rounded-full text-sm border transition-colors ${searchParams.status === s
-              ? 'bg-brand-600 text-white border-brand-600'
-              : 'bg-slate-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400'}`}>
-            {STATUS_LABELS[s as keyof typeof STATUS_LABELS]}
-          </Link>
-        ))}
+        {filterStatuses.map(s => {
+          const pill = STATUS_PILL[s as TicketStatus]
+          return (
+            <Link key={s} href={`/supplier/tickets?status=${s}`}
+              className={`block text-center px-3 py-1 rounded-full text-sm border transition-colors ${searchParams.status === s
+                ? pill.active
+                : `bg-slate-50 dark:bg-gray-800 ${pill.inactive}`}`}>
+              {STATUS_LABELS[s as keyof typeof STATUS_LABELS]}
+            </Link>
+          )
+        })}
       </div>
 
       {/* Ticket status breakdown bar */}
@@ -87,19 +103,6 @@ export default async function AdminTicketsPage({
             {statusCounts.declined > 0 && <div className="h-full bg-fuchsia-500 transition-all" style={{ width: `${Math.round((statusCounts.declined/totalCount)*100)}%` }} />}
             {statusCounts.cancelled > 0 && <div className="h-full bg-gray-400 transition-all" style={{ width: `${Math.round((statusCounts.cancelled/totalCount)*100)}%` }} />}
           </div>
-          <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-x-4 gap-y-1.5 text-xs text-gray-500 dark:text-gray-400">
-            {statusCounts.open > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />Open ({statusCounts.open})</span>}
-            {statusCounts.quoted > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-cyan-500 inline-block" />Quoted ({statusCounts.quoted})</span>}
-            {statusCounts.accepted > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-teal-500 inline-block" />Accepted ({statusCounts.accepted})</span>}
-            {statusCounts.in_progress > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />In Progress ({statusCounts.in_progress})</span>}
-            {statusCounts.variation_pending > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-purple-500 inline-block" />Variation Pending ({statusCounts.variation_pending})</span>}
-            {statusCounts.pending_sign_off > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-500 inline-block" />Pending Sign-off ({statusCounts.pending_sign_off})</span>}
-            {statusCounts.snag > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500 inline-block" />Snag ({statusCounts.snag})</span>}
-            {statusCounts.snag_in_progress > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-pink-500 inline-block" />Snag Underway ({statusCounts.snag_in_progress})</span>}
-            {statusCounts.completed > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />Completed ({statusCounts.completed})</span>}
-            {statusCounts.declined > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-fuchsia-500 inline-block" />Declined ({statusCounts.declined})</span>}
-            {statusCounts.cancelled > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-gray-400 inline-block" />Cancelled ({statusCounts.cancelled})</span>}
-          </div>
         </div>
       )}
 
@@ -114,7 +117,7 @@ export default async function AdminTicketsPage({
           )}
 
           <CollapsibleArchive count={archived.length}>
-            <StatusTicketDecks tickets={archived as any} variant="supplier" basePath="/supplier/tickets" />
+            <TicketList tickets={archived as any} variant="supplier" basePath="/supplier/tickets" />
           </CollapsibleArchive>
         </div>
       )}

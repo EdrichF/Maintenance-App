@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { BackButton } from '@/components/ui/BackButton'
 import {
   Phone, Mail, MapPin, Building2,
-  FileText, CheckCircle, Clock, Archive, AlertCircle, AlertTriangle,
+  FileText, Clock, Archive, AlertCircle, AlertTriangle,
   ChevronDown, ChevronUp,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
@@ -15,7 +15,7 @@ import { RecentTicketsStack } from '@/components/regional/RecentTicketsStack'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
-  QUOTE_STATUS_LABELS, formatDate, formatDateTime, formatCurrency,
+  formatDate, formatDateTime, formatCurrency,
 } from '@/lib/utils'
 import type { Ticket, Quote } from '@/lib/types'
 
@@ -115,15 +115,14 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
   const completedTickets  = ticketList.filter(t => t.status === 'completed')
   const cancelledTickets  = ticketList.filter(t => t.status === 'cancelled')
 
+  // Archived tickets = completed + declined, newest first (by last update)
+  const archivedTickets = [...completedTickets, ...declinedTickets]
+    .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+
   // Quote groups
   const pendingQuotes = ticketList
     .flatMap(t => (t.quotes ?? []).map((q: any) => ({ ...q, ticketTitle: t.title, ticketId: t.id })))
     .filter((q: any) => q.status === 'pending')
-
-  const archivedQuotes = ticketList
-    .flatMap(t => (t.quotes ?? []).map((q: any) => ({ ...q, ticketTitle: t.title, ticketId: t.id })))
-    .filter((q: any) => q.status !== 'pending')
-    .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   // Stats
   const acceptedQ   = allQuotes.filter((q: any) => q.status === 'accepted').length
@@ -360,30 +359,6 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
         </div>
       )}
 
-      {/* ── COMPLETED (collapsible) ── */}
-      {completedTickets.length > 0 && (
-        <CollapsibleSection
-          title="Completed"
-          count={completedTickets.length}
-          icon={<CheckCircle size={16} className="text-green-500" />}
-          colorClass="text-green-700 dark:text-green-400"
-        >
-          {completedTickets.map(t => <TicketRow key={t.id} ticket={t} />)}
-        </CollapsibleSection>
-      )}
-
-      {/* ── DECLINED (collapsible) ── */}
-      {declinedTickets.length > 0 && (
-        <CollapsibleSection
-          title="Declined"
-          count={declinedTickets.length}
-          icon={<span className="w-4 h-4 rounded-full bg-red-500 inline-flex items-center justify-center shrink-0"><span className="text-white text-xs font-bold leading-none">!</span></span>}
-          colorClass="text-red-600 dark:text-red-400"
-        >
-          {declinedTickets.map(t => <TicketRow key={t.id} ticket={t} />)}
-        </CollapsibleSection>
-      )}
-
       {/* ── CANCELLED (collapsible) ── */}
       {cancelledTickets.length > 0 && (
         <CollapsibleSection
@@ -399,33 +374,35 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
         </CollapsibleSection>
       )}
 
-      {/* ── TICKETS ARCHIVED (quotes archive, collapsible) ── */}
-      {archivedQuotes.length > 0 && (
+      {/* ── TICKETS ARCHIVED (completed + declined tickets, collapsible) ── */}
+      {archivedTickets.length > 0 && (
         <CollapsibleSection
           title="Tickets Archived"
-          count={archivedQuotes.length}
+          count={archivedTickets.length}
           icon={<Archive size={16} className="text-gray-400" />}
         >
-          {(archivedQuotes as any[]).map((q: any) => (
-            <Link key={q.id} href={`/regional/tickets/${q.ticketId}`}>
-              <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 flex items-center justify-between gap-3 hover:border-brand-400 dark:hover:border-gray-400 transition-colors">
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{q.ticketTitle}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{formatCurrency(q.amount)} · {formatDateTime(q.created_at)}</p>
-                  {q.decline_reason && (
-                    <p className="text-xs text-red-500 mt-0.5">Reason: {q.decline_reason}</p>
-                  )}
+          {archivedTickets.map(t => {
+            const isCompleted = t.status === 'completed'
+            return (
+              <Link key={t.id} href={`/regional/tickets/${t.id}`}>
+                <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 flex items-center justify-between gap-3 hover:border-brand-400 dark:hover:border-gray-400 transition-colors">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{t.title}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {isCompleted ? 'Completed' : 'Declined'}: {formatDate(t.updated_at)}
+                    </p>
+                  </div>
+                  <span className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full ${
+                    isCompleted
+                      ? 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400'
+                      : 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400'
+                  }`}>
+                    {isCompleted ? 'Completed' : 'Declined'}
+                  </span>
                 </div>
-                <span className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full ${
-                  q.status === 'accepted'
-                    ? 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400'
-                    : 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400'
-                }`}>
-                  {q.status === 'accepted' ? 'Approved' : 'Declined'}
-                </span>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            )
+          })}
         </CollapsibleSection>
       )}
 

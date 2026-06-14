@@ -116,6 +116,7 @@ export function SendQuoteForm({
   const [loading,    setLoading]    = useState(false)
   const [error,      setError]      = useState('')
   const [file,       setFile]       = useState<File | null>(null)
+  const [filePreview, setFilePreview] = useState<string | null>(null)
   const [existingFileUrl, setExistingFileUrl] = useState<string | null>(existingQuote?.file_url ?? null)
   const [uploading,  setUploading]  = useState(false)
   const [parsing,     setParsing]     = useState(false)
@@ -156,6 +157,7 @@ export function SendQuoteForm({
     const f = accepted[0]
     if (!f) return
     setFile(f)
+    setFilePreview(prev => { if (prev) URL.revokeObjectURL(prev); return URL.createObjectURL(f) })
     // NOTE: we intentionally do NOT reset the form here — anything the supplier
     // already typed is preserved; parsing only fills still-empty fields.
     setAutofilled(false)
@@ -285,6 +287,8 @@ export function SendQuoteForm({
     }
 
     reset()
+    if (filePreview) URL.revokeObjectURL(filePreview)
+    setFilePreview(null)
     setFile(null)
     setOpen(false)
     setAutofilled(false)
@@ -296,6 +300,8 @@ export function SendQuoteForm({
 
   function handleClose() {
     setOpen(false)
+    if (filePreview) URL.revokeObjectURL(filePreview)
+    setFilePreview(null)
     setFile(null)
     setAutofilled(false)
     setNeedAmount(false)
@@ -340,7 +346,15 @@ export function SendQuoteForm({
           {file ? (
             <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
               <FileText size={18} className="text-brand-600 shrink-0" />
-              <span className="text-sm text-gray-700 dark:text-gray-200 truncate flex-1">{file.name}</span>
+              <a
+                href={filePreview ?? '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-brand-600 dark:text-brand-400 truncate flex-1 hover:underline"
+                title="View attachment"
+              >
+                {file.name}
+              </a>
               {parsing ? (
                 <span className="flex items-center gap-1 text-xs text-brand-600 shrink-0">
                   <Loader2 size={12} className="animate-spin" /> Reading…
@@ -350,7 +364,7 @@ export function SendQuoteForm({
               )}
               <button
                 type="button"
-                onClick={() => { setFile(null); setAutofilled(false); setNeedAmount(false); setValidNA(false); setParseError(false) }}
+                onClick={() => { if (filePreview) URL.revokeObjectURL(filePreview); setFilePreview(null); setFile(null); setAutofilled(false); setNeedAmount(false); setValidNA(false); setParseError(false) }}
                 className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors"
               >
                 <X size={16} />
@@ -419,22 +433,22 @@ export function SendQuoteForm({
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-3">
-          <Input
-            id="amount"
-            type="number"
-            step="0.01"
-            label="Amount Excl. VAT (R) *"
-            placeholder="0.00"
-            error={errors.amount?.message}
-            {...register('amount', { required: 'Required', min: { value: 1, message: 'Must be > 0' } })}
-          />
-          <div>
+        <div>
+          <div className="grid grid-cols-2 gap-3 items-start">
+            <Input
+              id="amount"
+              type="number"
+              step="0.01"
+              label="Excl. VAT (R) *"
+              placeholder="0.00"
+              error={errors.amount?.message}
+              {...register('amount', { required: 'Required', min: { value: 1, message: 'Must be > 0' } })}
+            />
             <Input
               id="amount_incl_vat"
               type="number"
               step="0.01"
-              label="Amount Incl. VAT (R)"
+              label="Incl. VAT (R)"
               placeholder="0.00"
               error={errors.amount_incl_vat?.message}
               {...register('amount_incl_vat', {
@@ -442,8 +456,8 @@ export function SendQuoteForm({
                 setValueAs: v => v === '' ? '' : Number(v),
               })}
             />
-            <p className="mt-0.5 text-xs text-gray-400">Leave blank if supplier not VAT-registered</p>
           </div>
+          <p className="mt-1 text-xs text-gray-400">Incl. VAT — leave blank if supplier not VAT-registered</p>
         </div>
 
         <div>
