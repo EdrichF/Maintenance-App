@@ -6,8 +6,9 @@ import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { CollapsibleArchive } from '@/components/ui/CollapsibleArchive'
 import { StatusTicketDecks } from '@/components/ui/StatusTicketDecks'
+import { clientVisibleStatus } from '@/lib/utils'
 
-// Only these statuses are visible to store managers
+// Store managers only ever see three states; everything in between collapses.
 const VISIBLE_STATUSES = ['open', 'in_progress', 'completed']
 
 export default async function ClientTicketsPage({
@@ -18,15 +19,17 @@ export default async function ClientTicketsPage({
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Only fetch the 3 visible statuses
+  // Fetch every ticket so a quoted / in-flight ticket never disappears, then
+  // collapse its status to what the store manager is allowed to see.
   const { data: tickets } = await supabase
     .from('tickets')
     .select('*')
     .eq('client_id', user!.id)
-    .in('status', VISIBLE_STATUSES)
     .order('created_at', { ascending: false })
 
-  const allTickets = tickets ?? []
+  const allTickets = (tickets ?? [])
+    .map(t => ({ ...t, status: clientVisibleStatus(t.status) }))
+    .filter((t): t is typeof t & { status: 'open' | 'in_progress' | 'completed' } => t.status !== null)
 
   // Apply filter from URL param (must be one of the visible statuses)
   const activeFilter = searchParams.status && VISIBLE_STATUSES.includes(searchParams.status)

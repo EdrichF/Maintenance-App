@@ -56,6 +56,22 @@ export const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {
   declined: 'Declined',
 }
 
+export type ClientVisibleStatus = 'open' | 'in_progress' | 'completed'
+
+/**
+ * Collapse the full ticket lifecycle into what a store manager / client is
+ * allowed to see: Open → In Progress → Completed. Every supplier/RM-side
+ * intermediate state (quoted, accepted, variation_pending, pending_sign_off,
+ * snag, snag_in_progress, declined) reads as 'open' so the ticket never
+ * disappears from their view. Cancelled tickets return null (hidden).
+ */
+export function clientVisibleStatus(status: TicketStatus): ClientVisibleStatus | null {
+  if (status === 'cancelled')   return null
+  if (status === 'completed')   return 'completed'
+  if (status === 'in_progress') return 'in_progress'
+  return 'open'
+}
+
 export function formatCurrency(amount: number) {
   return new Intl.NumberFormat('en-ZA', {
     style: 'currency',

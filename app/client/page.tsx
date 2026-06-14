@@ -5,14 +5,14 @@ import Link from 'next/link'
 import { Plus, ClipboardList, Wrench, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { STATUS_COLORS, STATUS_LABELS, PRIORITY_COLORS, PRIORITY_LABELS, formatDateTime } from '@/lib/utils'
+import { STATUS_COLORS, STATUS_LABELS, PRIORITY_COLORS, PRIORITY_LABELS, formatDateTime, clientVisibleStatus } from '@/lib/utils'
 import type { Ticket as TicketType } from '@/lib/types'
 
 export default async function ClientDashboard() {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [{ data: profile }, { data: tickets }] = await Promise.all([
+  const [{ data: profile }, { data: rawTickets }] = await Promise.all([
     supabase
       .from('profiles')
       .select('full_name, company_name, sub_store, branch_code')
@@ -22,14 +22,20 @@ export default async function ClientDashboard() {
       .from('tickets')
       .select('id, title, status, priority, created_at')
       .eq('client_id', user!.id)
-      .in('status', ['open', 'in_progress', 'completed'])
-      .order('created_at', { ascending: false })
-      .limit(5),
+      .order('created_at', { ascending: false }),
   ])
 
-  const open   = tickets?.filter(t => t.status === 'open').length ?? 0
-  const active = tickets?.filter(t => t.status === 'in_progress').length ?? 0
-  const done   = tickets?.filter(t => t.status === 'completed').length ?? 0
+  // Collapse every in-flight status to Open → In Progress → Completed so a
+  // quoted ticket never vanishes from the store manager's view.
+  const visible = (rawTickets ?? [])
+    .map(t => ({ ...t, status: clientVisibleStatus(t.status) }))
+    .filter((t): t is typeof t & { status: 'open' | 'in_progress' | 'completed' } => t.status !== null)
+
+  const tickets = visible.slice(0, 5)
+
+  const open   = visible.filter(t => t.status === 'open').length
+  const active = visible.filter(t => t.status === 'in_progress').length
+  const done   = visible.filter(t => t.status === 'completed').length
 
   return (
     <div className="space-y-6">
