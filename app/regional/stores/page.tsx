@@ -119,7 +119,7 @@ export default async function RegionalStoresPage() {
                       {store.counts.variation_pending> 0 && <div className="bg-purple-500" style={{ width: `${store.pct(store.counts.variation_pending)}%` }} />}
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-6 gap-x-3 gap-y-1 mt-2 text-xs text-gray-500 dark:text-gray-400">
-                      {store.counts.completed        > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500  inline-block" />{store.pct(store.counts.completed)}% done ({store.counts.completed})</span>}
+                      {store.counts.completed        > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500  inline-block" />{store.pct(store.counts.completed)}% completed ({store.counts.completed})</span>}
                       {store.counts.in_progress      > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500  inline-block" />{store.pct(store.counts.in_progress)}% in progress ({store.counts.in_progress})</span>}
                       {store.counts.accepted         > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-teal-500   inline-block" />{store.pct(store.counts.accepted)}% accepted ({store.counts.accepted})</span>}
                       {store.counts.open             > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500   inline-block" />{store.pct(store.counts.open)}% open ({store.counts.open})</span>}

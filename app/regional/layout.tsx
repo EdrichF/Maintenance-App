@@ -5,8 +5,8 @@ import { SwipeNav } from '@/components/ui/SwipeNav'
 
 const LINKS = [
   { href: '/regional',         label: 'Dashboard' },
-  { href: '/regional/tickets', label: 'Tickets'   },
   { href: '/regional/stores',  label: 'Stores'    },
+  { href: '/regional/tickets', label: 'Tickets'   },
   { href: '/regional/signoff', label: 'Sign-off'  },
   { href: '/regional/snag',    label: 'Snag'      },
 ]
