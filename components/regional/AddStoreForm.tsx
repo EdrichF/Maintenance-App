@@ -43,8 +43,8 @@ export function AddStoreForm() {
 
   if (!open) {
     return (
-      <Button onClick={() => setOpen(true)} size="sm" variant="secondary">
-        <Plus size={15} className="mr-1.5" /> Add Store by Branch Code
+      <Button onClick={() => setOpen(true)} size="sm" variant="secondary" className="text-xs px-2.5 py-1 whitespace-nowrap">
+        <Plus size={13} className="mr-1" /> Add Store by Branch Code
       </Button>
     )
   }

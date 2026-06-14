@@ -183,14 +183,14 @@ export default async function RegionalTicketsPage({
       <SearchInput placeholder="Search by ticket title or store name…" />
 
       {/* Filter pills */}
-      <div className="flex flex-wrap gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {filterPills.map(p => {
           const isActive = activeStatus === p.status
           return (
             <Link
               key={p.label}
               href={filterHref(p.status)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-all ${isActive ? p.active : p.inactive}`}
+              className={`flex items-center justify-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-all text-center ${isActive ? p.active : p.inactive}`}
             >
               {p.label}
               <span className={`font-bold ${isActive ? 'opacity-90' : ''}`}>{p.count}</span>

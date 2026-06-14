@@ -56,16 +56,16 @@ export default async function AdminTicketsPage({
     <div className="space-y-4">
       <h1 className="text-xl font-bold text-gray-900 dark:text-white">All Tickets</h1>
 
-      <div className="flex gap-2 flex-wrap">
+      <div className="grid grid-cols-2 gap-2">
         <Link href="/supplier/tickets"
-          className={`px-3 py-1 rounded-full text-sm border transition-colors ${noFilter
+          className={`block text-center px-3 py-1 rounded-full text-sm border transition-colors ${noFilter
             ? 'bg-brand-600 text-white border-brand-600'
             : 'bg-slate-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400'}`}>
           All
         </Link>
         {filterStatuses.map(s => (
           <Link key={s} href={`/supplier/tickets?status=${s}`}
-            className={`px-3 py-1 rounded-full text-sm border transition-colors ${searchParams.status === s
+            className={`block text-center px-3 py-1 rounded-full text-sm border transition-colors ${searchParams.status === s
               ? 'bg-brand-600 text-white border-brand-600'
               : 'bg-slate-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400'}`}>
             {STATUS_LABELS[s as keyof typeof STATUS_LABELS]}

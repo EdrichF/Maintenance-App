@@ -97,14 +97,14 @@ export default async function ClientTicketsPage({
       </div>
 
       {/* Filter tabs */}
-      <div className="flex gap-2 flex-wrap">
+      <div className="grid grid-cols-2 gap-2">
         {FILTER_TABS.map(tab => {
           const isActive = tab.key === null ? !searchParams.status : tab.key === searchParams.status
           return (
             <Link
               key={tab.label}
               href={tab.key ? `/client/tickets?status=${tab.key}` : '/client/tickets'}
-              className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+              className={`block text-center px-3 py-1 rounded-full text-sm border transition-colors ${
                 isActive
                   ? 'bg-brand-600 text-white border-brand-600'
                   : 'bg-slate-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400'

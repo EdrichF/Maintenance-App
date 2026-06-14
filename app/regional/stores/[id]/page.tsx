@@ -189,8 +189,8 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
 
         {/* Ticket summary */}
         <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Ticket Summary</p>
-          <div className="grid grid-cols-3 gap-3">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3 text-center">Ticket Summary</p>
+          <div className="grid grid-cols-3 gap-3 text-center">
             {[
               { label: 'Total',       value: ticketList.length,        color: 'text-gray-900 dark:text-white', href: `/regional/tickets?store=${params.id}` },
               { label: 'Open',        value: openTickets.length,       color: 'text-blue-600',  href: `/regional/tickets?status=open&store=${params.id}` },
