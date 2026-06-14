@@ -149,22 +149,22 @@ export default async function AdminDashboard() {
             {completedCount  > 0 && <div className="h-full bg-green-500"  style={{ width: `${pct(completedCount)}%` }} />}
             {progressCount   > 0 && <div className="h-full bg-amber-500"  style={{ width: `${pct(progressCount)}%` }} />}
             {acceptedCount   > 0 && <div className="h-full bg-teal-500"   style={{ width: `${pct(acceptedCount)}%` }} />}
-            {quotedCount     > 0 && <div className="h-full bg-purple-500" style={{ width: `${pct(quotedCount)}%` }} />}
+            {quotedCount     > 0 && <div className="h-full bg-cyan-500"   style={{ width: `${pct(quotedCount)}%` }} />}
             {openCount       > 0 && <div className="h-full bg-blue-500"   style={{ width: `${pct(openCount)}%` }} />}
-            {signOffCount    > 0 && <div className="h-full bg-orange-400" style={{ width: `${pct(signOffCount)}%` }} />}
-            {snagCount       > 0 && <div className="h-full bg-rose-500"   style={{ width: `${pct(snagCount)}%` }} />}
-            {declinedCount   > 0 && <div className="h-full bg-red-400"    style={{ width: `${pct(declinedCount)}%` }} />}
+            {signOffCount    > 0 && <div className="h-full bg-orange-500" style={{ width: `${pct(signOffCount)}%` }} />}
+            {snagCount       > 0 && <div className="h-full bg-red-500"    style={{ width: `${pct(snagCount)}%` }} />}
+            {declinedCount   > 0 && <div className="h-full bg-fuchsia-500" style={{ width: `${pct(declinedCount)}%` }} />}
             {cancelledCount  > 0 && <div className="h-full bg-gray-400"   style={{ width: `${pct(cancelledCount)}%` }} />}
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs">
             {completedCount > 0 && <span className="flex items-center gap-1.5 text-green-700 dark:text-green-400"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />{pct(completedCount)}% Completed ({completedCount})</span>}
             {progressCount  > 0 && <span className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />{pct(progressCount)}% In Progress ({progressCount})</span>}
             {acceptedCount  > 0 && <span className="flex items-center gap-1.5 text-teal-700 dark:text-teal-400"><span className="w-2 h-2 rounded-full bg-teal-500 inline-block" />{pct(acceptedCount)}% Accepted ({acceptedCount})</span>}
-            {quotedCount    > 0 && <span className="flex items-center gap-1.5 text-purple-700 dark:text-purple-400"><span className="w-2 h-2 rounded-full bg-purple-500 inline-block" />{pct(quotedCount)}% Quoted ({quotedCount})</span>}
+            {quotedCount    > 0 && <span className="flex items-center gap-1.5 text-cyan-700 dark:text-cyan-400"><span className="w-2 h-2 rounded-full bg-cyan-500 inline-block" />{pct(quotedCount)}% Quoted ({quotedCount})</span>}
             {openCount      > 0 && <span className="flex items-center gap-1.5 text-blue-700 dark:text-blue-400"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />{pct(openCount)}% Open ({openCount})</span>}
-            {signOffCount   > 0 && <span className="flex items-center gap-1.5 text-orange-700 dark:text-orange-400"><span className="w-2 h-2 rounded-full bg-orange-400 inline-block" />{pct(signOffCount)}% Sign-off ({signOffCount})</span>}
-            {snagCount      > 0 && <span className="flex items-center gap-1.5 text-rose-700 dark:text-rose-400"><span className="w-2 h-2 rounded-full bg-rose-500 inline-block" />{pct(snagCount)}% Snag ({snagCount})</span>}
-            {declinedCount  > 0 && <span className="flex items-center gap-1.5 text-red-600 dark:text-red-400"><span className="w-2 h-2 rounded-full bg-red-400 inline-block" />{pct(declinedCount)}% Declined ({declinedCount})</span>}
+            {signOffCount   > 0 && <span className="flex items-center gap-1.5 text-orange-700 dark:text-orange-400"><span className="w-2 h-2 rounded-full bg-orange-500 inline-block" />{pct(signOffCount)}% Sign-off ({signOffCount})</span>}
+            {snagCount      > 0 && <span className="flex items-center gap-1.5 text-red-700 dark:text-red-400"><span className="w-2 h-2 rounded-full bg-red-500 inline-block" />{pct(snagCount)}% Snag ({snagCount})</span>}
+            {declinedCount  > 0 && <span className="flex items-center gap-1.5 text-fuchsia-600 dark:text-fuchsia-400"><span className="w-2 h-2 rounded-full bg-fuchsia-500 inline-block" />{pct(declinedCount)}% Declined ({declinedCount})</span>}
             {cancelledCount > 0 && <span className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400"><span className="w-2 h-2 rounded-full bg-gray-400 inline-block" />{pct(cancelledCount)}% Cancelled ({cancelledCount})</span>}
           </div>
         </div>

@@ -84,14 +84,14 @@ export default async function RegionalTicketsPage({
   const filterPills = [
     { label: 'All',         status: '',            count: counts.all,         active: 'bg-brand-600 text-white border-brand-600',         inactive: 'bg-slate-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-gray-400' },
     { label: 'Open',           status: 'open',           count: counts.open,             active: 'bg-blue-600 text-white border-blue-600',    inactive: 'bg-slate-50 dark:bg-gray-800 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/40 hover:border-blue-400' },
-    { label: 'Quoted',         status: 'quoted',         count: counts.quoted,           active: 'bg-purple-600 text-white border-purple-600',inactive: 'bg-slate-50 dark:bg-gray-800 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900/40 hover:border-purple-400' },
+    { label: 'Quoted',         status: 'quoted',         count: counts.quoted,           active: 'bg-cyan-600 text-white border-cyan-600',    inactive: 'bg-slate-50 dark:bg-gray-800 text-cyan-600 dark:text-cyan-400 border-cyan-200 dark:border-cyan-900/40 hover:border-cyan-400' },
     { label: 'Quote Accepted', status: 'quote_approved', count: counts.quote_approved,   active: 'bg-teal-600 text-white border-teal-600',    inactive: 'bg-slate-50 dark:bg-gray-800 text-teal-600 dark:text-teal-400 border-teal-200 dark:border-teal-900/40 hover:border-teal-400' },
     { label: 'In Progress',    status: 'in_progress',    count: counts.in_progress,      active: 'bg-amber-500 text-white border-amber-500',  inactive: 'bg-slate-50 dark:bg-gray-800 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/40 hover:border-amber-400' },
     { label: 'Pending Sign-off',status:'pending_sign_off',count: counts.pending_sign_off,active:'bg-orange-500 text-white border-orange-500',inactive:'bg-slate-50 dark:bg-gray-800 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/40 hover:border-orange-400' },
-    { label: 'Snag',           status: 'snag',           count: counts.snag,             active: 'bg-amber-500 text-white border-amber-500',  inactive: 'bg-slate-50 dark:bg-gray-800 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900/40 hover:border-amber-400' },
-    { label: 'Snag — In Progress', status: 'snag_in_progress', count: counts.snag_in_progress, active: 'bg-amber-500 text-white border-amber-500', inactive: 'bg-slate-50 dark:bg-gray-800 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900/40 hover:border-amber-400' },
+    { label: 'Snag',           status: 'snag',           count: counts.snag,             active: 'bg-red-500 text-white border-red-500',      inactive: 'bg-slate-50 dark:bg-gray-800 text-red-700 dark:text-red-400 border-red-200 dark:border-red-900/40 hover:border-red-400' },
+    { label: 'Snag Underway',  status: 'snag_in_progress', count: counts.snag_in_progress, active: 'bg-pink-500 text-white border-pink-500',  inactive: 'bg-slate-50 dark:bg-gray-800 text-pink-700 dark:text-pink-400 border-pink-200 dark:border-pink-900/40 hover:border-pink-400' },
     { label: 'Completed',      status: 'completed',      count: counts.completed,        active: 'bg-green-600 text-white border-green-600',  inactive: 'bg-slate-50 dark:bg-gray-800 text-green-600 dark:text-green-400 border-green-200 dark:border-green-900/40 hover:border-green-400' },
-    { label: 'Declined',       status: 'declined',       count: counts.declined,         active: 'bg-red-600 text-white border-red-600',      inactive: 'bg-slate-50 dark:bg-gray-800 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900/40 hover:border-red-400' },
+    { label: 'Declined',       status: 'declined',       count: counts.declined,         active: 'bg-fuchsia-600 text-white border-fuchsia-600', inactive: 'bg-slate-50 dark:bg-gray-800 text-fuchsia-600 dark:text-fuchsia-400 border-fuchsia-200 dark:border-fuchsia-900/40 hover:border-fuchsia-400' },
   ]
 
   function filterHref(status: string) {
@@ -135,24 +135,24 @@ export default async function RegionalTicketsPage({
           </div>
           <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden flex gap-px">
             {statusCounts.open > 0 && <div className="h-full bg-blue-500 transition-all" style={{ width: `${Math.round((statusCounts.open/totalCount)*100)}%` }} />}
-            {statusCounts.quoted > 0 && <div className="h-full bg-purple-500 transition-all" style={{ width: `${Math.round((statusCounts.quoted/totalCount)*100)}%` }} />}
+            {statusCounts.quoted > 0 && <div className="h-full bg-cyan-500 transition-all" style={{ width: `${Math.round((statusCounts.quoted/totalCount)*100)}%` }} />}
             {statusCounts.accepted > 0 && <div className="h-full bg-teal-500 transition-all" style={{ width: `${Math.round((statusCounts.accepted/totalCount)*100)}%` }} />}
             {statusCounts.in_progress > 0 && <div className="h-full bg-amber-500 transition-all" style={{ width: `${Math.round((statusCounts.in_progress/totalCount)*100)}%` }} />}
-            {statusCounts.pending_sign_off > 0 && <div className="h-full bg-orange-400 transition-all" style={{ width: `${Math.round((statusCounts.pending_sign_off/totalCount)*100)}%` }} />}
-            {statusCounts.snag > 0 && <div className="h-full bg-amber-500 transition-all" style={{ width: `${Math.round((statusCounts.snag/totalCount)*100)}%` }} />}
-            {statusCounts.completed > 0 && <div className="h-full bg-green-700 transition-all" style={{ width: `${Math.round((statusCounts.completed/totalCount)*100)}%` }} />}
-            {statusCounts.declined > 0 && <div className="h-full bg-red-500 transition-all" style={{ width: `${Math.round((statusCounts.declined/totalCount)*100)}%` }} />}
+            {statusCounts.pending_sign_off > 0 && <div className="h-full bg-orange-500 transition-all" style={{ width: `${Math.round((statusCounts.pending_sign_off/totalCount)*100)}%` }} />}
+            {statusCounts.snag > 0 && <div className="h-full bg-red-500 transition-all" style={{ width: `${Math.round((statusCounts.snag/totalCount)*100)}%` }} />}
+            {statusCounts.completed > 0 && <div className="h-full bg-green-500 transition-all" style={{ width: `${Math.round((statusCounts.completed/totalCount)*100)}%` }} />}
+            {statusCounts.declined > 0 && <div className="h-full bg-fuchsia-500 transition-all" style={{ width: `${Math.round((statusCounts.declined/totalCount)*100)}%` }} />}
             {statusCounts.cancelled > 0 && <div className="h-full bg-gray-400 transition-all" style={{ width: `${Math.round((statusCounts.cancelled/totalCount)*100)}%` }} />}
           </div>
           <div className="grid grid-cols-3 sm:flex sm:flex-wrap gap-x-4 gap-y-1.5 text-xs text-gray-500 dark:text-gray-400">
             {statusCounts.open > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />Open ({statusCounts.open})</span>}
-            {statusCounts.quoted > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-purple-500 inline-block" />Quoted ({statusCounts.quoted})</span>}
+            {statusCounts.quoted > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-cyan-500 inline-block" />Quoted ({statusCounts.quoted})</span>}
             {statusCounts.accepted > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-teal-500 inline-block" />Accepted ({statusCounts.accepted})</span>}
             {statusCounts.in_progress > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />In Progress ({statusCounts.in_progress})</span>}
-            {statusCounts.pending_sign_off > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-400 inline-block" />Pending Sign-off ({statusCounts.pending_sign_off})</span>}
-            {statusCounts.snag > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />Snag ({statusCounts.snag})</span>}
-            {statusCounts.completed > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-700 inline-block" />Completed ({statusCounts.completed})</span>}
-            {statusCounts.declined > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500 inline-block" />Declined ({statusCounts.declined})</span>}
+            {statusCounts.pending_sign_off > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-orange-500 inline-block" />Pending Sign-off ({statusCounts.pending_sign_off})</span>}
+            {statusCounts.snag > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500 inline-block" />Snag ({statusCounts.snag})</span>}
+            {statusCounts.completed > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />Completed ({statusCounts.completed})</span>}
+            {statusCounts.declined > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-fuchsia-500 inline-block" />Declined ({statusCounts.declined})</span>}
             {statusCounts.cancelled > 0 && <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-gray-400 inline-block" />Cancelled ({statusCounts.cancelled})</span>}
           </div>
         </div>

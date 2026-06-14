@@ -194,9 +194,9 @@ export default async function RegionalDashboard() {
           <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden flex">
             <div className="h-full bg-green-500 transition-all rounded-l-full" style={{ width: `${completionPct}%` }} />
             <div className="h-full bg-blue-400 transition-all" style={{ width: `${openPct}%` }} />
-            {pendingSignOffPct > 0 && <div className="h-full bg-orange-400 transition-all" style={{ width: `${pendingSignOffPct}%` }} />}
-            {snagPct > 0 && <div className="h-full bg-amber-500 transition-all" style={{ width: `${snagPct}%` }} />}
-            {declinedPct > 0 && <div className="h-full bg-red-400 transition-all" style={{ width: `${declinedPct}%` }} />}
+            {pendingSignOffPct > 0 && <div className="h-full bg-orange-500 transition-all" style={{ width: `${pendingSignOffPct}%` }} />}
+            {snagPct > 0 && <div className="h-full bg-red-500 transition-all" style={{ width: `${snagPct}%` }} />}
+            {declinedPct > 0 && <div className="h-full bg-fuchsia-500 transition-all" style={{ width: `${declinedPct}%` }} />}
           </div>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs">
             <span className="flex items-center gap-1.5 font-medium text-green-700 dark:text-green-400">
@@ -207,17 +207,17 @@ export default async function RegionalDashboard() {
             </span>
             {pendingSignOffTickets > 0 && (
               <span className="flex items-center gap-1.5 font-medium text-orange-600 dark:text-orange-400">
-                <span className="w-2 h-2 rounded-full bg-orange-400 inline-block" />{pendingSignOffPct}% Pending Sign-off ({pendingSignOffTickets})
+                <span className="w-2 h-2 rounded-full bg-orange-500 inline-block" />{pendingSignOffPct}% Pending Sign-off ({pendingSignOffTickets})
               </span>
             )}
             {snagTickets > 0 && (
-              <span className="flex items-center gap-1.5 font-medium text-amber-700 dark:text-amber-400">
-                <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />{snagPct}% Snag ({snagTickets})
+              <span className="flex items-center gap-1.5 font-medium text-red-700 dark:text-red-400">
+                <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />{snagPct}% Snag ({snagTickets})
               </span>
             )}
             {declinedTickets > 0 && (
-              <span className="flex items-center gap-1.5 font-medium text-red-600 dark:text-red-400">
-                <span className="w-2 h-2 rounded-full bg-red-400 inline-block" />{declinedPct}% Declined ({declinedTickets})
+              <span className="flex items-center gap-1.5 font-medium text-fuchsia-600 dark:text-fuchsia-400">
+                <span className="w-2 h-2 rounded-full bg-fuchsia-500 inline-block" />{declinedPct}% Declined ({declinedTickets})
               </span>
             )}
           </div>
