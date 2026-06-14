@@ -144,7 +144,7 @@ export default async function AdminStatsPage() {
           </div>
           <div className="h-4 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden flex">
             <div className="h-full bg-green-500 transition-all rounded-l-full" style={{ width: `${completionPct}%` }} />
-            <div className="h-full bg-blue-400 transition-all" style={{ width: `${openPct}%` }} />
+            <div className="h-full bg-blue-500 transition-all" style={{ width: `${openPct}%` }} />
           </div>
           <div className="flex items-center gap-6 text-xs">
             <span className="flex items-center gap-1.5 font-medium text-green-700 dark:text-green-400">
@@ -152,7 +152,7 @@ export default async function AdminStatsPage() {
               {completionPct}% Completed ({byStatus.completed})
             </span>
             <span className="flex items-center gap-1.5 font-medium text-blue-600 dark:text-blue-400">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-400 inline-block" />
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" />
               {openPct}% Open Tickets ({openTickets})
             </span>
           </div>
@@ -167,15 +167,15 @@ export default async function AdminStatsPage() {
           </h2>
           <div className="space-y-3">
             {[
-              { label: 'Open',             value: byStatus.open,             color: 'bg-blue-500'   },
-              { label: 'Quoted',           value: byStatus.quoted,           color: 'bg-purple-500' },
-              { label: 'Accepted',         value: byStatus.accepted,         color: 'bg-teal-500'   },
-              { label: 'In Progress',      value: byStatus.in_progress,      color: 'bg-yellow-500' },
-              { label: 'Pending Sign-off', value: byStatus.pending_sign_off, color: 'bg-orange-400' },
-              { label: 'Snag',             value: byStatus.snag,             color: 'bg-amber-500'   },
-              { label: 'Completed',        value: byStatus.completed,        color: 'bg-green-500'  },
-              { label: 'Declined',         value: byStatus.declined,         color: 'bg-red-500'    },
-              { label: 'Cancelled',        value: byStatus.cancelled,        color: 'bg-gray-400'   },
+              { label: 'Open',             value: byStatus.open,             color: 'bg-blue-500'    },
+              { label: 'Quoted',           value: byStatus.quoted,           color: 'bg-cyan-500'    },
+              { label: 'Accepted',         value: byStatus.accepted,         color: 'bg-teal-500'    },
+              { label: 'In Progress',      value: byStatus.in_progress,      color: 'bg-amber-500'   },
+              { label: 'Pending Sign-off', value: byStatus.pending_sign_off, color: 'bg-orange-500'  },
+              { label: 'Snag',             value: byStatus.snag,             color: 'bg-red-500'     },
+              { label: 'Completed',        value: byStatus.completed,        color: 'bg-green-500'   },
+              { label: 'Declined',         value: byStatus.declined,         color: 'bg-fuchsia-500' },
+              { label: 'Cancelled',        value: byStatus.cancelled,        color: 'bg-gray-400'    },
             ].map(row => (
               <div key={row.label}>
                 <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">

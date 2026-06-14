@@ -193,7 +193,7 @@ export default async function RegionalDashboard() {
           </div>
           <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden flex">
             <div className="h-full bg-green-500 transition-all rounded-l-full" style={{ width: `${completionPct}%` }} />
-            <div className="h-full bg-blue-400 transition-all" style={{ width: `${openPct}%` }} />
+            <div className="h-full bg-blue-500 transition-all" style={{ width: `${openPct}%` }} />
             {pendingSignOffPct > 0 && <div className="h-full bg-orange-500 transition-all" style={{ width: `${pendingSignOffPct}%` }} />}
             {snagPct > 0 && <div className="h-full bg-red-500 transition-all" style={{ width: `${snagPct}%` }} />}
             {declinedPct > 0 && <div className="h-full bg-fuchsia-500 transition-all" style={{ width: `${declinedPct}%` }} />}
@@ -203,7 +203,7 @@ export default async function RegionalDashboard() {
               <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />{completionPct}% Completed ({completedTickets})
             </span>
             <span className="flex items-center gap-1.5 font-medium text-blue-600 dark:text-blue-400">
-              <span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />{openPct}% Open ({openActiveTickets})
+              <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />{openPct}% Open ({openActiveTickets})
             </span>
             {pendingSignOffTickets > 0 && (
               <span className="flex items-center gap-1.5 font-medium text-orange-600 dark:text-orange-400">
