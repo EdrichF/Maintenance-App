@@ -10,9 +10,7 @@ const STATUS_OPTIONS: Record<string, { value: TicketStatus; label: string; color
   accepted: [
     { value: 'in_progress', label: 'Mark In Progress', color: 'amber' },
   ],
-  in_progress: [
-    { value: 'cancelled', label: 'Cancel Ticket', color: 'gray' },
-  ],
+  in_progress: [],
   snag: [
     { value: 'snag_in_progress', label: 'Start Snag Work', color: 'amber' },
     { value: 'cancelled',        label: 'Cancel Ticket',   color: 'gray'  },

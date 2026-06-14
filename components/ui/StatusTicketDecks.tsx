@@ -4,7 +4,7 @@ import { RecentTicketsStack, type RecentTicket } from '@/components/regional/Rec
 import type { TicketStatus } from '@/lib/types'
 
 const STATUS_ORDER: TicketStatus[] = [
-  'open', 'quoted', 'accepted', 'in_progress', 'variation_pending',
+  'open', 'quoted', 'accepted', 'in_progress', 'variation_pending', 'variation_accepted',
   'pending_sign_off', 'snag', 'snag_in_progress', 'declined', 'completed', 'cancelled',
 ]
 

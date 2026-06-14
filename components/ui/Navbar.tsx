@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { Bell, Settings, LogOut, FileBarChart } from 'lucide-react'
 import { MotivLogo } from '@/components/ui/MotivLogo'
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 type NavRole = 'client' | 'supplier' | 'regional'
@@ -16,13 +15,15 @@ const BASE: Record<NavRole, string> = {
 }
 
 export function Navbar({ role }: { role: NavRole }) {
-  const router = useRouter()
   const [unread, setUnread] = useState(0)
 
   async function handleLogout() {
     const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/auth/login')
+    try { await supabase.auth.signOut() } catch {}
+    // Hard navigation — bypasses any pending App Router transition (e.g. a
+    // realtime-triggered refresh after a write) that could otherwise swallow a
+    // client-side router.push and make logout appear unresponsive.
+    window.location.assign('/auth/login')
   }
 
   useEffect(() => {

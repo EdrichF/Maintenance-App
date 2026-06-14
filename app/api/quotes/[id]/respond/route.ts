@@ -63,10 +63,11 @@ export async function PATCH(
     quoteUpdate.decline_reason = null
   }
 
-  // Variation: approve OR decline returns the job to in-progress (work proceeds on
-  // the original scope); a revert re-parks it as variation_pending.
+  // Variation: approve → 'variation_accepted' (badge reads "Variation Accepted",
+  // work continues); decline → back to 'in_progress' (proceed on original scope);
+  // revert → re-parks it as 'variation_pending'.
   const ticketStatus = isVariation
-    ? (status === 'pending' ? 'variation_pending' : 'in_progress')
+    ? (status === 'pending' ? 'variation_pending' : status === 'accepted' ? 'variation_accepted' : 'in_progress')
     : status === 'accepted' ? 'accepted'
     : status === 'pending'  ? 'quoted'
     : isRM                  ? 'declined'

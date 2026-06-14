@@ -32,6 +32,7 @@ export const STATUS_LABELS: Record<TicketStatus, string> = {
   snag:             'Snag',
   snag_in_progress: 'Snag Underway',
   variation_pending: 'Variation Pending',
+  variation_accepted: 'Variation Accepted',
 }
 
 // One distinct hue per status, kept consistent across badges, bars and
@@ -42,6 +43,7 @@ export const STATUS_COLORS: Record<TicketStatus, string> = {
   accepted:    'bg-teal-100    text-teal-700    dark:bg-teal-950    dark:text-teal-400',
   in_progress: 'bg-amber-100   text-amber-700   dark:bg-amber-950   dark:text-amber-400',
   variation_pending: 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-400',
+  variation_accepted: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400',
   pending_sign_off:  'bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400',
   snag:             'bg-red-100    text-red-700    dark:bg-red-950    dark:text-red-400',
   snag_in_progress: 'bg-pink-100   text-pink-700   dark:bg-pink-950   dark:text-pink-400',
@@ -65,6 +67,7 @@ export const STATUS_PILL: Record<TicketStatus, { active: string; inactive: strin
   accepted:    { active: 'bg-teal-500 text-white border-teal-500',       inactive: 'text-teal-600 dark:text-teal-400 border-teal-200 dark:border-teal-900/40 hover:border-teal-400' },
   in_progress: { active: 'bg-amber-500 text-white border-amber-500',     inactive: 'text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/40 hover:border-amber-400' },
   variation_pending: { active: 'bg-purple-500 text-white border-purple-500', inactive: 'text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900/40 hover:border-purple-400' },
+  variation_accepted: { active: 'bg-indigo-500 text-white border-indigo-500', inactive: 'text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-900/40 hover:border-indigo-400' },
   pending_sign_off:  { active: 'bg-orange-500 text-white border-orange-500', inactive: 'text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/40 hover:border-orange-400' },
   snag:        { active: 'bg-red-500 text-white border-red-500',         inactive: 'text-red-700 dark:text-red-400 border-red-200 dark:border-red-900/40 hover:border-red-400' },
   snag_in_progress: { active: 'bg-pink-500 text-white border-pink-500',  inactive: 'text-pink-700 dark:text-pink-400 border-pink-200 dark:border-pink-900/40 hover:border-pink-400' },
@@ -85,7 +88,7 @@ export type ClientVisibleStatus = 'open' | 'in_progress' | 'completed'
 export function clientVisibleStatus(status: TicketStatus): ClientVisibleStatus | null {
   if (status === 'cancelled')   return null
   if (status === 'completed')   return 'completed'
-  if (status === 'in_progress') return 'in_progress'
+  if (status === 'in_progress' || status === 'variation_accepted') return 'in_progress'
   return 'open'
 }
 

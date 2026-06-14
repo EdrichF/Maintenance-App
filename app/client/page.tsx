@@ -30,7 +30,13 @@ export default async function ClientDashboard() {
     .map(t => ({ ...t, status: clientVisibleStatus(t.status) }))
     .filter((t): t is typeof t & { status: 'open' | 'in_progress' | 'completed' } => t.status !== null)
 
-  const tickets = visible.slice(0, 5)
+  // Recent list excludes completed & declined (and cancelled); stats below still
+  // count completed.
+  const recent = (rawTickets ?? [])
+    .filter(t => !['completed', 'declined', 'cancelled'].includes(t.status))
+    .map(t => ({ ...t, status: clientVisibleStatus(t.status) }))
+    .filter((t): t is typeof t & { status: 'open' | 'in_progress' | 'completed' } => t.status !== null)
+    .slice(0, 5)
 
   const open   = visible.filter(t => t.status === 'open').length
   const active = visible.filter(t => t.status === 'in_progress').length
@@ -86,16 +92,16 @@ export default async function ClientDashboard() {
           <Link href="/client/tickets" className="text-sm text-brand-600 dark:text-brand-300 hover:underline">View all</Link>
         </div>
 
-        {!tickets.length ? (
+        {!recent.length ? (
           <div className="bg-slate-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-10 text-center">
-            <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">No tickets yet.</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">No active tickets.</p>
             <Link href="/client/tickets/new">
-              <Button variant="secondary" size="sm">Submit your first ticket</Button>
+              <Button variant="secondary" size="sm">Submit a ticket</Button>
             </Link>
           </div>
         ) : (
           <RecentTicketsStack
-            tickets={tickets as any}
+            tickets={recent as any}
             variant="client"
             basePath="/client/tickets"
             countLabel="recent"

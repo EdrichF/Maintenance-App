@@ -29,6 +29,7 @@ export default async function AdminDashboard() {
       .from('tickets')
       .select('id, title, status, priority, created_at, profiles(full_name, company_name, sub_store), quotes(status, created_at)')
       .gte('created_at', sevenDaysAgoISO)
+      .not('status', 'in', '(completed,cancelled,declined)')
       .order('created_at', { ascending: false }),
     supabase
       .from('tickets')
@@ -65,7 +66,7 @@ export default async function AdminDashboard() {
   const urgentCount    = tickets.filter(t => t.priority === 'urgent' && t.status === 'open').length
   const quotedCount    = tickets.filter(t => t.status === 'quoted').length
   const acceptedCount  = tickets.filter(t => t.status === 'accepted').length
-  const progressCount  = tickets.filter(t => t.status === 'in_progress').length
+  const progressCount  = tickets.filter(t => ['in_progress', 'variation_accepted'].includes(t.status)).length
   const signOffCount   = tickets.filter(t => t.status === 'pending_sign_off').length
   const snagCount      = tickets.filter(t => ['snag','snag_in_progress'].includes(t.status)).length
   const completedCount = tickets.filter(t => t.status === 'completed').length

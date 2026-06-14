@@ -43,16 +43,16 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
   const client = (ticket as any).profiles
   const hasAcceptedQuote = (quotes ?? []).some((q: any) => q.status === 'accepted')
   const ticketStatus = (ticket as Ticket).status
-  const canUpdateStatus = (hasAcceptedQuote || ['accepted', 'in_progress', 'snag', 'snag_in_progress'].includes(ticketStatus))
+  const canUpdateStatus = (hasAcceptedQuote || ['accepted', 'in_progress', 'variation_accepted', 'snag', 'snag_in_progress'].includes(ticketStatus))
     && !['pending_sign_off', 'completed', 'cancelled'].includes(ticketStatus)
-  // A variation order can be raised once work is underway (extra materials/work mid-job)
-  const canRaiseVariation = ['accepted', 'in_progress', 'snag_in_progress'].includes(ticketStatus)
+  // A variation order can be raised once work is actually underway (extra materials/work mid-job)
+  const canRaiseVariation = ['in_progress', 'variation_accepted', 'snag_in_progress'].includes(ticketStatus)
   const variationPending  = ticketStatus === 'variation_pending'
 
   // Single main quote per ticket. The send/edit form is only available before work
   // starts; once in-progress (or beyond) it's removed.
   const mainQuote = (quotes ?? []).find((q: any) => q.type === 'quote') ?? null
-  const quoteFormHidden = ['in_progress', 'variation_pending', 'pending_sign_off', 'completed', 'cancelled', 'snag', 'snag_in_progress'].includes(ticketStatus)
+  const quoteFormHidden = ['in_progress', 'variation_pending', 'variation_accepted', 'pending_sign_off', 'completed', 'cancelled', 'snag', 'snag_in_progress'].includes(ticketStatus)
   const quoteEditable   = !!mainQuote && ['pending', 'declined'].includes((mainQuote as any).status)
 
   return (
@@ -187,8 +187,8 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
         </div>
       )}
 
-      {/* Submit for sign-off — shown when in_progress or snag_in_progress */}
-      {['in_progress', 'snag_in_progress'].includes(ticketStatus) && (
+      {/* Submit for sign-off — shown when work is underway */}
+      {['in_progress', 'variation_accepted', 'snag_in_progress'].includes(ticketStatus) && (
         <SubmitCompletionForm ticketId={params.id} />
       )}
 

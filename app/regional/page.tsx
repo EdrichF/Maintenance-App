@@ -52,7 +52,7 @@ export default async function RegionalDashboard() {
 
   const totalTickets          = allTickets.length
   const completedTickets      = allTickets.filter((t: any) => t.status === 'completed').length
-  const openActiveTickets     = allTickets.filter((t: any) => ['open','quoted','accepted','in_progress'].includes(t.status)).length
+  const openActiveTickets     = allTickets.filter((t: any) => ['open','quoted','accepted','in_progress','variation_accepted'].includes(t.status)).length
   const pendingSignOffTickets = allTickets.filter((t: any) => t.status === 'pending_sign_off').length
   const snagTickets           = allTickets.filter((t: any) => ['snag', 'snag_in_progress'].includes(t.status)).length
   const declinedTickets       = allTickets.filter((t: any) => t.status === 'declined').length
@@ -77,7 +77,7 @@ export default async function RegionalDashboard() {
       health:     total > 0 ? Math.round((settled / total) * 100) : null,
       urgent:     tk.filter((t: any) => t.priority === 'urgent' && !['completed', 'cancelled', 'declined'].includes(t.status)).length,
       snag:       tk.filter((t: any) => ['snag', 'snag_in_progress'].includes(t.status)).length,
-      openActive: tk.filter((t: any) => ['open', 'quoted', 'accepted', 'in_progress'].includes(t.status)).length,
+      openActive: tk.filter((t: any) => ['open', 'quoted', 'accepted', 'in_progress', 'variation_accepted'].includes(t.status)).length,
       signOff:    tk.filter((t: any) => t.status === 'pending_sign_off').length,
     }
   })
@@ -162,7 +162,10 @@ export default async function RegionalDashboard() {
     })
 
   const recentTickets = ticketsWithStore
-    .filter((t: any) => new Date(t.created_at) >= sevenDaysAgo)
+    .filter((t: any) =>
+      new Date(t.created_at) >= sevenDaysAgo &&
+      !['completed', 'declined', 'cancelled'].includes(t.status)
+    )
     .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   const storePerformance = storeList.map((s: any) => {

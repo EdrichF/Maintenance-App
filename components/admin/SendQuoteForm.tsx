@@ -311,7 +311,10 @@ export function SendQuoteForm({
 
   if (!open) {
     return (
-      <Button onClick={() => setOpen(true)} variant={isVariation ? 'secondary' : 'primary'} className="w-full">
+      <Button
+        onClick={() => setOpen(true)}
+        className={`w-full ${isVariation ? 'bg-orange-500 hover:bg-orange-600 text-white focus:ring-orange-500 border-orange-500' : ''}`}
+      >
         {isEdit ? 'Edit Quote' : isVariation ? 'Raise Variation Order' : 'Send Quote to Client'}
       </Button>
     )

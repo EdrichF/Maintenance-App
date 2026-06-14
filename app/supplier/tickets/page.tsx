@@ -26,8 +26,8 @@ export default async function AdminTicketsPage({
 
   const { data: tickets } = await query
 
-  const activeStatuses = ['open', 'quoted', 'accepted', 'in_progress', 'variation_pending', 'pending_sign_off', 'snag', 'snag_in_progress', 'declined']
-  const filterStatuses = ['open', 'quoted', 'accepted', 'in_progress', 'variation_pending', 'pending_sign_off', 'snag', 'snag_in_progress', 'completed', 'declined']
+  const activeStatuses = ['open', 'quoted', 'accepted', 'in_progress', 'variation_pending', 'variation_accepted', 'pending_sign_off', 'snag', 'snag_in_progress', 'declined']
+  const filterStatuses = ['open', 'quoted', 'accepted', 'in_progress', 'variation_pending', 'variation_accepted', 'pending_sign_off', 'snag', 'snag_in_progress', 'completed', 'declined']
 
   const noFilter = !searchParams.status && !searchParams.priority
   const queryText = (searchParams.q ?? '').toLowerCase().trim()
@@ -47,6 +47,7 @@ export default async function AdminTicketsPage({
     accepted:    (tickets ?? []).filter((t: any) => t.status === 'accepted').length,
     in_progress: (tickets ?? []).filter((t: any) => t.status === 'in_progress').length,
     variation_pending: (tickets ?? []).filter((t: any) => t.status === 'variation_pending').length,
+    variation_accepted: (tickets ?? []).filter((t: any) => t.status === 'variation_accepted').length,
     pending_sign_off: (tickets ?? []).filter((t: any) => t.status === 'pending_sign_off').length,
     snag:             (tickets ?? []).filter((t: any) => t.status === 'snag').length,
     snag_in_progress: (tickets ?? []).filter((t: any) => t.status === 'snag_in_progress').length,
@@ -96,6 +97,7 @@ export default async function AdminTicketsPage({
             {statusCounts.accepted > 0 && <div className="h-full bg-teal-500 transition-all" style={{ width: `${Math.round((statusCounts.accepted/totalCount)*100)}%` }} />}
             {statusCounts.in_progress > 0 && <div className="h-full bg-amber-500 transition-all" style={{ width: `${Math.round((statusCounts.in_progress/totalCount)*100)}%` }} />}
             {statusCounts.variation_pending > 0 && <div className="h-full bg-purple-500 transition-all" style={{ width: `${Math.round((statusCounts.variation_pending/totalCount)*100)}%` }} />}
+            {statusCounts.variation_accepted > 0 && <div className="h-full bg-indigo-500 transition-all" style={{ width: `${Math.round((statusCounts.variation_accepted/totalCount)*100)}%` }} />}
             {statusCounts.pending_sign_off > 0 && <div className="h-full bg-orange-500 transition-all" style={{ width: `${Math.round((statusCounts.pending_sign_off/totalCount)*100)}%` }} />}
             {statusCounts.snag > 0 && <div className="h-full bg-red-500 transition-all" style={{ width: `${Math.round((statusCounts.snag/totalCount)*100)}%` }} />}
             {statusCounts.snag_in_progress > 0 && <div className="h-full bg-pink-500 transition-all" style={{ width: `${Math.round((statusCounts.snag_in_progress/totalCount)*100)}%` }} />}

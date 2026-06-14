@@ -113,7 +113,7 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
   const urgentOpenTickets = openTickets.filter(t => t.priority === 'urgent')
   const normalOpenTickets = openTickets.filter(t => t.priority !== 'urgent')
   const declinedTickets   = ticketList.filter(t => t.status === 'declined')
-  const inProgressTickets = ticketList.filter(t => t.status === 'in_progress' || t.status === 'accepted')
+  const inProgressTickets = ticketList.filter(t => ['in_progress', 'accepted', 'variation_accepted'].includes(t.status))
   const pendingSignOff    = ticketList.filter(t => t.status === 'pending_sign_off')
   const snagTickets       = ticketList.filter(t => t.status === 'snag' || t.status === 'snag_in_progress')
   const completedTickets  = ticketList.filter(t => t.status === 'completed')
@@ -387,13 +387,21 @@ export default async function RegionalStoreDetailPage({ params }: { params: { id
         >
           {archivedTickets.map(t => {
             const isCompleted = t.status === 'completed'
+            const acceptedQuote = ((t as any).quotes ?? []).find((q: any) => q.status === 'accepted')
             return (
               <Link key={t.id} href={`/regional/tickets/${t.id}`}>
                 <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 flex items-center justify-between gap-3 hover:border-brand-400 dark:hover:border-gray-400 transition-colors">
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{t.title}</p>
+                    {isCompleted && acceptedQuote && (
+                      <p className="text-xs font-semibold text-green-600 dark:text-green-400 mt-0.5">
+                        {formatCurrency(acceptedQuote.amount)}
+                      </p>
+                    )}
                     <p className="text-xs text-gray-400 mt-0.5">
-                      {isCompleted ? 'Completed' : 'Declined'}: {formatDate(t.updated_at)}
+                      {isCompleted
+                        ? `Completed: ${formatDateTime(t.updated_at)}`
+                        : `Declined: ${formatDate(t.updated_at)}`}
                     </p>
                   </div>
                   <span className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full ${
