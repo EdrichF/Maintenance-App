@@ -34,7 +34,9 @@ export default async function RegionalStoresPage() {
       in_progress:      tickets.filter((t: any) => t.status === 'in_progress').length,
       completed:        tickets.filter((t: any) => t.status === 'completed').length,
       pending_sign_off: tickets.filter((t: any) => t.status === 'pending_sign_off').length,
-      snag:             tickets.filter((t: any) => ['snag','snag_in_progress'].includes(t.status)).length,
+      snag:             tickets.filter((t: any) => t.status === 'snag').length,
+      snag_in_progress: tickets.filter((t: any) => t.status === 'snag_in_progress').length,
+      variation_pending:tickets.filter((t: any) => t.status === 'variation_pending').length,
       declined:         tickets.filter((t: any) => t.status === 'declined').length,
       cancelled:        tickets.filter((t: any) => t.status === 'cancelled').length,
       total:            tickets.length,
@@ -119,9 +121,10 @@ export default async function RegionalStoresPage() {
                       {store.counts.quoted           > 0 && <div className="bg-purple-400" style={{ width: `${store.pct(store.counts.quoted)}%` }} />}
                       {store.counts.pending_sign_off > 0 && <div className="bg-orange-400" style={{ width: `${store.pct(store.counts.pending_sign_off)}%` }} />}
                       {store.counts.snag             > 0 && <div className="bg-rose-500"   style={{ width: `${store.pct(store.counts.snag)}%` }} />}
-                      {store.counts.declined         > 0 && <div className="bg-red-400"    style={{ width: `${store.pct(store.counts.declined)}%` }} />}
+                      {store.counts.snag_in_progress > 0 && <div className="bg-amber-400"  style={{ width: `${store.pct(store.counts.snag_in_progress)}%` }} />}
+                      {store.counts.variation_pending> 0 && <div className="bg-indigo-500" style={{ width: `${store.pct(store.counts.variation_pending)}%` }} />}
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-1 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-x-3 gap-y-1 mt-2 text-xs text-gray-500 dark:text-gray-400">
                       {store.counts.completed        > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500  inline-block" />{store.pct(store.counts.completed)}% done ({store.counts.completed})</span>}
                       {store.counts.in_progress      > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500  inline-block" />{store.pct(store.counts.in_progress)}% in progress ({store.counts.in_progress})</span>}
                       {store.counts.accepted         > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-teal-500   inline-block" />{store.pct(store.counts.accepted)}% accepted ({store.counts.accepted})</span>}
@@ -129,7 +132,8 @@ export default async function RegionalStoresPage() {
                       {store.counts.quoted           > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-purple-400 inline-block" />{store.pct(store.counts.quoted)}% quoted ({store.counts.quoted})</span>}
                       {store.counts.pending_sign_off > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-400 inline-block" />{store.pct(store.counts.pending_sign_off)}% sign-off ({store.counts.pending_sign_off})</span>}
                       {store.counts.snag             > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500   inline-block" />{store.pct(store.counts.snag)}% snag ({store.counts.snag})</span>}
-                      {store.counts.declined         > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-400    inline-block" />{store.pct(store.counts.declined)}% declined ({store.counts.declined})</span>}
+                      {store.counts.snag_in_progress > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400  inline-block" />{store.pct(store.counts.snag_in_progress)}% snag in progress ({store.counts.snag_in_progress})</span>}
+                      {store.counts.variation_pending> 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-indigo-500 inline-block" />{store.pct(store.counts.variation_pending)}% variation pending ({store.counts.variation_pending})</span>}
                     </div>
                   </div>
                 ) : (
