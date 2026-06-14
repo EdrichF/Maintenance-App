@@ -42,6 +42,21 @@ NEXT_PUBLIC_ADMIN_EMAILS=your@email.com,partner@email.com
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
+Optional — auto-sent store-manager invites (regional managers creating store
+accounts). Without these the account is still created and the UI shows manual
+share buttons (Copy / WhatsApp / Email):
+```
+RESEND_API_KEY=re_...                 # email channel (https://resend.com)
+EMAIL_FROM=Motiv <noreply@yourdomain> # verified Resend sender
+# WhatsApp reuses the existing WhatsApp Cloud API vars:
+WHATSAPP_ACCESS_TOKEN=...
+WHATSAPP_PHONE_NUMBER_ID=...
+```
+> WhatsApp note: the Cloud API only delivers free-form text inside the 24-hour
+> customer-care window; cold invites need a pre-approved template. Server WA
+> send is therefore best-effort — email is the reliable auto-channel, and the
+> manual WhatsApp share button always works.
+
 ### 5. Set up admin accounts
 
 Admin accounts are created manually in Supabase:

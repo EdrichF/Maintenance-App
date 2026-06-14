@@ -3,7 +3,7 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowRight, Building2 } from 'lucide-react'
+import { ArrowRight, Building2, UserPlus } from 'lucide-react'
 import { AddStoreForm } from '@/components/regional/AddStoreForm'
 
 export default async function RegionalStoresPage() {
@@ -63,7 +63,15 @@ export default async function RegionalStoresPage() {
             {storeList.length} store{storeList.length !== 1 ? 's' : ''} under your management
           </p>
         </div>
-        <AddStoreForm />
+        <div className="flex flex-col items-end gap-2 shrink-0">
+          <Link
+            href="/regional/stores/new"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium px-3 py-1.5 whitespace-nowrap transition-colors"
+          >
+            <UserPlus size={13} /> Create Store Account(s)
+          </Link>
+          <AddStoreForm />
+        </div>
       </div>
 
       {storeList.length === 0 ? (
