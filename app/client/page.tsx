@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Plus, ClipboardList, Wrench, CheckCircle2, Clock4 } from 'lucide-react'
+import { Plus, ClipboardList, Wrench, CheckCircle2, Clock4, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { RecentTicketsStack } from '@/components/regional/RecentTicketsStack'
 import { clientVisibleStatus } from '@/lib/utils'
@@ -14,7 +14,7 @@ export default async function ClientDashboard() {
   const [{ data: profile }, { data: rawTickets }] = await Promise.all([
     supabase
       .from('profiles')
-      .select('full_name, company_name, sub_store, branch_code')
+      .select('full_name, company_name, sub_store, branch_code, closed_at')
       .eq('id', user!.id)
       .single(),
     supabase
@@ -41,6 +41,7 @@ export default async function ClientDashboard() {
   const open   = visible.filter(t => t.status === 'open').length
   const active = visible.filter(t => t.status === 'in_progress').length
   const done   = visible.filter(t => t.status === 'completed').length
+  const closed = !!(profile as any)?.closed_at
 
   return (
     <div className="space-y-6">
@@ -59,12 +60,27 @@ export default async function ClientDashboard() {
             )}
           </p>
         </div>
-        <Link href="/client/tickets/new">
-          <Button size="sm">
-            <Plus size={16} className="mr-1" /> New Ticket
-          </Button>
-        </Link>
+        {!closed && (
+          <Link href="/client/tickets/new">
+            <Button size="sm">
+              <Plus size={16} className="mr-1" /> New Ticket
+            </Button>
+          </Link>
+        )}
       </div>
+
+      {/* Closed-store notice */}
+      {closed && (
+        <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/40 rounded-xl p-4">
+          <Lock size={18} className="text-amber-500 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">This store has been closed</p>
+            <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+              Your regional manager has closed this store. You can still view existing tickets, but new tickets can&apos;t be submitted. Contact your regional manager if this is unexpected.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">

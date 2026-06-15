@@ -3,8 +3,11 @@
 import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowRight, Building2, UserPlus } from 'lucide-react'
+import { Building2, UserPlus, Archive } from 'lucide-react'
 import { AddStoreForm } from '@/components/regional/AddStoreForm'
+import { StoreCloseControls } from '@/components/regional/StoreCloseControls'
+import { CollapsibleArchive } from '@/components/ui/CollapsibleArchive'
+import { formatDate } from '@/lib/utils'
 
 export default async function RegionalStoresPage() {
   const supabase    = createClient()
@@ -15,7 +18,7 @@ export default async function RegionalStoresPage() {
   const { data: stores } = await adminClient
     .from('profiles')
     .select(`
-      id, full_name, company_name, sub_store,
+      id, full_name, company_name, sub_store, closed_at, closure_reason,
       tickets(id, status, priority, created_at, updated_at)
     `)
     .eq('regional_manager_id', user.id)
@@ -54,13 +57,16 @@ export default async function RegionalStoresPage() {
     return { ...s, counts, health, pct }
   })
 
+  const activeStores   = storeList.filter((s: any) => !s.closed_at)
+  const archivedStores = storeList.filter((s: any) =>  s.closed_at)
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">All Stores</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            {storeList.length} store{storeList.length !== 1 ? 's' : ''} under your management
+            {activeStores.length} store{activeStores.length !== 1 ? 's' : ''} under your management
           </p>
         </div>
         <div className="flex flex-col items-end gap-2 shrink-0">
@@ -74,43 +80,43 @@ export default async function RegionalStoresPage() {
         </div>
       </div>
 
-      {storeList.length === 0 ? (
+      {activeStores.length === 0 ? (
         <div className="bg-slate-50 dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-12 text-center">
           <Building2 size={32} className="mx-auto text-gray-300 mb-3" />
-          <p className="text-gray-500 dark:text-gray-400 text-sm">No stores assigned to you yet.</p>
-          <p className="text-xs text-gray-400 mt-1">Contact your administrator to link store accounts.</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">No active stores.</p>
+          <p className="text-xs text-gray-400 mt-1">Create a store account or link one by branch code above.</p>
         </div>
       ) : (
         <div className="space-y-4">
-          {storeList.map((store: any) => (
-            <Link key={store.id} href={`/regional/stores/${store.id}`}>
-              <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-brand-400 dark:hover:border-gray-400 transition-colors">
+          {activeStores.map((store: any) => (
+            <div key={store.id} className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-brand-400 dark:hover:border-gray-400 transition-colors">
 
-                {/* Header */}
-                <div className="flex items-start justify-between gap-2 mb-4">
-                  <div className="min-w-0">
-                    <p className="font-semibold text-gray-900 dark:text-white">{store.company_name}</p>
-                    <p className="text-sm text-brand-600 dark:text-brand-400 font-medium">{store.sub_store}</p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {store.health !== null && (
-                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                        store.health >= 70
-                          ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                          : store.health >= 40
-                          ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                          : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                      }`}>
-                        {store.health}% health
-                      </span>
-                    )}
-                    <ArrowRight size={16} className="text-gray-400" />
-                  </div>
+              {/* Header */}
+              <div className="flex items-start justify-between gap-2 mb-4">
+                <Link href={`/regional/stores/${store.id}`} className="min-w-0 flex-1">
+                  <p className="font-semibold text-gray-900 dark:text-white">{store.company_name}</p>
+                  <p className="text-sm text-brand-600 dark:text-brand-400 font-medium">{store.sub_store}</p>
+                </Link>
+                <div className="flex items-center gap-2 shrink-0">
+                  {store.health !== null && (
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                      store.health >= 70
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                        : store.health >= 40
+                        ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                        : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                    }`}>
+                      {store.health}% health
+                    </span>
+                  )}
+                  <StoreCloseControls storeId={store.id} storeName={`${store.company_name} — ${store.sub_store}`} mode="close" />
                 </div>
+              </div>
 
-                {/* Ticket performance bar */}
+              {/* Ticket performance bar — links to store detail */}
+              <Link href={`/regional/stores/${store.id}`} className="block">
                 {store.counts.total > 0 ? (
-                  <div className="mb-4">
+                  <div>
                     <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1.5">
                       <span>Ticket breakdown</span>
                       <span>{store.counts.completed} of {store.counts.total} completed ({store.pct(store.counts.completed)}%)</span>
@@ -139,13 +145,36 @@ export default async function RegionalStoresPage() {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-xs text-gray-400 italic mb-4">No tickets yet</p>
+                  <p className="text-xs text-gray-400 italic">No tickets yet</p>
                 )}
+              </Link>
 
-              </div>
-            </Link>
+            </div>
           ))}
         </div>
+      )}
+
+      {/* Archived / closed stores */}
+      {archivedStores.length > 0 && (
+        <CollapsibleArchive count={archivedStores.length}>
+          <div className="divide-y divide-gray-100 dark:divide-gray-700/60">
+            {archivedStores.map((store: any) => (
+              <div key={store.id} className="flex items-start justify-between gap-3 p-4">
+                <Link href={`/regional/stores/${store.id}`} className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <Archive size={14} className="text-gray-400 shrink-0" />
+                    <p className="font-medium text-sm text-gray-700 dark:text-gray-200 truncate">{store.company_name} — {store.sub_store}</p>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Closed {store.closed_at ? formatDate(store.closed_at) : ''}
+                    {store.closure_reason ? ` · ${store.closure_reason}` : ''}
+                  </p>
+                </Link>
+                <StoreCloseControls storeId={store.id} storeName={`${store.company_name} — ${store.sub_store}`} mode="reopen" />
+              </div>
+            ))}
+          </div>
+        </CollapsibleArchive>
       )}
     </div>
   )

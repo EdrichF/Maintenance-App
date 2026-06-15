@@ -13,6 +13,14 @@ export async function POST(request: Request) {
   if (!rateLimit(`tickets:${user.id}`, 10, 60_000))
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
 
+  // Closed stores cannot submit new tickets.
+  const { data: me } = await supabase.from('profiles').select('closed_at').eq('id', user.id).single()
+  if (me?.closed_at) {
+    return NextResponse.json({
+      error: 'Your store has been closed by your regional manager. You can no longer submit new tickets.',
+    }, { status: 403 })
+  }
+
   const body = await request.json()
   const { title, description, priority, photo_urls } = body
 

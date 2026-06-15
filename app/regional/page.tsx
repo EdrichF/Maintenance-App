@@ -40,6 +40,7 @@ export default async function RegionalDashboard() {
       `)
       .eq('regional_manager_id', user.id)
       .in('role', ['store_manager', 'client'])
+      .is('closed_at', null)
       .order('company_name'),
   ])
 
@@ -374,7 +375,7 @@ export default async function RegionalDashboard() {
       {/* 4 — Summary stats (compact) */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
         {[
-          { label: 'Stores',           value: stats.totalStores,                     icon: Building2,     accent: 'border-l-brand-500',   iconCls: 'text-brand-600 dark:text-brand-400',   href: '/regional/stores' },
+          { label: 'Stores You\nManage', value: stats.totalStores,                   icon: Building2,     accent: 'border-l-brand-500',   iconCls: 'text-brand-600 dark:text-brand-400',   href: '/regional/stores' },
           { label: 'Open Tickets',     value: stats.openTickets,                     icon: ClipboardList, accent: 'border-l-blue-500',    iconCls: 'text-blue-600 dark:text-blue-400',     href: '/regional/tickets' },
           { label: 'Urgent',           value: stats.urgentTickets,                   icon: ShieldAlert,   accent: 'border-l-red-500',     iconCls: 'text-red-600 dark:text-red-400',       href: '/regional/tickets?status=open' },
           { label: 'Quotes Pending\nApproval', value: stats.pendingQuotes,           icon: ReceiptText,   accent: 'border-l-yellow-500',  iconCls: 'text-yellow-600 dark:text-yellow-400', href: '/regional/tickets?status=quoted' },

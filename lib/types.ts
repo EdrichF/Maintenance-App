@@ -15,6 +15,8 @@ export interface Profile {
   sub_store: string | null
   regional_manager_id: string | null
   capex_budget: number | null
+  closed_at: string | null
+  closure_reason: string | null
   created_at: string
 }
 

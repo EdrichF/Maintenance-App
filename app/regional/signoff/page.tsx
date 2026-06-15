@@ -19,7 +19,8 @@ export default async function RegionalSignoffPage() {
       .from('profiles')
       .select('id, company_name, sub_store')
       .eq('regional_manager_id', user.id)
-      .in('role', ['store_manager', 'client']),
+      .in('role', ['store_manager', 'client'])
+      .is('closed_at', null),
   ])
   if (rmProfile?.role !== 'regional_manager') redirect('/auth/login')
 
