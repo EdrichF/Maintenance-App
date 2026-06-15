@@ -6,12 +6,13 @@ import { MotivLogo } from '@/components/ui/MotivLogo'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
-type NavRole = 'client' | 'supplier' | 'regional'
+type NavRole = 'client' | 'supplier' | 'regional' | 'executive'
 
 const BASE: Record<NavRole, string> = {
-  supplier: '/supplier',
-  regional: '/regional',
-  client:   '/client',
+  supplier:  '/supplier',
+  regional:  '/regional',
+  client:    '/client',
+  executive: '/executive',
 }
 
 export function Navbar({ role }: { role: NavRole }) {
