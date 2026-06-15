@@ -85,6 +85,12 @@ export default function LoginPage() {
                 {...register('password', { required: 'Password is required' })}
               />
 
+              <div className="text-right -mt-1">
+                <Link href="/auth/forgot-password" className="text-xs text-[#C6A35D] hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
+
               {error && (
                 <div className="bg-red-900/20 border border-red-800 text-red-400 text-sm rounded-lg px-4 py-3">
                   {error}

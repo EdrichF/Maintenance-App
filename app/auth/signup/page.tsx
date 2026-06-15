@@ -120,15 +120,15 @@ export default function SignupPage() {
                 onClick={() => switchRole(opt.value)}
                 className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-center transition-all ${
                   role === opt.value
-                    ? 'border-brand-500 bg-brand-50 dark:bg-brand-900/20'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-brand-300 dark:hover:border-brand-700'
+                    ? 'border-[#C6A35D] bg-[#C6A35D]/10'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-[#C6A35D]/60'
                 }`}
               >
                 <opt.icon
                   size={20}
-                  className={role === opt.value ? 'text-brand-600' : 'text-gray-400'}
+                  className="text-[#C6A35D]"
                 />
-                <span className={`text-sm font-medium ${role === opt.value ? 'text-brand-700 dark:text-brand-400' : 'text-gray-700 dark:text-gray-300'}`}>
+                <span className={`text-sm font-medium ${role === opt.value ? 'text-[#C6A35D]' : 'text-gray-700 dark:text-gray-300'}`}>
                   {opt.label}
                 </span>
                 <span className="text-xs text-gray-400">{opt.desc}</span>
@@ -236,7 +236,7 @@ export default function SignupPage() {
 
           <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
             Already have an account?{' '}
-            <Link href="/auth/login" className="text-brand-600 hover:underline font-medium">
+            <Link href="/auth/login" className="text-[#C6A35D] hover:underline font-medium">
               Log in
             </Link>
           </p>

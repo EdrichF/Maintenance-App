@@ -313,7 +313,9 @@ export function SendQuoteForm({
     return (
       <Button
         onClick={() => setOpen(true)}
-        className="w-full bg-[#C6A35D] hover:bg-[#b8954f] text-white border-[#C6A35D] focus:ring-[#C6A35D]"
+        className={`w-full ${isVariation
+          ? 'bg-[#C6A35D] hover:bg-[#b8954f] text-white border-[#C6A35D] focus:ring-[#C6A35D]'
+          : 'bg-green-600 hover:bg-green-700 text-white border-green-600 focus:ring-green-500'}`}
       >
         {isEdit ? 'Edit Quote' : isVariation ? 'Raise Variation Order' : 'Send Quote to Client'}
       </Button>
@@ -539,12 +541,14 @@ export function SendQuoteForm({
         )}
 
         <div className="flex gap-2">
-          <Button type="submit" loading={loading} className="flex-1 bg-[#C6A35D] hover:bg-[#b8954f] text-white border-[#C6A35D] focus:ring-[#C6A35D]" disabled={uploading || parsing}>
+          <Button type="submit" loading={loading} className={`flex-1 ${isVariation
+            ? 'bg-[#C6A35D] hover:bg-[#b8954f] text-white border-[#C6A35D] focus:ring-[#C6A35D]'
+            : 'bg-green-600 hover:bg-green-700 text-white border-green-600 focus:ring-green-500'}`} disabled={uploading || parsing}>
             {uploading ? (
               <><Loader2 size={14} className="animate-spin mr-1.5" /> Uploading…</>
             ) : isEdit ? 'Update Quote' : isVariation ? 'Submit Variation Order' : 'Send Quote'}
           </Button>
-          <Button type="button" variant="secondary" onClick={handleClose} className="flex-1">
+          <Button type="button" variant="danger" onClick={handleClose} className="flex-1">
             Cancel
           </Button>
         </div>
