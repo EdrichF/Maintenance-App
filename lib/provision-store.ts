@@ -7,6 +7,7 @@ export interface ProvisionInput {
   full_name:    string
   email:        string
   phone?:       string | null
+  address?:     string | null
   company_name: string
   sub_store:    string
   branch_code:  string
@@ -40,6 +41,7 @@ export async function provisionStoreAccount(
   const branch_code  = input.branch_code?.trim().toUpperCase() ?? ''
   const password     = input.password ?? ''
   const phoneE164    = normalisePhone(input.phone)
+  const address      = input.address?.trim() || null
 
   if (!email)        return { ok: false, reason: 'Email is required' }
   if (!full_name)    return { ok: false, reason: 'Manager name is required' }
@@ -67,7 +69,7 @@ export async function provisionStoreAccount(
     email,
     password,
     email_confirm: true,
-    user_metadata: { full_name, phone: phoneE164, company_name, sub_store, branch_code, role: 'store_manager' },
+    user_metadata: { full_name, phone: phoneE164, address, company_name, sub_store, branch_code, role: 'store_manager' },
   })
 
   if (createErr || !created?.user) {
@@ -88,6 +90,7 @@ export async function provisionStoreAccount(
       regional_manager_id: rm.id,
       full_name,
       phone: phoneE164,
+      address,
       company_name,
       sub_store,
       branch_code,

@@ -26,6 +26,7 @@ export async function POST(request: Request) {
       full_name:    body.full_name,
       email:        body.email,
       phone:        body.phone,
+      address:      body.address,
       company_name: body.company_name,
       sub_store:    body.sub_store,
       branch_code:  body.branch_code,

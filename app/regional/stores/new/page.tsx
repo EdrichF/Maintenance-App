@@ -15,11 +15,11 @@ import {
 type Tab = 'single' | 'bulk'
 
 interface SingleForm {
-  full_name: string; email: string; phone: string
+  full_name: string; email: string; phone: string; address: string
   company_name: string; sub_store: string; branch_code: string; password: string
 }
 const EMPTY: SingleForm = {
-  full_name: '', email: '', phone: '', company_name: '', sub_store: '', branch_code: '', password: '',
+  full_name: '', email: '', phone: '', address: '', company_name: '', sub_store: '', branch_code: '', password: '',
 }
 
 interface SingleResult {
@@ -81,7 +81,7 @@ export default function NewStoreAccountPage() {
   }
 
   function downloadTemplate() {
-    const example = 'Jane Smith,jane@acme.co.za,0712345678,Acme Retail,Cape Town Branch,CPT001,'
+    const example = 'Jane Smith,jane@acme.co.za,0712345678,12 Main Rd Cape Town,Acme Retail,Cape Town Branch,CPT001,'
     const csv = `${STORE_CSV_HEADERS.join(',')}\n${example}\n`
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
     const url = URL.createObjectURL(blob)
@@ -182,6 +182,16 @@ export default function NewStoreAccountPage() {
             <Input label="Company Name" value={form.company_name} onChange={e => set('company_name', e.target.value)} placeholder="Acme Retail" />
             <Input label="Branch / Sub-Store" value={form.sub_store} onChange={e => set('sub_store', e.target.value)} placeholder="Cape Town Branch" />
             <Input label="Branch Code" value={form.branch_code} onChange={e => set('branch_code', e.target.value.toUpperCase())} placeholder="CPT001" className="font-mono uppercase" />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Address <span className="text-gray-400 font-normal">(optional)</span></label>
+              <textarea
+                value={form.address}
+                onChange={e => set('address', e.target.value)}
+                rows={2}
+                placeholder="12 Main Road, Cape Town"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+              />
+            </div>
           </div>
 
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-2">

@@ -9,8 +9,9 @@ import { Badge } from '@/components/ui/Badge'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
-  QUOTE_STATUS_LABELS, formatDate, formatDateTime, formatCurrency,
+  QUOTE_STATUS_LABELS, formatDate, formatDateTime, formatCurrency, formatJobId,
 } from '@/lib/utils'
+import { StaleTicketActions } from '@/components/regional/StaleTicketActions'
 
 export default async function RegionalTicketDetailPage({ params }: { params: { id: string } }) {
   const supabase    = createClient()
@@ -53,6 +54,10 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
   )
   const hasPendingQuote = quotes.some((q: any) => q.status === 'pending')
 
+  // Flag tickets left Open (no quote) for 7+ days so the RM can decline or act.
+  const daysOpen    = Math.floor((Date.now() - new Date(ticket.created_at).getTime()) / 86_400_000)
+  const isStaleOpen = ticket.status === 'open' && daysOpen >= 7
+
   // Fetch contractor profiles and full ratings for quote section
   const adminIds = Array.from(new Set(quotes.map((q: any) => q.admin_id).filter(Boolean))) as string[]
   const [contractorProfilesResult, ratingsResult] = adminIds.length > 0
@@ -89,6 +94,7 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
         <div className="flex-1 min-w-0">
           <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">{ticket.title}</h1>
           <p className="text-sm text-brand-600 dark:text-brand-400">{store.company_name} — {store.sub_store}</p>
+          {formatJobId((ticket as any).job_number) && <p className="text-xs font-mono text-gray-400 dark:text-gray-500 mt-0.5">{formatJobId((ticket as any).job_number)}</p>}
         </div>
       </div>
 
@@ -106,6 +112,9 @@ export default async function RegionalTicketDetailPage({ params }: { params: { i
           </Badge>
         </div>
       </div>
+
+      {/* Stale (7+ days open) — decline or take action */}
+      {isStaleOpen && <StaleTicketActions ticketId={ticket.id} daysOpen={daysOpen} />}
 
       {/* Description */}
       <div className="bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">

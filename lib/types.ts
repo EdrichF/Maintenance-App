@@ -22,6 +22,7 @@ export interface Profile {
 
 export interface Ticket {
   id: string
+  job_number?: number | null
   client_id: string
   title: string
   description: string

@@ -10,7 +10,7 @@ import { EditTicketForm } from '@/components/client/EditTicketForm'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
-  formatDate, clientVisibleStatus,
+  formatDate, clientVisibleStatus, formatJobId,
 } from '@/lib/utils'
 import type { Ticket } from '@/lib/types'
 
@@ -46,7 +46,10 @@ export default async function ClientTicketDetailPage({ params }: { params: { id:
     <div className="max-w-lg mx-auto space-y-4">
       <div className="flex items-center gap-3">
         <BackButton />
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">{t.title}</h1>
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">{t.title}</h1>
+          {formatJobId(t.job_number) && <p className="text-xs font-mono text-gray-400 dark:text-gray-500">{formatJobId(t.job_number)}</p>}
+        </div>
       </div>
 
       {/* Progress tracker — only for the linear happy-path statuses */}

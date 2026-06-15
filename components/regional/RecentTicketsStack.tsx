@@ -7,11 +7,14 @@ import { Badge } from '@/components/ui/Badge'
 import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
-  formatDateTimeShort,
+  formatDateTimeShort, formatJobId,
 } from '@/lib/utils'
+
+const STALE_MS = 7 * 24 * 60 * 60 * 1000
 
 export interface RecentTicket {
   id: string
+  job_number?: number | null
   title: string
   status: string
   priority: string
@@ -38,9 +41,13 @@ export function TicketContent({ ticket, variant }: { ticket: RecentTicket; varia
     ? ticket.profiles?.sub_store
     : ticket.store?.sub_store
 
+  const jobId = formatJobId(ticket.job_number)
+  const isStaleOpen = ticket.status === 'open' && Date.now() - new Date(ticket.created_at).getTime() > STALE_MS
+
   return (
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0 flex-1">
+        {jobId && <p className="text-[10px] font-mono text-gray-400 dark:text-gray-500 mb-0.5">{jobId}</p>}
         {variant === 'supplier' ? (
           <>
             <p className="font-bold text-base text-gray-900 dark:text-white truncate">{companyName ?? '—'}</p>
@@ -66,6 +73,9 @@ export function TicketContent({ ticket, variant }: { ticket: RecentTicket; varia
 
       {/* Priority + Status — right side */}
       <div className="flex items-center gap-1.5 shrink-0">
+        {isStaleOpen && (
+          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 whitespace-nowrap">7d+</span>
+        )}
         <Badge className={`text-xs ${PRIORITY_COLORS[ticket.priority as keyof typeof PRIORITY_COLORS]}`}>
           {PRIORITY_LABELS[ticket.priority as keyof typeof PRIORITY_LABELS]}
         </Badge>

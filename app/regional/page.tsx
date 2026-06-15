@@ -34,7 +34,7 @@ export default async function RegionalDashboard() {
       .select(`
         id, full_name, company_name, sub_store, email, phone, address,
         tickets(
-          id, title, status, priority, created_at, updated_at,
+          id, job_number, title, status, priority, created_at, updated_at,
           quotes(status, amount, created_at, type)
         )
       `)
@@ -152,10 +152,11 @@ export default async function RegionalDashboard() {
   const ticketsWithStore = allTickets.map((t: any) => ({ ...t, store: storeByTicketId.get(t.id) }))
 
   const attentionTickets = ticketsWithStore
-    .filter((t: any) =>
-      ['urgent', 'high'].includes(t.priority) &&
-      !['completed', 'cancelled', 'declined'].includes(t.status)
-    )
+    .filter((t: any) => {
+      const isPriority = ['urgent', 'high'].includes(t.priority) && !['completed', 'cancelled', 'declined'].includes(t.status)
+      const isStaleOpen = t.status === 'open' && Date.now() - new Date(t.created_at).getTime() > 7 * 86_400_000
+      return isPriority || isStaleOpen
+    })
     .sort((a: any, b: any) => {
       if (a.priority === 'urgent' && b.priority !== 'urgent') return -1
       if (b.priority === 'urgent' && a.priority !== 'urgent') return 1

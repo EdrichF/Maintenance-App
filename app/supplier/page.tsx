@@ -27,13 +27,13 @@ export default async function AdminDashboard() {
       .order('created_at', { ascending: false }),
     supabase
       .from('tickets')
-      .select('id, title, status, priority, created_at, profiles(full_name, company_name, sub_store), quotes(status, created_at)')
+      .select('id, job_number, title, status, priority, created_at, profiles(full_name, company_name, sub_store), quotes(status, created_at)')
       .gte('created_at', sevenDaysAgoISO)
       .not('status', 'in', '(completed,cancelled,declined)')
       .order('created_at', { ascending: false }),
     supabase
       .from('tickets')
-      .select('id, title, status, priority, created_at, profiles(full_name, company_name, sub_store), quotes(status, created_at)')
+      .select('id, job_number, title, status, priority, created_at, profiles(full_name, company_name, sub_store), quotes(status, created_at)')
       .in('priority', ['urgent', 'high'])
       .not('status', 'in', '(completed,cancelled,declined)')
       .order('created_at', { ascending: false })

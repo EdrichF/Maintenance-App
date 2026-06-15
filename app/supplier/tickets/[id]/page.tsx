@@ -13,7 +13,7 @@ import {
   STATUS_COLORS, STATUS_LABELS,
   PRIORITY_COLORS, PRIORITY_LABELS,
   QUOTE_STATUS_LABELS,
-  formatDate, formatDateTime, formatCurrency,
+  formatDate, formatDateTime, formatCurrency, formatJobId,
 } from '@/lib/utils'
 import type { Ticket, Quote } from '@/lib/types'
 
@@ -59,7 +59,10 @@ export default async function AdminTicketDetailPage({ params }: { params: { id: 
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <BackButton />
-        <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">{ticket.title}</h1>
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate">{ticket.title}</h1>
+          {formatJobId((ticket as any).job_number) && <p className="text-xs font-mono text-gray-400 dark:text-gray-500">{formatJobId((ticket as any).job_number)}</p>}
+        </div>
       </div>
 
       {/* Status + Priority */}

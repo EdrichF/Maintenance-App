@@ -313,7 +313,7 @@ export function SendQuoteForm({
     return (
       <Button
         onClick={() => setOpen(true)}
-        className={`w-full ${isVariation ? 'bg-orange-500 hover:bg-orange-600 text-white focus:ring-orange-500 border-orange-500' : ''}`}
+        className="w-full bg-[#C6A35D] hover:bg-[#b8954f] text-white border-[#C6A35D] focus:ring-[#C6A35D]"
       >
         {isEdit ? 'Edit Quote' : isVariation ? 'Raise Variation Order' : 'Send Quote to Client'}
       </Button>
@@ -490,8 +490,8 @@ export function SendQuoteForm({
                   onClick={() => { setValue('valid_until', val); setValidNA(false) }}
                   className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                     isActive
-                      ? 'bg-brand-600 text-white border-brand-600'
-                      : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-brand-400 dark:hover:border-brand-500'
+                      ? 'bg-[#C6A35D] text-white border-[#C6A35D]'
+                      : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-[#C6A35D]'
                   }`}
                 >
                   <Calendar size={11} />
@@ -539,7 +539,7 @@ export function SendQuoteForm({
         )}
 
         <div className="flex gap-2">
-          <Button type="submit" loading={loading} className="flex-1" disabled={uploading || parsing}>
+          <Button type="submit" loading={loading} className="flex-1 bg-[#C6A35D] hover:bg-[#b8954f] text-white border-[#C6A35D] focus:ring-[#C6A35D]" disabled={uploading || parsing}>
             {uploading ? (
               <><Loader2 size={14} className="animate-spin mr-1.5" /> Uploading…</>
             ) : isEdit ? 'Update Quote' : isVariation ? 'Submit Variation Order' : 'Send Quote'}

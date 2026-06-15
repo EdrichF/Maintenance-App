@@ -26,7 +26,7 @@ export function generatePassword(): string {
 
 // Columns recognised in an uploaded store-account spreadsheet.
 export const STORE_CSV_HEADERS = [
-  'full_name', 'email', 'phone', 'company_name', 'sub_store', 'branch_code', 'password',
+  'full_name', 'email', 'phone', 'address', 'company_name', 'sub_store', 'branch_code', 'password',
 ] as const
 
 /**

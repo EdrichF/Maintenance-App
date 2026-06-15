@@ -92,6 +92,12 @@ export function clientVisibleStatus(status: TicketStatus): ClientVisibleStatus |
   return 'open'
 }
 
+/** Human-readable ticket reference, e.g. JOB-00042. */
+export function formatJobId(jobNumber: number | null | undefined): string | null {
+  if (jobNumber == null) return null
+  return `JOB-${String(jobNumber).padStart(5, '0')}`
+}
+
 export function formatCurrency(amount: number) {
   return new Intl.NumberFormat('en-ZA', {
     style: 'currency',

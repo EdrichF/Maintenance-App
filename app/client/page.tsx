@@ -19,7 +19,7 @@ export default async function ClientDashboard() {
       .single(),
     supabase
       .from('tickets')
-      .select('id, title, status, priority, created_at')
+      .select('id, job_number, title, status, priority, created_at')
       .eq('client_id', user!.id)
       .order('created_at', { ascending: false }),
   ])

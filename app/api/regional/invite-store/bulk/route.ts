@@ -56,6 +56,7 @@ export async function POST(request: Request) {
         full_name:    raw.full_name,
         email,
         phone:        raw.phone,
+        address:      raw.address,
         company_name: raw.company_name,
         sub_store:    raw.sub_store,
         branch_code:  code,
