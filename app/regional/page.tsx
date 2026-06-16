@@ -6,9 +6,10 @@ import {
   Banknote, ListTodo, Building2, ShieldAlert, Clock4, ArrowRight,
 } from 'lucide-react'
 import { requireRegionalManager } from '@/lib/dashboards/guard'
-import { assembleRegionalDashboard } from '@/lib/dashboards/data'
+import { assembleRegionalDashboard, type TicketActionRow } from '@/lib/dashboards/data'
 import { PORTFOLIO_LABELS } from '@/lib/dashboards/constants'
 import { HealthGauge, KpiGrid, DistributionBar, SectionCard, RagBadge, type KpiSpec } from '@/components/dashboards/primitives'
+import { ResponsiveTable, type RTColumn } from '@/components/dashboards/ResponsiveTable'
 import { formatCurrency, formatDateTimeShort } from '@/lib/utils'
 
 export default async function RegionalDashboard() {
@@ -34,6 +35,19 @@ export default async function RegionalDashboard() {
 
   // Recommended focus today
   const focus = buildFocus(data)
+
+  const ticketCols: RTColumn<TicketActionRow>[] = [
+    { header: 'Store', role: 'title', cell: t => (
+      <Link href={`/regional/tickets/${t.id}`} className="font-medium text-gray-900 dark:text-white hover:text-brand-600">{t.storeName}</Link>
+    ) },
+    { header: 'SLA', role: 'badge', cell: t => <span className="text-xs text-gray-600 dark:text-gray-300 whitespace-nowrap">{t.slaLabel}</span> },
+    { header: 'Priority', cell: t => <span className="capitalize">{t.priority}</span> },
+    { header: 'Age', cell: t => `${t.ageDays}d` },
+    { header: 'Blocker', hideMobile: true, cell: t => <span className="text-gray-500 dark:text-gray-400">{t.currentBlocker ?? '—'}</span> },
+    { header: 'Owner', hideMobile: true, cell: t => <span className="text-gray-500 dark:text-gray-400">{t.blockerOwner ?? '—'}</span> },
+    { header: 'Next action', cell: t => <span className="text-gray-600 dark:text-gray-300">{t.nextAction}</span> },
+    { header: 'Due', cell: t => <span className="whitespace-nowrap">{t.nextActionDueAt ? formatDateTimeShort(t.nextActionDueAt) : '—'}</span> },
+  ]
 
   return (
     <div className="space-y-6">
@@ -133,33 +147,17 @@ export default async function RegionalDashboard() {
       {/* Ticket action list */}
       <SectionCard title="Ticket Action List" icon={<ClipboardList size={16} className="text-brand-600" />}
         action={<Link href="/regional/tickets" className="text-xs text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1">All tickets <ArrowRight size={12} /></Link>}>
-        {data.ticketActions.length === 0 ? (
-          <p className="text-sm text-gray-400">No open tickets needing action.</p>
-        ) : (
-          <div className="overflow-x-auto -mx-2">
-            <table className="w-full text-sm min-w-[720px]">
-              <thead>
-                <tr className="text-left text-xs text-gray-400 border-b border-gray-100 dark:border-gray-700">
-                  <th className="py-2 px-2">Store</th><th className="px-2">Pri.</th><th className="px-2">Age</th>
-                  <th className="px-2">SLA</th><th className="px-2">Blocker</th><th className="px-2">Owner</th><th className="px-2">Next action</th><th className="px-2">Due</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.ticketActions.slice(0, 12).map(t => (
-                  <tr key={t.id} className="border-b border-gray-50 dark:border-gray-700/50">
-                    <td className="py-2 px-2"><Link href={`/regional/tickets/${t.id}`} className="font-medium text-gray-900 dark:text-white hover:text-brand-600">{t.storeName}</Link></td>
-                    <td className="px-2 capitalize">{t.priority}</td>
-                    <td className="px-2">{t.ageDays}d</td>
-                    <td className="px-2"><span className="text-xs">{t.slaLabel}</span></td>
-                    <td className="px-2 text-xs text-gray-500 dark:text-gray-400">{t.currentBlocker ?? '—'}</td>
-                    <td className="px-2 text-xs text-gray-500 dark:text-gray-400">{t.blockerOwner ?? '—'}</td>
-                    <td className="px-2 text-xs text-gray-600 dark:text-gray-300 max-w-[200px]">{t.nextAction}</td>
-                    <td className="px-2 text-xs whitespace-nowrap">{t.nextActionDueAt ? formatDateTimeShort(t.nextActionDueAt) : '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <ResponsiveTable
+          columns={ticketCols}
+          rows={data.ticketActions.slice(0, 5)}
+          getKey={t => t.id}
+          minWidth={720}
+          empty="No open tickets needing action."
+        />
+        {data.ticketActions.length > 5 && (
+          <Link href="/regional/tickets" className="text-xs text-brand-600 dark:text-brand-400 hover:underline mt-3 inline-block">
+            +{data.ticketActions.length - 5} more →
+          </Link>
         )}
       </SectionCard>
 

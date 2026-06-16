@@ -3,11 +3,40 @@ export const dynamic = 'force-dynamic'
 import { Gavel, Repeat } from 'lucide-react'
 import { requireExecutive } from '@/lib/dashboards/guard'
 import { assembleEstateDashboard } from '@/lib/dashboards/data'
+import { SectionCard } from '@/components/dashboards/primitives'
+import { ResponsiveTable, type RTColumn } from '@/components/dashboards/ResponsiveTable'
 import { DECISION_CHIP } from '@/components/dashboards/decisionChip'
+import type { DecisionItem } from '@/lib/dashboards/decisions'
+
+type RepeatRow = Awaited<ReturnType<typeof assembleEstateDashboard>>['repeatDefects'][number]
 
 export default async function ExecutiveDecisionsPage() {
   await requireExecutive()
   const data = await assembleEstateDashboard()
+
+  const decisionCols: RTColumn<DecisionItem>[] = [
+    { header: 'Decision', role: 'title', cell: d => (
+      <div className="min-w-0">
+        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${DECISION_CHIP[d.category]}`}>{d.category}</span>
+        <p className="text-sm font-medium text-gray-900 dark:text-white mt-1">{d.decisionRequired}</p>
+      </div>
+    ) },
+    { header: 'Value', role: 'badge', cell: d => <span className="text-xs font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">{d.value}</span> },
+    { header: 'Reason', cell: d => <span className="text-gray-500 dark:text-gray-400">{d.reason}</span> },
+    { header: 'Action', hideMobile: true, cell: d => <span className="text-gray-500 dark:text-gray-400">{d.recommendedAction}</span> },
+    { header: 'Owner', cell: d => <span className="whitespace-nowrap">{d.owner}</span> },
+    { header: 'Due', cell: d => `${d.deadlineDays}d` },
+  ]
+
+  const repeatCols: RTColumn<RepeatRow>[] = [
+    { header: 'Defect', role: 'title', cell: d => (
+      <span className="font-medium text-gray-900 dark:text-white capitalize">{d.category} <span className="text-gray-400 font-normal">· {d.storeName}</span></span>
+    ) },
+    { header: 'Repeats', role: 'badge', cell: d => <span className="font-semibold text-pink-600 dark:text-pink-400">×{d.count}</span> },
+    { header: 'Region', cell: d => d.regionName },
+    { header: 'Likely cause', hideMobile: true, cell: d => <span className="text-gray-500 dark:text-gray-400">{d.possibleRootCause}</span> },
+    { header: 'Suggested action', cell: d => <span className="text-gray-500 dark:text-gray-400">{d.suggestedAction}</span> },
+  ]
 
   return (
     <div className="space-y-6">
@@ -18,64 +47,13 @@ export default async function ExecutiveDecisionsPage() {
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Exception-based. Each item names the reason, impact, recommended action, owner and deadline.</p>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-3 overflow-x-auto">
-        <table className="w-full text-sm min-w-[820px]">
-          <thead>
-            <tr className="text-left text-xs text-gray-400 border-b border-gray-100 dark:border-gray-700">
-              <th className="py-2 px-2">Decision</th><th className="px-2">Reason</th><th className="px-2">Value / impact</th>
-              <th className="px-2">Recommended action</th><th className="px-2">Owner</th><th className="px-2">Due</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.decisions.map((d, i) => (
-              <tr key={i} className="border-b border-gray-50 dark:border-gray-700/50 align-top">
-                <td className="py-2 px-2">
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${DECISION_CHIP[d.category]}`}>{d.category}</span>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white mt-1">{d.decisionRequired}</p>
-                </td>
-                <td className="px-2 text-xs text-gray-500 dark:text-gray-400 max-w-[240px]">{d.reason}</td>
-                <td className="px-2 text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap">{d.value}</td>
-                <td className="px-2 text-xs text-gray-500 dark:text-gray-400 max-w-[220px]">{d.recommendedAction}</td>
-                <td className="px-2 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{d.owner}</td>
-                <td className="px-2 text-xs whitespace-nowrap">{d.deadlineDays}d</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <SectionCard title="Decisions" icon={<Gavel size={16} className="text-indigo-500" />}>
+        <ResponsiveTable columns={decisionCols} rows={data.decisions} getKey={(_, i) => String(i)} minWidth={820} empty="No decisions outstanding." />
+      </SectionCard>
 
-      {/* Repeat defect & root-cause analysis */}
-      <div>
-        <h2 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-3">
-          <Repeat size={16} className="text-pink-500" /> Repeat Defect & Root-Cause Analysis
-        </h2>
-        {data.repeatDefects.length === 0 ? (
-          <p className="text-sm text-gray-400">No repeat-defect patterns detected in the last 30 days.</p>
-        ) : (
-          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-3 overflow-x-auto">
-            <table className="w-full text-sm min-w-[760px]">
-              <thead>
-                <tr className="text-left text-xs text-gray-400 border-b border-gray-100 dark:border-gray-700">
-                  <th className="py-2 px-2">Category</th><th className="px-2">Store</th><th className="px-2">Region</th>
-                  <th className="px-2">Repeats</th><th className="px-2">Likely cause</th><th className="px-2">Suggested action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.repeatDefects.map((d, i) => (
-                  <tr key={i} className="border-b border-gray-50 dark:border-gray-700/50 align-top">
-                    <td className="py-2 px-2 font-medium text-gray-900 dark:text-white capitalize">{d.category}</td>
-                    <td className="px-2 text-gray-600 dark:text-gray-300">{d.storeName}</td>
-                    <td className="px-2 text-gray-500 dark:text-gray-400">{d.regionName}</td>
-                    <td className="px-2 font-semibold">{d.count}</td>
-                    <td className="px-2 text-xs text-gray-500 dark:text-gray-400 max-w-[220px]">{d.possibleRootCause}</td>
-                    <td className="px-2 text-xs text-gray-500 dark:text-gray-400 max-w-[220px]">{d.suggestedAction}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      <SectionCard title="Repeat Defect & Root-Cause Analysis" icon={<Repeat size={16} className="text-pink-500" />}>
+        <ResponsiveTable columns={repeatCols} rows={data.repeatDefects} getKey={(_, i) => String(i)} minWidth={760} empty="No repeat-defect patterns in the last 30 days." />
+      </SectionCard>
     </div>
   )
 }

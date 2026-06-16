@@ -6,9 +6,10 @@ import Link from 'next/link'
 import {
   Briefcase, ShieldAlert, Gavel, TrendingUp, Activity, ArrowRight,
 } from 'lucide-react'
-import { assembleEstateDashboard } from '@/lib/dashboards/data'
-import { PORTFOLIO_LABELS, RAG_COLORS } from '@/lib/dashboards/constants'
+import { assembleEstateDashboard, type RegionRankRow } from '@/lib/dashboards/data'
+import { PORTFOLIO_LABELS } from '@/lib/dashboards/constants'
 import { HealthGauge, KpiGrid, DistributionBar, SectionCard, RagBadge, type KpiSpec } from '@/components/dashboards/primitives'
+import { ResponsiveTable, type RTColumn } from '@/components/dashboards/ResponsiveTable'
 import { formatCurrency } from '@/lib/utils'
 import { DECISION_CHIP } from '@/components/dashboards/decisionChip'
 
@@ -33,6 +34,17 @@ export default async function ExecutiveDashboard() {
     { label: 'Repeat Defect Alerts', value: data.repeatDefects.length, accent: 'border-l-pink-500', tone: data.repeatDefects.length > 0 ? 'warn' : 'good' },
     { label: 'Top Risk Regions', value: e.regionsCritical + data.regions.filter(r => r.region.rag === 'red').length, accent: 'border-l-rose-500', href: '/executive/regions' },
     { label: 'Decisions Required', value: data.decisions.filter(d => d.category !== 'No action required').length, accent: 'border-l-indigo-500', href: '/executive/decisions' },
+  ]
+
+  const regionCols: RTColumn<RegionRankRow>[] = [
+    { header: '#', hideMobile: true, cell: r => <span className="text-gray-400">{r.rank}</span> },
+    { header: 'Region', role: 'title', cell: r => <span className="font-medium text-gray-900 dark:text-white">{r.regionName}</span> },
+    { header: 'Health', role: 'badge', cell: r => <span className="font-semibold">{r.region.finalPortfolioHealth}%</span> },
+    { header: 'Status', role: 'badge', cell: r => <RagBadge rag={r.region.rag} /> },
+    { header: 'Stores', cell: r => r.region.activeStores },
+    { header: 'Red/Crit', cell: r => `${r.region.counts.red}/${r.region.counts.critical}` },
+    { header: 'Open', cell: r => r.region.openTickets },
+    { header: 'Cost', cell: r => formatCurrency(r.region.costExposure) },
   ]
 
   return (
@@ -80,33 +92,16 @@ export default async function ExecutiveDashboard() {
       {/* Regional ranking (preview) */}
       <SectionCard
         title="Regional Ranking — highest risk first"
-        icon={<TrendingUp size={16} className="text-brand-600" />}
+        icon={<TrendingUp size={16} className="text-brand-600 dark:text-brand-300" />}
         action={<Link href="/executive/regions" className="text-xs text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1">All regions <ArrowRight size={12} /></Link>}
       >
-        <div className="overflow-x-auto -mx-2">
-          <table className="w-full text-sm min-w-[640px]">
-            <thead>
-              <tr className="text-left text-xs text-gray-400 border-b border-gray-100 dark:border-gray-700">
-                <th className="py-2 px-2">#</th><th className="px-2">Region</th><th className="px-2">Health</th><th className="px-2">Status</th>
-                <th className="px-2">Stores</th><th className="px-2">Red/Crit</th><th className="px-2">Open</th><th className="px-2">Cost</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.regions.slice(0, 6).map(({ rank, region, regionName }) => (
-                <tr key={region.regionId} className="border-b border-gray-50 dark:border-gray-700/50">
-                  <td className="py-2 px-2 text-gray-400">{rank}</td>
-                  <td className="px-2 font-medium text-gray-900 dark:text-white">{regionName}</td>
-                  <td className="px-2 font-semibold">{region.finalPortfolioHealth}%</td>
-                  <td className="px-2"><RagBadge rag={region.rag} /></td>
-                  <td className="px-2">{region.activeStores}</td>
-                  <td className="px-2">{region.counts.red}/{region.counts.critical}</td>
-                  <td className="px-2">{region.openTickets}</td>
-                  <td className="px-2">{formatCurrency(region.costExposure)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <ResponsiveTable
+          columns={regionCols}
+          rows={data.regions.slice(0, 5)}
+          getKey={r => r.region.regionId}
+          minWidth={620}
+          empty="No active regions yet."
+        />
       </SectionCard>
 
       {/* Top risk stores (preview) */}
