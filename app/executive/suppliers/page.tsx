@@ -24,7 +24,7 @@ export default async function ExecutiveSuppliersPage() {
     <div className="space-y-5">
       <div>
         <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-          <Truck size={20} className="text-brand-600" /> Supplier Performance
+          <Truck size={20} className="text-brand-600 dark:text-brand-300" /> Supplier Performance
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Estate-wide. Score weighs SLA breaches, first-time-fix, evidence, repeat defects and escalations.</p>
       </div>

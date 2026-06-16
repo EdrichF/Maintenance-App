@@ -33,7 +33,7 @@ const NAV_LINKS: Record<NavRole, { href: string; label: string; icon: React.Elem
   executive: [
     { href: '/executive',           label: 'Estate',    icon: Globe2          },
     { href: '/executive/regions',   label: 'Regions',   icon: MapIcon         },
-    { href: '/executive/stores',    label: 'Risk',      icon: AlertTriangle   },
+    { href: '/executive/stores',    label: 'Stores',    icon: Store           },
     { href: '/executive/suppliers', label: 'Suppliers', icon: Truck           },
     { href: '/executive/decisions', label: 'Decisions', icon: Gavel           },
   ],

@@ -210,7 +210,7 @@ export default async function RegionalDashboard() {
 
       {/* Supplier performance + Repeat defects */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <SectionCard title="Supplier Performance" icon={<Truck size={16} className="text-brand-600" />}>
+        <SectionCard title="Supplier Performance" icon={<Truck size={16} className="text-brand-600 dark:text-brand-300" />}>
           {data.suppliers.length === 0 ? (
             <p className="text-sm text-gray-400">No tickets linked to a sub-supplier in your region yet.</p>
           ) : (

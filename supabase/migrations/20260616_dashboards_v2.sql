@@ -91,7 +91,11 @@ end $$;
 -- ─────────────────────────────────────────
 alter table public.tickets add column if not exists region_id                       uuid references public.regions(id) on delete set null;
 alter table public.tickets add column if not exists supplier_id                     uuid references public.suppliers(id) on delete set null;
-alter table public.tickets add column if not exists assigned_user_id                uuid references public.profiles(id) on delete set null;
+-- NOTE: assigned_user_id is a plain uuid (NOT a FK to profiles). A second/third
+-- tickets→profiles FK makes PostgREST `profiles(...)` embeds ambiguous and breaks
+-- every ticket query that embeds the store profile. Keep client_id as the only
+-- tickets→profiles FK.
+alter table public.tickets add column if not exists assigned_user_id                uuid;
 
 alter table public.tickets add column if not exists category                        text;
 alter table public.tickets add column if not exists subcategory                     text;
@@ -139,7 +143,7 @@ alter table public.tickets add column if not exists total_paused_minutes        
 -- Blocker tracking
 alter table public.tickets add column if not exists current_blocker                 text;
 alter table public.tickets add column if not exists blocker_owner_type              text;  -- supplier | regional_manager | finance | store | executive
-alter table public.tickets add column if not exists blocker_owner_id                uuid references public.profiles(id) on delete set null;
+alter table public.tickets add column if not exists blocker_owner_id                uuid;  -- plain uuid, not a FK (see assigned_user_id note above)
 alter table public.tickets add column if not exists blocker_started_at              timestamptz;
 alter table public.tickets add column if not exists internal_action_due_at          timestamptz;
 alter table public.tickets add column if not exists delay_owner                     text;  -- supplier | internal | store | none

@@ -15,7 +15,7 @@ export default async function ExecutiveRegionsPage() {
     <div className="space-y-5">
       <div>
         <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-          <MapIcon size={20} className="text-brand-600" /> Regional Ranking
+          <MapIcon size={20} className="text-brand-600 dark:text-brand-300" /> Regional Ranking
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Highest-risk regions first. Portfolio health = average store health − risk penalty.</p>
       </div>

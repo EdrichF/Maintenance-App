@@ -293,6 +293,8 @@ export interface EstateDashboardData {
   estate: EstateHealthResult
   regions: RegionRankRow[]
   topRiskStores: RankedStore<StoreCard>[]
+  amberStores: StoreCard[]
+  controlledStores: StoreCard[]
   suppliers: { id: string; name: string; perf: SupplierPerformance }[]
   repeatDefects: (RepeatDefect & { storeName: string; regionName: string })[]
   decisions: DecisionItem[]
@@ -383,6 +385,8 @@ export async function assembleEstateDashboard(now: Date = new Date()): Promise<E
     .map(r => ({ ...r, regionName: regionName.get(r.region.regionId) ?? (r.region.regionId === 'unassigned' ? 'Unassigned' : 'Region') }))
 
   const topRiskStores = getTopRiskStores(allCards, 10)
+  const amberStores = allCards.filter(c => c.finalRag === 'amber').sort((a, b) => a.finalHealthScore - b.finalHealthScore)
+  const controlledStores = allCards.filter(c => c.finalRag === 'green').sort((a, b) => b.finalHealthScore - a.finalHealthScore)
 
   // estate-wide supplier performance
   const bySupplier = new Map<string, Ticket[]>()
@@ -407,7 +411,7 @@ export async function assembleEstateDashboard(now: Date = new Date()): Promise<E
     regionName: (id) => regionName.get(id) ?? 'Region',
   })
 
-  return { estate, regions: ranking, topRiskStores, suppliers, repeatDefects, decisions, pendingQuoteValue, generatedAt: now.toISOString() }
+  return { estate, regions: ranking, topRiskStores, amberStores, controlledStores, suppliers, repeatDefects, decisions, pendingQuoteValue, generatedAt: now.toISOString() }
 }
 
 /** Compare today's live counts to yesterday's estate snapshot for trend flags. */

@@ -6,7 +6,7 @@ import { SwipeNav } from '@/components/ui/SwipeNav'
 const LINKS = [
   { href: '/executive',           label: 'Estate'    },
   { href: '/executive/regions',   label: 'Regions'   },
-  { href: '/executive/stores',    label: 'Risk'      },
+  { href: '/executive/stores',    label: 'Stores'    },
   { href: '/executive/suppliers', label: 'Suppliers' },
   { href: '/executive/decisions', label: 'Decisions' },
 ]

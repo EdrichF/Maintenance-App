@@ -4,8 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import {
-  Globe2, Building2, ClipboardList, ShieldAlert, Banknote,
-  Repeat, Gavel, TrendingUp, Truck, Activity, ArrowRight,
+  Briefcase, ShieldAlert, Gavel, TrendingUp, Activity, ArrowRight,
 } from 'lucide-react'
 import { assembleEstateDashboard } from '@/lib/dashboards/data'
 import { PORTFOLIO_LABELS, RAG_COLORS } from '@/lib/dashboards/constants'
@@ -24,7 +23,6 @@ export default async function ExecutiveDashboard() {
   const e = data.estate
 
   const kpis: KpiSpec[] = [
-    { label: 'Estate Health', value: `${e.finalEstateHealth}%`, hint: PORTFOLIO_LABELS[e.rag], accent: 'border-l-brand-500', tone: e.rag === 'green' ? 'good' : e.rag === 'amber' ? 'warn' : 'bad', href: undefined },
     { label: 'Active Stores', value: e.totalActiveStores, hint: `${data.regions.length} regions`, accent: 'border-l-blue-500', href: '/executive/stores' },
     { label: 'Critical / Red Stores', value: `${e.counts.critical} / ${e.counts.red}`, hint: `${e.pctCritical}% critical`, accent: 'border-l-red-500', tone: e.counts.critical > 0 ? 'bad' : 'default' },
     { label: 'Open Tickets', value: e.openTickets, hint: `${e.criticalTickets} critical`, accent: 'border-l-amber-500', href: '/executive/stores' },
@@ -41,10 +39,9 @@ export default async function ExecutiveDashboard() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-          <Globe2 size={22} className="text-brand-600 dark:text-brand-400" /> Executive Estate Dashboard
+          <Briefcase size={22} className="text-brand-600 dark:text-brand-400" /> Executive Estate Dashboard
         </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          {profile.full_name ? `${profile.full_name.split(' ')[0]} · ` : ''}
           {new Date().toLocaleDateString('en-ZA', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
         </p>
       </div>
@@ -60,7 +57,7 @@ export default async function ExecutiveDashboard() {
               <RagBadge rag={e.rag} label={PORTFOLIO_LABELS[e.rag]} />
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              Weighted regional health {e.weightedRegionalHealth}% − risk penalty {e.riskPenalty} = <strong>{e.finalEstateHealth}%</strong>.
+              Weighted regional health {e.weightedRegionalHealth}% − risk penalty {e.riskPenalty}% = <strong>{e.finalEstateHealth}%</strong>.
               {' '}Main driver: <strong>{e.mainRiskDriver}</strong>.
             </p>
             {e.appliedPenalties.length > 0 && (
